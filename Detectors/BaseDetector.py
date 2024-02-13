@@ -96,8 +96,8 @@ class BaseDetector(ABC):
         :return: list of GazeEventTypeEnum values, where each value indicates the type of event that is detected at the
             corresponding index in the given gaze data
         """
-        left_candidates = self.detect_candidates_monocular(x=x_l, y=y_l, expand_blink_by_ms=expand_blink_by_ms)
-        right_candidates = self.detect_candidates_monocular(x=x_r, y=y_r, expand_blink_by_ms=expand_blink_by_ms)
+        left_candidates = self.detect_candidates_monocular(t=t,x=x_l, y=y_l, expand_blink_by_ms=expand_blink_by_ms)
+        right_candidates = self.detect_candidates_monocular(t=t, x=x_r, y=y_r, expand_blink_by_ms=expand_blink_by_ms)
 
         detect_by = detect_by.lower()
         if detect_by == cnst.LEFT:
