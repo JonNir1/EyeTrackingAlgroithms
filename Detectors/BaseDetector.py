@@ -33,7 +33,8 @@ class BaseDetector(ABC):
         self._sr = np.nan  # sampling rate in Hz
 
     @final
-    def detect_candidates_monocular(self, t: np.ndarray, x: np.ndarray, y: np.ndarray,
+    def detect_candidates_monocular(self,
+                                    t: np.ndarray, x: np.ndarray, y: np.ndarray,
                                     expand_blink_by_ms: int = 0) -> List[GazeEventTypeEnum]:
         """
         Detects event-candidates in the given gaze data from a single eye. Detection steps:
@@ -134,7 +135,8 @@ class BaseDetector(ABC):
         return t, x, y
 
     @final
-    def _identify_blink_candidates(self, x: np.ndarray, y: np.ndarray,
+    def _identify_blink_candidates(self,
+                                   x: np.ndarray, y: np.ndarray,
                                    candidates: np.ndarray,
                                    expand_blink_by_ms: int = 0) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
