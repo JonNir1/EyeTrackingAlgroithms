@@ -76,17 +76,19 @@ def pixels_array_to_vis_angle_array(xs: np.ndarray, ys: np.ndarray, d: float,
     return np.array(visual_angles)
 
 
-def pixels_array_to_vis_angle_velocity_array(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray,
+def pixels_array_to_angular_velocities_array(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray,
                                              d: float, pixel_size: float, use_radians=False) -> np.ndarray:
     """
-    Calculates the visual angle between subsequent pixels and divides it by the time difference between the two pixels.
+    Calculates the visual angle between subsequent pixels, accumulates the angles, and calculates the temporal
+    derivative of the accumulated angles, to get the angular velocity of the gaze in degrees- or radian-per-second.
+
     :param xs: 1D array of x coordinates
     :param ys: 1D array of y coordinates
     :param timestamps: 1D array of timestamps
     :param d: distance from the screen in centimeters.
     :param pixel_size: size of each pixel in centimeters.
     :param use_radians: if True, returns the angle in radians. Otherwise, returns the angle in degrees.
-    :return: angular velocity (in degrees- or radian-per-second) of each point (first is NaN)
+    :return: angular velocity (deg- or rad-per-second) of each point (first is NaN)
     """
     assert len(xs) == len(ys) == len(timestamps), "x-array, y-array and timestamps-array must be of the same length"
     angles = pixels_array_to_vis_angle_array(xs, ys, d, pixel_size, use_radians)

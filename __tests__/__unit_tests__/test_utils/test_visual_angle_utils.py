@@ -61,19 +61,19 @@ class TestVisualAngleUtils(unittest.TestCase):
         ys = np.arange(5)
         ts = np.arange(5)
         self.assertTrue(np.array_equal(np.array([np.nan, 0, 0, 0, 0]),
-                                       visang_utils.pixels_array_to_vis_angle_velocity_array(xs, xs, ts, self.D,
+                                       visang_utils.pixels_array_to_angular_velocities_array(xs, xs, ts, self.D,
                                                                                              self.PS),
                                        equal_nan=True))
         self.assertTrue(np.array_equal(np.array([np.nan, 45, 45, 45, 45]) * cnst.MILLISECONDS_PER_SECOND,
-                                       visang_utils.pixels_array_to_vis_angle_velocity_array(xs, ys, ts, self.D,
+                                       visang_utils.pixels_array_to_angular_velocities_array(xs, ys, ts, self.D,
                                                                                              self.PS),
                                        equal_nan=True))
         self.assertTrue(np.array_equal(np.array([np.nan, 45, 45, 45, 45]) * cnst.MILLISECONDS_PER_SECOND,
-                                       visang_utils.pixels_array_to_vis_angle_velocity_array(xs, -ys, ts, self.D,
+                                       visang_utils.pixels_array_to_angular_velocities_array(xs, -ys, ts, self.D,
                                                                                              self.PS),
                                        equal_nan=True))
         self.assertTrue(np.array_equal(np.array([np.nan, 22.5, 22.5, 22.5, 22.5]) * cnst.MILLISECONDS_PER_SECOND,
-                                       visang_utils.pixels_array_to_vis_angle_velocity_array(xs, ys, ts * 2, self.D,
+                                       visang_utils.pixels_array_to_angular_velocities_array(xs, ys, ts * 2, self.D,
                                                                                              self.PS),
                                        equal_nan=True))
 
