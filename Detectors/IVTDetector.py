@@ -1,12 +1,22 @@
 import numpy as np
+from overrides import override
+
+from Detectors.BaseDetector import BaseDetector
 
 
-class IVTDetector:
+class IVTDetector(BaseDetector):
     __DEFAULT_VELOCITY_THRESHOLD = 0.5
 
     def __init__(self,
+                 missing_value: float = BaseDetector._MISSING_VALUE,
                  velocity_threshold: float = __DEFAULT_VELOCITY_THRESHOLD):
+        super().__init__(missing_value)
         self._velocity_threshold = velocity_threshold
+
+    @override
+    def _identify_gaze_event_candidates(self, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
+        # TODO: implement
+        raise NotImplementedError
 
     def detect(self, x_coords, y_coords) -> np.ndarray:
         # calculate velocity by difference between coordinates
