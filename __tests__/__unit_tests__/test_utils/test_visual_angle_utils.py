@@ -34,27 +34,27 @@ class TestVisualAngleUtils(unittest.TestCase):
         xs1 = np.zeros(5)
         ys = np.arange(5)
         self.assertTrue(np.array_equal(np.array([0, 0, 0, 0, 0]),
-                                       visang_utils.pixels_array_to_vis_angle_array(xs1, xs1, self.D, self.PS),
+                                       visang_utils.calculate_angles_from_pixels(xs1, xs1, self.D, self.PS),
                                        equal_nan=True))
         self.assertTrue(np.array_equal(np.array([0, 45, 45, 45, 45]),
-                                       visang_utils.pixels_array_to_vis_angle_array(xs1, ys, self.D, self.PS),
+                                       visang_utils.calculate_angles_from_pixels(xs1, ys, self.D, self.PS),
                                        equal_nan=True))
         self.assertTrue(np.array_equal(np.array([0, 45, 45, 45, 45]),
-                                       visang_utils.pixels_array_to_vis_angle_array(xs1, -ys, self.D, self.PS),
+                                       visang_utils.calculate_angles_from_pixels(xs1, -ys, self.D, self.PS),
                                        equal_nan=True))
         xs2 = np.arange(5)
         exp = np.arctan(np.sqrt(2))
         self.assertTrue(np.array_equal(np.array([0, exp, exp, exp, exp]),
-                                       visang_utils.pixels_array_to_vis_angle_array(xs2, ys, self.D, self.PS,
-                                                                                    use_radians=True),
+                                       visang_utils.calculate_angles_from_pixels(xs2, ys, self.D, self.PS,
+                                                                                 use_radians=True),
                                        equal_nan=True))
         xs3 = xs1.copy()
         xs3[2] = np.nan
         self.assertTrue(np.array_equal(np.array([0, 45, np.nan, np.nan, 45]),
-                                       visang_utils.pixels_array_to_vis_angle_array(xs3, ys, self.D, self.PS),
+                                       visang_utils.calculate_angles_from_pixels(xs3, ys, self.D, self.PS),
                                        equal_nan=True))
         xs4 = xs1[:-1].copy()
-        self.assertRaises(AssertionError, visang_utils.pixels_array_to_vis_angle_array, xs4, ys, self.D, self.PS)
+        self.assertRaises(AssertionError, visang_utils.calculate_angles_from_pixels, xs4, ys, self.D, self.PS)
 
     def test_pixels_array_to_vis_angle_velocity_array(self):
         xs = np.zeros(5)

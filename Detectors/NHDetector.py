@@ -3,7 +3,7 @@ import numpy as np
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 from Detectors.BaseDetector import BaseDetector
 from scipy.signal import savgol_filter, argrelextrema
-from Utils.visual_angle_utils import pixels_array_to_vis_angle_array
+from Utils.visual_angle_utils import calculate_angles_from_pixels
 
 
 class NHDetector(BaseDetector):
@@ -75,7 +75,7 @@ class NHDetector(BaseDetector):
         x_filtered = savgol_filter(x, window_length=self._window_length, polyorder=self._poly_order)
         y_filtered = savgol_filter(y, window_length=self._window_length, polyorder=self._poly_order)
         # convert pixels to visual angles and derive
-        visual_angles = pixels_array_to_vis_angle_array(x_filtered, y_filtered, view_dist, pixel_size)
+        visual_angles = calculate_angles_from_pixels(x_filtered, y_filtered, view_dist, pixel_size)
         dt = np.concatenate(([np.nan], np.diff(timestamps)))  # first dt is NaN
         angular_velocities = visual_angles / dt
         angular_accelerations = angular_velocities / dt

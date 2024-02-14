@@ -59,8 +59,8 @@ def pixels_to_visual_angle(num_px: float, d: float, pixel_size: float, use_radia
     return angle
 
 
-def pixels_array_to_vis_angle_array(xs: np.ndarray, ys: np.ndarray, d: float,
-                                    pixel_size: float, use_radians=False) -> np.ndarray:
+def calculate_angles_from_pixels(xs: np.ndarray, ys: np.ndarray, d: float,
+                                 pixel_size: float, use_radians=False) -> np.ndarray:
     """
     Calculates the visual angle between each pair of subsequent pixels in the given x and y coordinates.
     :param xs: 1D array of x coordinates
@@ -91,7 +91,7 @@ def calculates_velocities_from_pixels(xs: np.ndarray, ys: np.ndarray, timestamps
     :return: angular velocity (deg- or rad-per-second) of each point (first is NaN)
     """
     assert len(xs) == len(ys) == len(timestamps), "x-array, y-array and timestamps-array must be of the same length"
-    angles = pixels_array_to_vis_angle_array(xs, ys, d, pixel_size, use_radians)
+    angles = calculate_angles_from_pixels(xs, ys, d, pixel_size, use_radians)
     cum_angles = np.cumsum(angles)
     return arr_utils.temporal_derivative(cum_angles, timestamps, deg=1, time_coeff=cnst.MILLISECONDS_PER_SECOND)
 
@@ -117,7 +117,7 @@ def visual_angle_between_pixels(p1: Tuple[float, float], p2: Tuple[float, float]
     if not np.all(np.isfinite(np.concatenate((xs, ys)))):
         # if any of the coordinates is invalid
         return np.nan
-    angles = pixels_array_to_vis_angle_array(xs, ys, distance_from_screen, pixel_size, use_radians)
+    angles = calculate_angles_from_pixels(xs, ys, distance_from_screen, pixel_size, use_radians)
     # angles[0] should be 0, since it's the angle between the first pixel and itself
     assert len(angles) == 2 and angles[0] == 0, "unexpected result from pixels_to_visual_angles"
     return angles[1]
