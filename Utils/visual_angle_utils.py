@@ -96,6 +96,27 @@ def calculates_angular_velocities_from_pixels(xs: np.ndarray, ys: np.ndarray, ti
     return arr_utils.temporal_derivative(cum_angles, timestamps, deg=1, time_coeff=cnst.MILLISECONDS_PER_SECOND)
 
 
+def calculate_angular_accelerations_from_pixels(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray,
+                                                d: float, pixel_size: float, use_radians=False) -> np.ndarray:
+    """
+    Calculates the visual angle between subsequent pixels, accumulates the angles, and calculates the 2nd tempora
+    derivative of the accumulated angles, to get the angular acceleration of the gaze in degrees- or radian-per-second^2.
+
+    :param xs: 1D array of x coordinates
+    :param ys: 1D array of y coordinates
+    :param timestamps: 1D array of timestamps
+    :param d: distance from the screen in centimeters.
+    :param pixel_size: size of each pixel in centimeters.
+    :param use_radians: if True, returns the angle in radians. Otherwise, returns the angle in degrees.
+    :return: angular acceleration (deg- or rad-per-second^2) of each point (first is NaN)
+    """
+    # TODO: add unit tests
+    assert len(xs) == len(ys) == len(timestamps), "x-array, y-array and timestamps-array must be of the same length"
+    angles = calculate_angles_from_pixels(xs, ys, d, pixel_size, use_radians)
+    cum_angles = np.cumsum(angles)
+    return arr_utils.temporal_derivative(cum_angles, timestamps, deg=2, time_coeff=cnst.MILLISECONDS_PER_SECOND)
+
+
 def visual_angle_between_pixels(p1: Tuple[float, float], p2: Tuple[float, float],
                                 distance_from_screen: float, pixel_size: float, use_radians=False) -> float:
     """
