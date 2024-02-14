@@ -76,8 +76,8 @@ def pixels_array_to_vis_angle_array(xs: np.ndarray, ys: np.ndarray, d: float,
     return np.array(visual_angles)
 
 
-def pixels_array_to_angular_velocities_array(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray,
-                                             d: float, pixel_size: float, use_radians=False) -> np.ndarray:
+def calculates_velocities_from_pixels(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray,
+                                      d: float, pixel_size: float, use_radians=False) -> np.ndarray:
     """
     Calculates the visual angle between subsequent pixels, accumulates the angles, and calculates the temporal
     derivative of the accumulated angles, to get the angular velocity of the gaze in degrees- or radian-per-second.
