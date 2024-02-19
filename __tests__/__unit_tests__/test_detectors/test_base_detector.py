@@ -28,7 +28,6 @@ class TestBaseDetector(unittest.TestCase):
         t = np.setdiff1d(np.arange(10), [2, 5, 8])
         self.assertEqual(self.DETECTOR._calculate_sampling_rate(t), cnst.MILLISECONDS_PER_SECOND / 1.5)
 
-
     def test__merge_consecutive_chunks(self):
         arr = np.array([])
         self.assertTrue(np.array_equal(self.DETECTOR._merge_consecutive_chunks(arr, self._SR), arr))
