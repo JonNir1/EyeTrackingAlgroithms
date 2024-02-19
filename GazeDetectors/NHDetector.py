@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import savgol_filter
 
+import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 import Utils.visual_angle_utils as vis_utils
@@ -38,12 +39,10 @@ class NHDetector(BaseDetector):
                  missing_value=BaseDetector.DEFAULT_MISSING_VALUE,
                  viewer_distance: float = BaseDetector.DEFAULT_VIEWER_DISTANCE,
                  pixel_size: float = BaseDetector.DEFAULT_PIXEL_SIZE,
-                 minimum_event_duration: float = BaseDetector.DEFAULT_MINIMUM_EVENT_DURATION,
                  pad_blinks_by: float = BaseDetector.DEFAULT_BLINK_PADDING):
         super().__init__(missing_value=missing_value,
                          viewer_distance=viewer_distance,
                          pixel_size=pixel_size,
-                         minimum_event_duration=minimum_event_duration,
                          pad_blinks_by=pad_blinks_by)
         if filter_duration <= 0:
             raise ValueError("filter_duration must be positive")
@@ -125,18 +124,46 @@ class NHDetector(BaseDetector):
             is_noise[start:end] = True
         return is_noise
 
-    def _detect_saccades(self, v: np.ndarray) -> np.ndarray:
+    def _detect_saccades(self, v: np.ndarray, sr: float) -> np.ndarray:
         # find saccade-peak samples
         pt = self._find_saccade_peak_threshold(v)
         is_peak_idxs = np.where(v > pt)[0]
 
-        # calculate the global onset threshold: OT = mean(v) + 3 * std(v) for v < PT
-        onset_threshold = np.nanmean(v[v < pt]) + 3 * np.nanstd(v[v < pt])
+        # for each peak, find the index of the onset: the first sample preceding the peak with velocity below the
+        # onset threshold (OnT = mean(v) + 3 * std(v) for v < PT), AND is a local minimum
+        onset_threshold = np.nanmean(v[v < pt]) + 3 * np.nanstd(v[v < pt])  # global onset threshold
+        start_idxs = []
+        for idx in is_peak_idxs:
+            start = idx - 1
+            while start > 0:
+                if v[start] < onset_threshold and v[start] < v[start + 1] and v[start] < v[start - 1]:
+                    # sample is below OnT and is local minimum
+                    start_idxs.append(start)
+                    break
+                start -= 1
+        assert len(start_idxs) == len(is_peak_idxs), "Failed to find saccade onset for all peaks"  # sanity
+
+        # for each peak, find the index of the offset: the first sample following the peak with velocity below the
+        # offset threshold (OfT = a * OnT + b * OtT), AND is a local minimum
+        # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples prior to saccade onset
+        min_fixation_duration = cnfg.EVENT_DURATIONS[cnfg.EVENTS.FIXATION][0]
+        min_fixation_samples = self._calc_num_samples(min_fixation_duration, sr)
+        # TODO: start here
+
+
 
         # for every peak, expand it backwards and forwards to find the onset and offset
         for idx in is_peak_idxs:
             start, end = idx, idx
-            # offset_threshold =  # TODO: start here
+
+            # find saccade onset index
+            while start > 0 and v[start] > onset_threshold:
+                start -= 1
+
+            # find saccade offset threshold: OfT = a * OnT + b * OtT
+            # where OtT = mean(v) + 3 * std(v) for the min_fixation_samples preceding the peak
+            while end < len(v) and v[end] > onset_threshold:
+                end += 1
         return None
 
     @staticmethod

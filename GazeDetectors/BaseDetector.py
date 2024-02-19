@@ -33,15 +33,12 @@ class BaseDetector(ABC):
     DEFAULT_MISSING_VALUE = np.nan
     DEFAULT_VIEWER_DISTANCE = 60  # cm
     DEFAULT_PIXEL_SIZE = cnfg.SCREEN_MONITOR.pixel_size   # cm
-    DEFAULT_MINIMUM_EVENT_DURATION = 5  # ms
     DEFAULT_BLINK_PADDING = 0  # ms
-    __DEFAULT_MINIMUM_EVENT_SAMPLES = 2  # events cannot be shorter than 2 samples
 
     def __init__(self,
                  missing_value=DEFAULT_MISSING_VALUE,
                  viewer_distance: float = DEFAULT_VIEWER_DISTANCE,
                  pixel_size: float = DEFAULT_PIXEL_SIZE,
-                 minimum_event_duration: float = DEFAULT_MINIMUM_EVENT_DURATION,
                  pad_blinks_by: float = DEFAULT_BLINK_PADDING):
         self._missing_value = np.nan if missing_value is None else missing_value
         self._viewer_distance = viewer_distance if viewer_distance is not None else self.DEFAULT_VIEWER_DISTANCE
@@ -50,17 +47,14 @@ class BaseDetector(ABC):
         self._pixel_size = pixel_size if pixel_size is not None else self.DEFAULT_PIXEL_SIZE
         if pixel_size <= 0:
             raise ValueError("pixel_size must be positive")
-        self._minimum_event_duration = minimum_event_duration if minimum_event_duration is not None else self.DEFAULT_MINIMUM_EVENT_DURATION
-        if minimum_event_duration < 0:
-            raise ValueError("minimum_event_duration must be non-negative")
-        self._minimum_event_duration = minimum_event_duration   # ms
         if pad_blinks_by < 0:
             raise ValueError("pad_blinks_by must be non-negative")
         self._pad_blinks_by = pad_blinks_by                     # ms
 
     def minimum_event_samples(self, sr: float) -> int:
-        ns = self._calc_num_samples(self._minimum_event_duration, sr)
-        return max(ns, self.__DEFAULT_MINIMUM_EVENT_SAMPLES)
+        min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS)))
+        ns = self._calc_num_samples(min_event_duration, sr)
+        return max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
 
     @final
     def detect(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
