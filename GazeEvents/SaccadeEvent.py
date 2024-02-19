@@ -6,11 +6,10 @@ import Config.experiment_config as cnfg
 import Utils.pixel_utils as pixel_utils
 import Utils.visual_angle_utils as visang_utils
 from GazeEvents.BaseGazeEvent import BaseGazeEvent
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class SaccadeEvent(BaseGazeEvent):
-    _EVENT_TYPE = GazeEventTypeEnum.SACCADE
+    _EVENT_TYPE = cnfg.EVENTS.SACCADE
 
     @property
     def start_point(self) -> Tuple[float, float]:

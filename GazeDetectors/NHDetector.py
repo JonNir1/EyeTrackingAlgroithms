@@ -3,7 +3,6 @@ from scipy.signal import savgol_filter
 
 import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 import Utils.visual_angle_utils as vis_utils
 
 
@@ -58,7 +57,7 @@ class NHDetector(BaseDetector):
         self._max_saccade_acceleration = max_saccade_acceleration
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        candidates_copy = np.asarray(candidates, dtype=GazeEventTypeEnum).copy()
+        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
 
         # detect noise
         sr = self._calculate_sampling_rate(t)

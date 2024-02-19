@@ -1,7 +1,7 @@
 import numpy as np
 
+import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 from Utils import visual_angle_utils as vis_utils
 
 
@@ -49,7 +49,7 @@ class IDTDetector(BaseDetector):
         self._window_duration = window_duration
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        candidates_copy = np.asarray(candidates, dtype=GazeEventTypeEnum).copy()
+        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
         ws = self._calculate_window_size(t)
 
         start_idx, end_idx = 0, ws
@@ -59,7 +59,7 @@ class IDTDetector(BaseDetector):
             if dispersion < self._dispersion_threshold:
                 # label all samples in the window as fixation and expand window to the right
                 is_fixation = True
-                candidates_copy[start_idx: end_idx] = GazeEventTypeEnum.FIXATION
+                candidates_copy[start_idx: end_idx] = cnfg.EVENTS.FIXATION
                 end_idx += 1
             elif is_fixation:
                 # start new window in the end of the old one
@@ -68,7 +68,7 @@ class IDTDetector(BaseDetector):
                 is_fixation = False
             else:
                 # label current sample as saccade and start new window in the next sample
-                candidates_copy[start_idx] = GazeEventTypeEnum.SACCADE
+                candidates_copy[start_idx] = cnfg.EVENTS.SACCADE
                 start_idx += 1
                 end_idx += 1
         return candidates_copy

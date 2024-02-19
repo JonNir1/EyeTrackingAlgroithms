@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 from typing import Tuple
 
+import Config.experiment_config as cnfg
 from GazeEvents.BaseGazeEvent import BaseGazeEvent
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class FixationEvent(BaseGazeEvent):
-    _EVENT_TYPE = GazeEventTypeEnum.FIXATION
+    _EVENT_TYPE = cnfg.EVENTS.FIXATION
 
     def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, pupil: np.ndarray, viewer_distance: float):
         super().__init__(timestamps=timestamps, x=x, y=y, viewer_distance=viewer_distance)

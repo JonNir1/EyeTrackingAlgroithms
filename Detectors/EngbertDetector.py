@@ -3,8 +3,8 @@ from typing import Tuple
 from overrides import override
 
 import constants as cnst
+import Config.experiment_config as cnfg
 from Detectors.BaseDetector import BaseDetector
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class EngbertDetector(BaseDetector):
@@ -46,9 +46,9 @@ class EngbertDetector(BaseDetector):
         thresh_y = self.calculate_velocity_threshold(y)
 
         ellipse = (x_velocity / thresh_x) ** 2 + (y_velocity / thresh_y) ** 2
-        candidates_copy = np.asarray(candidates, dtype=GazeEventTypeEnum).copy()
-        candidates_copy[ellipse < 1] = GazeEventTypeEnum.FIXATION
-        candidates_copy[ellipse >= 1] = GazeEventTypeEnum.SACCADE
+        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
+        candidates_copy[ellipse < 1] = cnfg.EVENTS.FIXATION
+        candidates_copy[ellipse >= 1] = cnfg.EVENTS.SACCADE
         return candidates_copy
 
     def calculate_velocity_threshold(self, arr: np.ndarray) -> float:

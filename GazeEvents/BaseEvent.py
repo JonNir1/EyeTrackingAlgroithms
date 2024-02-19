@@ -5,11 +5,10 @@ from typing import List, final
 
 import constants as cnst
 import Config.experiment_config as cnfg
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class BaseEvent(ABC):
-    _EVENT_TYPE: GazeEventTypeEnum
+    _EVENT_TYPE: cnfg.EVENTS
 
     def __init__(self, timestamps: np.ndarray):
         if len(timestamps) < cnst.MINIMUM_SAMPLES_IN_EVENT:
@@ -79,7 +78,7 @@ class BaseEvent(ABC):
 
     @classmethod
     @final
-    def event_type(cls) -> GazeEventTypeEnum:
+    def event_type(cls) -> cnfg.EVENTS:
         return cls._EVENT_TYPE
 
     @classmethod
