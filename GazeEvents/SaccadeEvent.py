@@ -10,8 +10,6 @@ from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class SaccadeEvent(BaseGazeEvent):
-    MIN_DURATION = 10
-    MAX_DURATION = 500
     _EVENT_TYPE = GazeEventTypeEnum.SACCADE
 
     @property

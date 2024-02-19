@@ -4,12 +4,11 @@ from abc import ABC
 from typing import List, final
 
 import constants as cnst
+import Config.experiment_config as cnfg
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class BaseEvent(ABC):
-    MIN_DURATION: float = 10        # minimum duration of an event in milliseconds
-    MAX_DURATION: float = 2500     # maximum duration of an event in milliseconds
     _EVENT_TYPE: GazeEventTypeEnum
 
     def __init__(self, timestamps: np.ndarray):
@@ -46,9 +45,9 @@ class BaseEvent(ABC):
 
     def get_outlier_reasons(self) -> List[str]:
         reasons = []
-        if self.duration < self.MIN_DURATION:
+        if self.duration < self.get_min_duration():
             reasons.append(f"min_{cnst.DURATION}")
-        if self.duration > self.MAX_DURATION:
+        if self.duration > self.get_max_duration():
             reasons.append(f"max_{cnst.DURATION}")
         return reasons
 
@@ -85,13 +84,35 @@ class BaseEvent(ABC):
 
     @classmethod
     @final
+    def get_min_duration(cls) -> float:
+        return cnfg.EVENT_DURATIONS[cls._EVENT_TYPE][0]
+
+    @classmethod
+    @final
     def set_min_duration(cls, min_duration: float):
-        cls.MIN_DURATION = min_duration
+        event_type = cls._EVENT_TYPE.name.capitalize()
+        if min_duration < 0:
+            raise ValueError(f"min_duration for {event_type} must be a positive number")
+        max_duration = cnfg.EVENT_DURATIONS[cls._EVENT_TYPE][1]
+        if min_duration > max_duration:
+            raise ValueError(f"min_duration for {event_type} must be less than or equal to max_duration")
+        cnfg.EVENT_DURATIONS[cls._EVENT_TYPE] = (min_duration, max_duration)
+
+    @classmethod
+    @final
+    def get_max_duration(cls) -> float:
+        return cnfg.EVENT_DURATIONS[cls._EVENT_TYPE][1]
 
     @classmethod
     @final
     def set_max_duration(cls, max_duration: float):
-        cls.MAX_DURATION = max_duration
+        event_type = cls._EVENT_TYPE.name.capitalize()
+        if max_duration < 0:
+            raise ValueError(f"max_duration for {event_type} must be a positive number")
+        min_duration = cnfg.EVENT_DURATIONS[cls._EVENT_TYPE][0]
+        if max_duration < min_duration:
+            raise ValueError(f"max_duration for {event_type} must be greater than or equal to min_duration")
+        cnfg.EVENT_DURATIONS[cls._EVENT_TYPE] = (min_duration, max_duration)
 
     def __repr__(self):
         event_type = self._EVENT_TYPE.name.capitalize()
