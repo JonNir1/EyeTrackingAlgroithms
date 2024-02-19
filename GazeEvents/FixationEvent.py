@@ -7,7 +7,7 @@ from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class FixationEvent(BaseGazeEvent):
-    MIN_DURATION = 50
+    MIN_DURATION = 40
     MAX_DURATION = 2000
     _EVENT_TYPE = GazeEventTypeEnum.FIXATION
 
