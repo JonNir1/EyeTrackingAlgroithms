@@ -20,9 +20,10 @@ OUTPUT_DIR = os.path.join(BASE_DIR, "Results")
 
 # GAZE-EVENT VALUES
 EVENT_DURATIONS = {
+    # duration range for each event type (in ms)
     EVENTS.BLINK: (10, 250),
     EVENTS.FIXATION: (50, 2000),
     EVENTS.SACCADE: (10, 250)
-}  # duration range for each event type
+}
 
 EXPERIMENT_SPECIFIC_VARIABLES = []  # additional variable recorded in the experiment and extracted from the raw data
