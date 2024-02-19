@@ -29,3 +29,5 @@ PUPIL = "pupil"
 LEFT_X, RIGHT_X = f"{LEFT}_{X}", f"{RIGHT}_{X}"
 LEFT_Y, RIGHT_Y = f"{LEFT}_{Y}", f"{RIGHT}_{Y}"
 LEFT_PUPIL, RIGHT_PUPIL = f"{LEFT}_{PUPIL}", f"{RIGHT}_{PUPIL}"
+
+MINIMUM_SAMPLES_IN_EVENT: int = 2  # minimum number of samples in an event
