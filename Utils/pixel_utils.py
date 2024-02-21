@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Tuple
 
-import constants as cnst
+from Config import constants as cnst
 import Utils.array_utils as arr_utils
 
 

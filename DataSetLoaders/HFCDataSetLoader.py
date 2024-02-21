@@ -8,7 +8,7 @@ import itertools
 from scipy.interpolate import interp1d
 from typing import Tuple, Dict
 
-import constants as cnst
+from Config import constants as cnst
 import Utils.io_utils as ioutils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 

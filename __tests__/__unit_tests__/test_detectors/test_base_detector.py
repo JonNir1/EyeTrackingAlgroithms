@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-import constants as cnst
+from Config import constants as cnst
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 

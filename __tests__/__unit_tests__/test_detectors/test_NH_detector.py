@@ -2,17 +2,11 @@ import unittest
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 from Detectors.NHDetector import NHDetector
 import numpy as np
-import LoadAnderssonData
-from Detectors.IDTDetector import IDTDetector
-from Detectors.IVTDetector import IVTDetector
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 from DataSetLoaders.Lund2013DataSetLoader import Lund2013DataSetLoader
-import constants as cnst
+from Config import constants as cnst
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics import cohen_kappa_score
-
-
 
 
 class TestNHDetector(unittest.TestCase):

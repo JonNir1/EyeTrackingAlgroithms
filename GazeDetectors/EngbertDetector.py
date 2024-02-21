@@ -1,7 +1,7 @@
 import numpy as np
 from overrides import override
 
-import constants as cnst
+from Config import constants as cnst
 import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
 

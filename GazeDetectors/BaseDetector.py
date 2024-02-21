@@ -3,8 +3,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from typing import final
 
-import constants as cnst
-from Config import experiment_config as cnfg
+from Config import experiment_config as cnfg, constants as cnst
 import Utils.array_utils as arr_utils
 
 

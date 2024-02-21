@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-import constants as cnst
+from Config import constants as cnst
 import Utils.array_utils as arr_utils
 
 

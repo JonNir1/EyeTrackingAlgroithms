@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-import constants as cnst
+from Config import constants as cnst
 from Utils import pixel_utils as pixel_utils
 
 

@@ -3,7 +3,7 @@ import requests as req
 from abc import ABC, abstractmethod
 from typing import final, List, Dict, Union
 
-import constants as cnst
+from Config import constants as cnst
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 

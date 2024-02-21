@@ -7,7 +7,7 @@ import requests as req
 from scipy.io import loadmat
 from typing import Tuple, Dict
 
-import constants as cnst
+from Config import constants as cnst
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
 

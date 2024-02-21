@@ -2,7 +2,7 @@ import numpy as np
 from typing import Tuple
 from overrides import override
 
-import constants as cnst
+from Config import constants as cnst
 import Config.experiment_config as cnfg
 from Detectors.BaseDetector import BaseDetector
 

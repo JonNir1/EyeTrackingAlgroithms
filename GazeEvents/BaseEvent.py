@@ -3,7 +3,7 @@ import pandas as pd
 from abc import ABC
 from typing import List, final
 
-import constants as cnst
+from Config import constants as cnst
 import Config.experiment_config as cnfg
 
 

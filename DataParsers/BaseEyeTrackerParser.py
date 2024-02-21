@@ -4,8 +4,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union, Set, Tuple, final
 
-import constants as cnst
-from Config import experiment_config as cnfg
+from Config import experiment_config as cnfg, constants as cnst
 
 
 class BaseEyeTrackerParser(ABC):

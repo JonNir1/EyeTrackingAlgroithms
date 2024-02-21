@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-import constants as cnst
+from Config import constants as cnst
 import Utils.visual_angle_utils as visang_utils
 
 
