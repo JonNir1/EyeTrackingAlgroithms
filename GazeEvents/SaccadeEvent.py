@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from typing import Tuple
 
+import Config.constants as cnst
 import Config.experiment_config as cnfg
 import Utils.pixel_utils as pixel_utils
 import Utils.visual_angle_utils as visang_utils
@@ -9,7 +10,7 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 
 
 class SaccadeEvent(BaseGazeEvent):
-    _EVENT_TYPE = cnfg.EVENTS.SACCADE
+    _EVENT_TYPE = cnst.EVENTS.SACCADE
 
     @property
     def start_point(self) -> Tuple[float, float]:

@@ -1,7 +1,7 @@
 from typing import List
 import numpy as np
 
-import Config.experiment_config as cnfg
+import Config.constants as cnst
 from Detectors.BaseDetector import BaseDetector
 from scipy.signal import savgol_filter, argrelextrema
 from Utils.visual_angle_utils import calculate_angles_from_pixels
@@ -38,9 +38,9 @@ class NHDetector(BaseDetector):
 
     def _identify_gaze_event_candidates(self, x: np.ndarray,
                                         y: np.ndarray,
-                                        candidates: List[cnfg.EVENTS]) -> List[cnfg.EVENTS]:
+                                        candidates: List[cnst.EVENTS]) -> List[cnst.EVENTS]:
         candidates = np.array(candidates)
-        blinks_indexes = np.where(candidates == cnfg.EVENTS.BLINK)[0]
+        blinks_indexes = np.where(candidates == cnst.EVENTS.BLINK)[0]
         # step 1 - filtering, denoising and calculating angular velocities and accelerations
         angular_velocities, angular_accelerations = self._filter_and_denoise(x, y, self._view_dist, self._pixel_size,
                                                                              self._timestamps)
@@ -66,9 +66,9 @@ class NHDetector(BaseDetector):
         # change noise samples to undefined (np.nan in the velocities and accelerations arrays)
         noise_nan_indexes = np.where(np.isnan(angular_velocities) & np.isnan(angular_accelerations))[0]
         for noise_index in noise_nan_indexes:
-            candidates[noise_index] = cnfg.EVENTS.UNDEFINED
+            candidates[noise_index] = cnst.EVENTS.UNDEFINED
         for blink in blinks_indexes:
-            candidates[blink] = cnfg.EVENTS.BLINK
+            candidates[blink] = cnst.EVENTS.BLINK
 
         return list(candidates)
 
@@ -146,11 +146,11 @@ class NHDetector(BaseDetector):
                                                                                        saccade_onset_threshold)
 
             if timestamps[saccade_offset_index] - timestamps[saccade_onset_index] > self._min_saccade_duration:
-                candidates[saccade_onset_index: saccade_offset_index + 1] = cnfg.EVENTS.SACCADE
+                candidates[saccade_onset_index: saccade_offset_index + 1] = cnst.EVENTS.SACCADE
                 saccade_peaks_list.append(peak_index)
                 saccade_dict[peak_index] = (saccade_offset_threshold, saccade_offset_index, saccade_onset_index)
             else:
-                candidates[saccade_onset_index: saccade_offset_index + 1] = cnfg.EVENTS.UNDEFINED
+                candidates[saccade_onset_index: saccade_offset_index + 1] = cnst.EVENTS.UNDEFINED
 
         return candidates, saccade_dict, saccade_peaks_list
 
@@ -160,7 +160,7 @@ class NHDetector(BaseDetector):
         sequence_start_index, sequence_end_index = 0, 0
         is_fixation_sequence_possible = False
         for i, label in enumerate(candidates):
-            if label == cnfg.EVENTS.UNDEFINED:
+            if label == cnst.EVENTS.UNDEFINED:
                 # find the indexes of the undefined sequences, to later check if they are fixations
                 if not is_fixation_sequence_possible:
                     is_fixation_sequence_possible = True
@@ -171,7 +171,7 @@ class NHDetector(BaseDetector):
             elif is_fixation_sequence_possible:
                 is_fixation_sequence_possible = False
                 if timestamps[sequence_end_index] - timestamps[sequence_start_index] > self.__MIN_FIXATION_DURATION:
-                    candidates[sequence_start_index: sequence_end_index + 1] = cnfg.EVENTS.FIXATION
+                    candidates[sequence_start_index: sequence_end_index + 1] = cnst.EVENTS.FIXATION
 
         return candidates
 
@@ -240,6 +240,6 @@ class NHDetector(BaseDetector):
                             break
                         else:
                             glissade_offset_index += 1
-                    candidates[glissade_onset: glissade_offset_index + 1] = cnfg.EVENTS.PSO
+                    candidates[glissade_onset: glissade_offset_index + 1] = cnst.EVENTS.PSO
 
         return candidates

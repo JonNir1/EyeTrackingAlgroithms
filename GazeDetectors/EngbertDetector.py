@@ -2,7 +2,6 @@ import numpy as np
 from overrides import override
 
 from Config import constants as cnst
-import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
 
 
@@ -50,7 +49,7 @@ class EngbertDetector(BaseDetector):
         self._derivation_window_size = round(derivation_window_size)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
+        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
 
         # Calculate the velocity of the gaze data in both axes
         sr = self._calculate_sampling_rate(t)
@@ -61,8 +60,8 @@ class EngbertDetector(BaseDetector):
 
         # Identify saccade candidates as samples with velocity greater than the noise threshold
         ellipse = (x_velocity / thresh_x) ** 2 + (y_velocity / thresh_y) ** 2
-        candidates_copy[ellipse < 1] = cnfg.EVENTS.FIXATION
-        candidates_copy[ellipse >= 1] = cnfg.EVENTS.SACCADE
+        candidates_copy[ellipse < 1] = cnst.EVENTS.FIXATION
+        candidates_copy[ellipse >= 1] = cnst.EVENTS.SACCADE
         return candidates_copy
 
     def _calculate_axial_velocity(self, arr, sr) -> np.ndarray:

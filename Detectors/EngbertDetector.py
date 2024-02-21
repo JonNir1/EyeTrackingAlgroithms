@@ -2,8 +2,7 @@ import numpy as np
 from typing import Tuple
 from overrides import override
 
-from Config import constants as cnst
-import Config.experiment_config as cnfg
+import Config.constants as cnst
 from Detectors.BaseDetector import BaseDetector
 
 
@@ -46,9 +45,9 @@ class EngbertDetector(BaseDetector):
         thresh_y = self.calculate_velocity_threshold(y)
 
         ellipse = (x_velocity / thresh_x) ** 2 + (y_velocity / thresh_y) ** 2
-        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
-        candidates_copy[ellipse < 1] = cnfg.EVENTS.FIXATION
-        candidates_copy[ellipse >= 1] = cnfg.EVENTS.SACCADE
+        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
+        candidates_copy[ellipse < 1] = cnst.EVENTS.FIXATION
+        candidates_copy[ellipse >= 1] = cnst.EVENTS.SACCADE
         return candidates_copy
 
     def calculate_velocity_threshold(self, arr: np.ndarray) -> float:

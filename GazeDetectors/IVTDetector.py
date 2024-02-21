@@ -1,6 +1,6 @@
 import numpy as np
 
-import Config.experiment_config as cnfg
+import Config.constants as cnst
 from GazeDetectors.BaseDetector import BaseDetector
 from Utils import visual_angle_utils as vis_utils
 
@@ -45,7 +45,7 @@ class IVTDetector(BaseDetector):
                                                    f"match the length of x (shape {x.shape})")
 
         # assume undefined (non-blink) samples are fixations, unless angular velocity is above threshold
-        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
-        candidates_copy[candidates_copy == cnfg.EVENTS.UNDEFINED] = cnfg.EVENTS.FIXATION
-        candidates_copy[angular_velocities >= self._velocity_threshold] = cnfg.EVENTS.SACCADE
+        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
+        candidates_copy[candidates_copy == cnst.EVENTS.UNDEFINED] = cnst.EVENTS.FIXATION
+        candidates_copy[angular_velocities >= self._velocity_threshold] = cnst.EVENTS.SACCADE
         return candidates_copy

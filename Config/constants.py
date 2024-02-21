@@ -1,6 +1,9 @@
 """
 List of all the constants used as field names, column names, etc.
 """
+
+from Config.GazeEventTypeEnum import GazeEventTypeEnum
+
 EPSILON = 1e-8
 
 MILLISECONDS_PER_SECOND = 1000
@@ -30,4 +33,5 @@ LEFT_X, RIGHT_X = f"{LEFT}_{X}", f"{RIGHT}_{X}"
 LEFT_Y, RIGHT_Y = f"{LEFT}_{Y}", f"{RIGHT}_{Y}"
 LEFT_PUPIL, RIGHT_PUPIL = f"{LEFT}_{PUPIL}", f"{RIGHT}_{PUPIL}"
 
+EVENTS = GazeEventTypeEnum
 MINIMUM_SAMPLES_IN_EVENT: int = 2  # minimum number of samples in an event

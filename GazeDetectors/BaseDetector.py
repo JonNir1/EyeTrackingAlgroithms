@@ -3,7 +3,8 @@ import numpy as np
 from abc import ABC, abstractmethod
 from typing import final
 
-from Config import experiment_config as cnfg, constants as cnst
+import Config.constants as cnst
+import Config.experiment_config as cnfg
 import Utils.array_utils as arr_utils
 
 
@@ -57,14 +58,14 @@ class BaseDetector(ABC):
     @final
     def detect(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         t, x, y = self._verify_inputs(t, x, y)
-        candidates = np.full_like(t, cnfg.EVENTS.UNDEFINED)
+        candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
         try:
             # detect blinks
             candidates = self.detect_blinks(t, x, y, candidates)
             # set x and y to nan where blinks are detected
             x_copy, y_copy = x.copy(), y.copy()
-            x_copy[candidates == cnfg.EVENTS.BLINK] = np.nan
-            y_copy[candidates == cnfg.EVENTS.BLINK] = np.nan
+            x_copy[candidates == cnst.EVENTS.BLINK] = np.nan
+            y_copy[candidates == cnst.EVENTS.BLINK] = np.nan
             # detect gaze events
             candidates = self._detect_impl(t, x_copy, y_copy, candidates)
             sr = self._calculate_sampling_rate(t)
@@ -100,7 +101,7 @@ class BaseDetector(ABC):
         # identify samples where x or y are missing as blinks
         is_missing_x = np.array([self._is_missing_value(xi) for xi in x])
         is_missing_y = np.array([self._is_missing_value(yi) for yi in y])
-        candidates[is_missing_x | is_missing_y] = cnfg.EVENTS.BLINK
+        candidates[is_missing_x | is_missing_y] = cnst.EVENTS.BLINK
 
         # ignore short blinks and merge consecutive blinks
         sr = self._calculate_sampling_rate(t)
@@ -111,10 +112,10 @@ class BaseDetector(ABC):
             return candidates
         pad_samples = self._calc_num_samples(self._pad_blinks_by, sr)
         for i, c in enumerate(candidates):
-            if c == cnfg.EVENTS.BLINK:
+            if c == cnst.EVENTS.BLINK:
                 start = max(0, i - pad_samples)
                 end = min(len(candidates), i + pad_samples)
-                candidates[start:end] = cnfg.EVENTS.BLINK
+                candidates[start:end] = cnst.EVENTS.BLINK
         return candidates
 
     @abstractmethod
@@ -157,7 +158,7 @@ class BaseDetector(ABC):
     def _merge_consecutive_chunks(self, candidates: np.ndarray, sr: float) -> np.ndarray:
         """
         1. Splits the candidates array into chunks of identical values
-        2. Sets chunks that are shorter than the minimum event duration to cnfg.EVENTS.UNDEFINED
+        2. Sets chunks that are shorter than the minimum event duration to cnst.EVENTS.UNDEFINED
         3. Merges consecutive chunks of the same type into a single chunk with the same type
 
         :param candidates: array of event candidates
@@ -172,7 +173,7 @@ class BaseDetector(ABC):
         chunk_indices = arr_utils.get_chunk_indices(candidates)
         for chunk_idxs in chunk_indices:
             if len(chunk_idxs) < min_samples:
-                cand_copy[chunk_idxs] = cnfg.EVENTS.UNDEFINED
+                cand_copy[chunk_idxs] = cnst.EVENTS.UNDEFINED
 
         # merge consecutive events of the same type
         chunk_indices = arr_utils.get_chunk_indices(candidates)  # re-calculate chunks after setting short chunks to undefined

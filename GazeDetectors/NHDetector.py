@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import savgol_filter
 
+import Config.constants as cnst
 import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
 import Utils.visual_angle_utils as vis_utils
@@ -57,7 +58,7 @@ class NHDetector(BaseDetector):
         self._max_saccade_acceleration = max_saccade_acceleration
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        candidates_copy = np.asarray(candidates, dtype=cnfg.EVENTS).copy()
+        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
 
         # detect noise
         sr = self._calculate_sampling_rate(t)
@@ -145,7 +146,7 @@ class NHDetector(BaseDetector):
         # for each peak, find the index of the offset: the first sample following the peak with velocity below the
         # offset threshold (OfT = a * OnT + b * OtT), AND is a local minimum
         # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples prior to saccade onset
-        min_fixation_duration = cnfg.EVENT_DURATIONS[cnfg.EVENTS.FIXATION][0]
+        min_fixation_duration = cnfg.EVENT_DURATIONS[cnst.EVENTS.FIXATION][0]
         min_fixation_samples = self._calc_num_samples(min_fixation_duration, sr)
         # TODO: start here
 
