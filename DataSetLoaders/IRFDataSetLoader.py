@@ -14,7 +14,6 @@ import Utils.io_utils as ioutils
 import Utils.visual_angle_utils as vis_utils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
-from Config.GazeEventTypeEnum import get_event_type
 
 
 class IRFDataSetLoader(BaseDataSetLoader):
@@ -68,7 +67,7 @@ class IRFDataSetLoader(BaseDataSetLoader):
             gaze_data = pd.DataFrame(np.load(file))
 
             # convert gaze events from int to GazeEventTypeEnum
-            gaze_data['evt'] = gaze_data['evt'].apply(lambda x: get_event_type(x))
+            gaze_data['evt'] = gaze_data['evt'].apply(lambda x: IRFDataSetLoader._parse_gaze_event(x, safe=True))
 
             # extract subject id:
             _, file_name, _ = ioutils.split_path(f)

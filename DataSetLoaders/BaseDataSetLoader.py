@@ -1,9 +1,10 @@
 import pandas as pd
 import requests as req
 from abc import ABC, abstractmethod
-from typing import final, List, Dict
+from typing import final, List, Dict, Union
 
 import constants as cnst
+from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class BaseDataSetLoader(ABC):
@@ -67,4 +68,28 @@ class BaseDataSetLoader(ABC):
         if response.status_code != 200:
             raise RuntimeError(f"Failed to download dataset from {cls._URL}")
         return response
+
+    @staticmethod
+    @final
+    def _parse_gaze_event(ev: Union[GazeEventTypeEnum, int, str], safe: bool = True) -> GazeEventTypeEnum:
+        """
+        Parses a gaze label from the original dataset's type to type GazeEventTypeEnum
+        :param ev: the gaze label to parse
+        :param safe: if True, returns GazeEventTypeEnum.UNDEFINED when the parsing fails
+        :return: the parsed gaze label
+        """
+        try:
+            if type(ev) not in [GazeEventTypeEnum, int, str]:
+                raise TypeError(f"Incompatible type: {type(ev)}")
+            if type(ev) is GazeEventTypeEnum:
+                return ev
+            if type(ev) is int:
+                return GazeEventTypeEnum(ev)
+            if type(ev) is str:
+                return GazeEventTypeEnum[ev.upper()]
+            return GazeEventTypeEnum(ev)
+        except Exception as err:
+            if safe and (type(err) is ValueError or type(err) is TypeError):
+                return GazeEventTypeEnum.UNDEFINED
+            raise err
 

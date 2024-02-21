@@ -10,7 +10,6 @@ from typing import Tuple, Dict
 import constants as cnst
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
-from Config.GazeEventTypeEnum import get_event_type
 
 
 class Lund2013DataSetLoader(BaseDataSetLoader):
@@ -121,7 +120,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         samples_data = eyetracking_data_dict['pos']
         right_x, right_y = samples_data[:, 3:5].T  # only recording right eye
         timestamps = Lund2013DataSetLoader.__calculate_timestamps(samples_data[:, 0], sampling_rate)
-        labels = [get_event_type(int(event_type), safe=True) for event_type in samples_data[:, 5]]
+        labels = [Lund2013DataSetLoader._parse_gaze_event(event_type, safe=True) for event_type in samples_data[:, 5]]
 
         # create dataframe:
         df = pd.DataFrame(data={cnst.MILLISECONDS: timestamps,
