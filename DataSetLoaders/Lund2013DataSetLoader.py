@@ -120,8 +120,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         samples_data = eyetracking_data_dict['pos']
         right_x, right_y = samples_data[:, 3:5].T  # only recording right eye
         timestamps = Lund2013DataSetLoader.__calculate_timestamps(samples_data[:, 0], sampling_rate)
-        labels = [BaseDataSetLoader._parse_gaze_event(event_type, safe=True)
-                  for event_type in samples_data[:, 5].astype(int)]
+        labels = pd.Series(samples_data[:, 5]).apply(lambda x: BaseDataSetLoader._parse_gaze_event(x, safe=True))
 
         # create dataframe:
         df = pd.DataFrame(data={cnst.MILLISECONDS: timestamps,

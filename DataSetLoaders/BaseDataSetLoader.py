@@ -71,7 +71,7 @@ class BaseDataSetLoader(ABC):
 
     @staticmethod
     @final
-    def _parse_gaze_event(ev: Union[GazeEventTypeEnum, int, str], safe: bool = True) -> GazeEventTypeEnum:
+    def _parse_gaze_event(ev: Union[GazeEventTypeEnum, int, str, float], safe: bool = True) -> GazeEventTypeEnum:
         """
         Parses a gaze label from the original dataset's type to type GazeEventTypeEnum
         :param ev: the gaze label to parse
@@ -79,17 +79,20 @@ class BaseDataSetLoader(ABC):
         :return: the parsed gaze label
         """
         try:
-            if type(ev) not in [GazeEventTypeEnum, int, str]:
+            if type(ev) not in [GazeEventTypeEnum, int, str, float]:
                 raise TypeError(f"Incompatible type: {type(ev)}")
-            if type(ev) is GazeEventTypeEnum:
+            if isinstance(ev, GazeEventTypeEnum):
                 return ev
-            if type(ev) is int:
+            if isinstance(ev, int):
                 return GazeEventTypeEnum(ev)
-            if type(ev) is str:
+            if isinstance(ev, str):
                 return GazeEventTypeEnum[ev.upper()]
-            return GazeEventTypeEnum(ev)
+            if isinstance(ev, float):
+                if not ev.is_integer():
+                    raise ValueError(f"Invalid value: {ev}")
+                return GazeEventTypeEnum(int(ev))
         except Exception as err:
-            if safe and (type(err) is ValueError or type(err) is TypeError):
+            if safe and (isinstance(err, ValueError) or isinstance(err, TypeError)):
                 return GazeEventTypeEnum.UNDEFINED
             raise err
 
