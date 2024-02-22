@@ -137,7 +137,7 @@ def _extract_and_open_files() -> pd.DataFrame:
     with zipfile.ZipFile(ZIP_NAME, "r") as zip_ref:
         zip_ref.extractall(extracted_directory)
 
-    internal_dir = "\data"
+    internal_dir = r"\data"
     full_directory_path = extracted_directory + internal_dir
 
     # for each file in the directory - process using "open_single_file"
