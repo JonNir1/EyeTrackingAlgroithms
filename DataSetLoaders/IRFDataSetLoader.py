@@ -64,7 +64,7 @@ class IRFDataSetLoader(BaseDataSetLoader):
             gaze_data = pd.DataFrame(np.load(file))
 
             # convert gaze events from int to GazeEventTypeEnum
-            gaze_data['evt'] = gaze_data['evt'].apply(lambda x: IRFDataSetLoader._parse_gaze_event(x, safe=True))
+            gaze_data['evt'] = gaze_data['evt'].apply(lambda x: BaseDataSetLoader._parse_gaze_event(x, safe=True))
 
             # extract subject id:
             _, file_name, _ = ioutils.split_path(f)
