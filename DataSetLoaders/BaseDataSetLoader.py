@@ -66,7 +66,7 @@ class BaseDataSetLoader(ABC):
             raise AttributeError(f"Class {cls.__name__} must implement class attribute `_URL`")
         response = req.get(cls._URL)
         if response.status_code != 200:
-            raise RuntimeError(f"Failed to download dataset from {cls._URL}")
+            raise RuntimeError(f"HTTP status code {response.status_code} received from {cls._URL}")
         return response
 
     @staticmethod
