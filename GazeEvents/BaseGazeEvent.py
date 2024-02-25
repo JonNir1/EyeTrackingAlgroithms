@@ -14,11 +14,11 @@ class BaseGazeEvent(BaseEvent):
     """
 
     def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, viewer_distance: float):
-        if not np.isfinite(viewer_distance) or viewer_distance <= 0:
-            raise ValueError("viewer_distance must be a positive finite number")
-        if len(timestamps) != len(x) or len(timestamps) != len(y):
-            raise ValueError("Arrays of timestamps, x and y must have the same length")
         super().__init__(timestamps=timestamps)
+        if x is None or y is None or len(x) != len(y) or len(x) != len(timestamps):
+            raise ValueError("Arrays `x` and `y` must have the same length as `timestamps`")
+        if viewer_distance is None or viewer_distance <= 0 or not np.isfinite(viewer_distance):
+            raise ValueError("viewer_distance must be a positive finite number")
         self._viewer_distance = viewer_distance  # in cm
         self._x = x
         self._y = y

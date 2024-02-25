@@ -11,6 +11,8 @@ class FixationEvent(BaseGazeEvent):
 
     def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, pupil: np.ndarray, viewer_distance: float):
         super().__init__(timestamps=timestamps, x=x, y=y, viewer_distance=viewer_distance)
+        if pupil is None or len(pupil) != len(timestamps):
+            raise ValueError("Array `pupil` must have the same length as `timestamps`")
         self._pupil: np.ndarray = pupil  # pupil size (in mm)
 
     @property

@@ -11,7 +11,7 @@ class BaseEvent(ABC):
     _EVENT_TYPE: cnst.EVENTS
 
     def __init__(self, timestamps: np.ndarray):
-        if len(timestamps) < cnst.MINIMUM_SAMPLES_IN_EVENT:
+        if timestamps is None or len(timestamps) < cnst.MINIMUM_SAMPLES_IN_EVENT:
             raise ValueError(f"{self.__class__.__name__} must be at least {cnst.MINIMUM_SAMPLES_IN_EVENT} samples long")
         if np.isnan(timestamps).any() or np.isinf(timestamps).any():
             raise ValueError("array `timestamps` must not contain NaN or infinite values")
