@@ -116,7 +116,7 @@ class NHDetector(BaseDetector):
         window_size = self._calc_num_samples(self._filter_duration, sr)
         order = self._filter_polyorder
         if window_size <= order:
-            raise RuntimeError(f"Cannot compute {order} order SAVGOL filter with duration {self._filter_duration}ms " +
+            raise RuntimeError(f"Cannot compute {order}-order SAVGOL filter with duration {self._filter_duration}ms " +
                                f"on data with sampling rate {sr}Hz")
 
         # calculate angular velocity: v = sr * sqrt((x')^2 + (y')^2) * pixel-to-angle-constant
@@ -285,13 +285,14 @@ class NHDetector(BaseDetector):
         :return: the threshold velocity for detecting saccade peaks
         """
         # find the starting PT value, by making sure there are at least 1 peak with higher velocity
-        start_criteria = np.arange(300, 99, -50)
+        start_criteria = np.arange(300, 74, -25)
         pt = start_criteria[0]
         for i, pt in enumerate(start_criteria):
             if any(v > pt):
                 break
             if i == len(start_criteria) - 1:
-                raise RuntimeError("Could not find a suitable PT_1 value for saccade detection")
+                # raise RuntimeError("Could not find a suitable PT_1 value for saccade detection")
+                pt = np.median(start_criteria)
 
         # iteratively update PT value until convergence
         pt_prev = 0
@@ -317,8 +318,8 @@ class NHDetector(BaseDetector):
         :param move_back: whether to move back or forward from the starting index   (default: False)
         :return: the index of the local minimum
         """
-        if not 0 <= idx < len(arr):
-            raise IndexError(f"Index {idx} is out of bounds for array of length {len(arr)}")
+        # if not 0 <= idx < len(arr):
+        #     raise IndexError(f"Index {idx} is out of bounds for array of length {len(arr)}")
         while 0 < idx < len(arr):
             if arr[idx] < min_thresh and arr[idx] < arr[idx + 1] and arr[idx] < arr[idx - 1]:
                 # idx is a local minimum

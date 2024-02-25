@@ -51,7 +51,7 @@ class BaseDetector(ABC):
         self._pad_blinks_by = pad_blinks_by                     # ms
 
     def minimum_event_samples(self, sr: float) -> int:
-        min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS)))
+        min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS.values())))
         ns = self._calc_num_samples(min_event_duration, sr)
         return max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
 
