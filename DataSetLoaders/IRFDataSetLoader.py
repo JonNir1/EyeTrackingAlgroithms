@@ -86,9 +86,9 @@ class IRFDataSetLoader(BaseDataSetLoader):
         df[cnst.MILLISECONDS] = df[cnst.MILLISECONDS] * 1000
 
         # convert x-y coordinates to pixels (use apparatus values):
-        x, y = cls.__convert_coordinates(x=df[cnst.RIGHT_X], y=df[cnst.RIGHT_Y])
-        df[cnst.RIGHT_X] = x
-        df[cnst.RIGHT_Y] = y
+        x, y = cls.__convert_coordinates(x=df[cnst.X], y=df[cnst.Y])
+        df[cnst.X] = x
+        df[cnst.Y] = y
 
         # add a column for trial number:
         # trials are instances that share the same subject id & stimulus.
