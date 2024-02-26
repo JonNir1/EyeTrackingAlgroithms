@@ -71,7 +71,7 @@ class HFCDataSetLoader(BaseDataSetLoader):
     @classmethod
     def _clean_data(cls, df: pd.DataFrame) -> pd.DataFrame:
         # rename columns:
-        df.rename(columns={"time": cnst.MILLISECONDS, "x": cnst.LEFT_X, "y": cnst.LEFT_Y}, inplace=True)
+        df.rename(columns={"time": cnst.MILLISECONDS, "x": cnst.X, "y": cnst.Y}, inplace=True)
 
         # add a column for trial number:
         # trials are instances that share the same subject id & stimulus.

@@ -20,7 +20,6 @@ class IRFDataSetLoader(BaseDataSetLoader):
     See also about the repro study: https://github.com/r-zemblys/irf/blob/master/doc/IRF_replication_report.pdf
 
     Note: binocular data was recorded but only one pair of (x, y) coordinates is provided.
-    For the sake of consistency, we will consider these right-eye coordinates.
 
     This loader is based on a previous implementation, see article:
     Startsev, M., Zemblys, R. Evaluating Eye Movement Event Detection: A Review of the State of the Art. Behav Res 55, 1653–1714 (2023)
@@ -86,9 +85,9 @@ class IRFDataSetLoader(BaseDataSetLoader):
         df.loc[idxs_to_replace, cnst.X] = np.nan
         df.loc[idxs_to_replace, cnst.Y] = np.nan
 
-        # rename columns: replace `t` with `milliseconds`, `evt` with `rater_name`, and change the unambiguous `x` and
-        # `y` with `right_x` and `right_y`. also, drop the `status` column that indicates whether the data is valid.
-        df.rename(columns={"t": cnst.MILLISECONDS, "evt": cls.__RATER_NAME, "x": cnst.RIGHT_X, "y": cnst.RIGHT_Y},
+        # rename columns: replace `t` with `milliseconds`, `evt` with `rater_name`
+        # also, drop the `status` column that indicates whether the data is valid.
+        df.rename(columns={"t": cnst.MILLISECONDS, "evt": cls.__RATER_NAME, "x": cnst.X, "y": cnst.Y},
                   inplace=True)
         df.drop(columns=["status"], inplace=True)
 

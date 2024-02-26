@@ -124,7 +124,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
 
         # create dataframe:
         df = pd.DataFrame(data={cnst.MILLISECONDS: timestamps,
-                                cnst.RIGHT_X: right_x, cnst.RIGHT_Y: right_y,
+                                cnst.X: right_x, cnst.Y: right_y,
                                 cnst.EVENT_TYPE: labels})
         df[Lund2013DataSetLoader.__VIEWER_DISTANCE_CM] = view_dist
         df[Lund2013DataSetLoader.__PIXEL_SIZE_CM] = pixel_size
