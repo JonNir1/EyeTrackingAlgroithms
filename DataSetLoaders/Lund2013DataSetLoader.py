@@ -87,7 +87,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         # trials are instances that share the same subject id, stimulus type and stimulus name.
         trial_counter = 1
         df[cnst.TRIAL] = np.nan
-        for _, trial_df in df.groupby([cnst.SUBJECT_ID, cnst.STIMULUS, cls.__STIMULUS_NAME]):
+        for _, trial_df in df.groupby([cnst.SUBJECT_ID, cnst.STIMULUS, cls._STIMULUS_NAME_STR]):
             df.loc[trial_df.index, cnst.TRIAL] = trial_counter
             trial_counter += 1
         df[cnst.TRIAL] = df[cnst.TRIAL].astype(int)
