@@ -42,7 +42,7 @@ class IRFDataSetLoader(BaseDataSetLoader):
     # see https://github.com/r-zemblys/irf/blob/master/etdata/lookAtPoint_EL/db_config.json
     __STIMULUS_VAL = "moving_dot"  # all subjects were shown the same 13-point moving dot stimulus
     __VIEWER_DISTANCE_CM_VAL = 56.5
-    __SCREEN_MONITOR = ScreenMonitor(width=1920, height=1080, resolution=(1920, 1080), refresh_rate=60)
+    __SCREEN_MONITOR = ScreenMonitor(width=37.5, height=30.2, resolution=(1280, 1024), refresh_rate=60)
 
     @classmethod
     def column_order(cls) -> Dict[str, float]:
