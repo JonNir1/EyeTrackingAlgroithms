@@ -39,12 +39,6 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
     ]
 
     @classmethod
-    def column_order(cls) -> Dict[str, float]:
-        order = BaseDataSetLoader.column_order()
-        order.update({cls._STIMULUS_NAME_STR: 6.1, cls._PIXEL_SIZE_CM_STR: 6.2, cls._VIEWER_DISTANCE_CM_STR: 6.3})
-        return order
-
-    @classmethod
     def _parse_response(cls, response: req.Response) -> pd.DataFrame:
         zip_file = zp.ZipFile(io.BytesIO(response.content))
 
