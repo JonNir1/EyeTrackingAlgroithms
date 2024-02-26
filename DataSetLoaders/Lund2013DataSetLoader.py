@@ -38,14 +38,10 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         "events in eye-tracking data. Behavior Research Methods, 50(1), 160–181."
     ]
 
-    __STIMULUS_NAME = f"{cnst.STIMULUS}_name"
-    __PIXEL_SIZE_CM = "pixel_size_cm"
-    __VIEWER_DISTANCE_CM = "viewer_distance_cm"
-
     @classmethod
     def column_order(cls) -> Dict[str, float]:
         order = BaseDataSetLoader.column_order()
-        order.update({cls.__STIMULUS_NAME: 6.1, cls.__PIXEL_SIZE_CM: 6.2, cls.__VIEWER_DISTANCE_CM: 6.3})
+        order.update({cls._STIMULUS_NAME_STR: 6.1, cls._PIXEL_SIZE_CM_STR: 6.2, cls._VIEWER_DISTANCE_CM_STR: 6.3})
         return order
 
     @classmethod
@@ -74,7 +70,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
             if existing_df is None:
                 gaze_data[cnst.SUBJECT_ID] = subject_id
                 gaze_data[cnst.STIMULUS] = stimulus_type
-                gaze_data[cls.__STIMULUS_NAME] = stimulus_name
+                gaze_data[cls._STIMULUS_NAME_STR] = stimulus_name
                 dataframes[(subject_id, stimulus_type, stimulus_name)] = gaze_data
             else:
                 existing_df[rater] = gaze_data[rater]
@@ -126,8 +122,8 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         df = pd.DataFrame(data={cnst.MILLISECONDS: timestamps,
                                 cnst.X: right_x, cnst.Y: right_y,
                                 cnst.EVENT_TYPE: labels})
-        df[Lund2013DataSetLoader.__VIEWER_DISTANCE_CM] = view_dist
-        df[Lund2013DataSetLoader.__PIXEL_SIZE_CM] = pixel_size
+        df[Lund2013DataSetLoader._VIEWER_DISTANCE_CM_STR] = view_dist
+        df[Lund2013DataSetLoader._PIXEL_SIZE_CM_STR] = pixel_size
         return df
 
     @staticmethod

@@ -33,12 +33,9 @@ class IRFDataSetLoader(BaseDataSetLoader):
         "learning to detect events in eye-tracking data. Behavior Research Methods, 50(1), 160–181 (2018)."
     ]
 
-    __RATER_NAME = "RZ"
-    __PIXEL_SIZE_CM = "pixel_size_cm"
-    __VIEWER_DISTANCE_CM = "viewer_distance_cm"
-
     # Values used in the apparatus of the experiment.
     # see https://github.com/r-zemblys/irf/blob/master/etdata/lookAtPoint_EL/db_config.json
+    __RATER_NAME = "RZ"
     __STIMULUS_VAL = "moving_dot"  # all subjects were shown the same 13-point moving dot stimulus
     __VIEWER_DISTANCE_CM_VAL = 56.5
     __SCREEN_MONITOR = ScreenMonitor(width=37.5, height=30.2, resolution=(1280, 1024), refresh_rate=60)
@@ -46,7 +43,7 @@ class IRFDataSetLoader(BaseDataSetLoader):
     @classmethod
     def column_order(cls) -> Dict[str, float]:
         order = BaseDataSetLoader.column_order()
-        order.update({cls.__PIXEL_SIZE_CM: 6.2, cls.__VIEWER_DISTANCE_CM: 6.3})
+        order.update({cls._PIXEL_SIZE_CM_STR: 6.2, cls._VIEWER_DISTANCE_CM_STR: 6.3})
         return order
 
     @classmethod
@@ -74,8 +71,8 @@ class IRFDataSetLoader(BaseDataSetLoader):
 
         # add meta data columns:
         merged_df[cnst.STIMULUS] = cls.__STIMULUS_VAL
-        merged_df[cls.__VIEWER_DISTANCE_CM] = cls.__VIEWER_DISTANCE_CM_VAL
-        merged_df[cls.__PIXEL_SIZE_CM] = cls.__SCREEN_MONITOR.pixel_size
+        merged_df[cls._VIEWER_DISTANCE_CM_STR] = cls.__VIEWER_DISTANCE_CM_VAL
+        merged_df[cls._PIXEL_SIZE_CM_STR] = cls.__SCREEN_MONITOR.pixel_size
         return merged_df
 
     @classmethod

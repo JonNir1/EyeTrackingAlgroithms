@@ -9,6 +9,10 @@ from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 class BaseDataSetLoader(ABC):
 
+    _PIXEL_SIZE_CM_STR = "pixel_size_cm"
+    _VIEWER_DISTANCE_CM_STR = "viewer_distance_cm"
+    _STIMULUS_NAME_STR = f"{cnst.STIMULUS}_name"
+
     _URL: str = None
     _ARTICLES: List[str] = None
 
