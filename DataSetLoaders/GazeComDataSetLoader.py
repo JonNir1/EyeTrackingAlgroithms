@@ -23,9 +23,10 @@ class GazeComDataSetLoader(BaseDataSetLoader):
     movements recorded during dynamic scene viewing. In 2016 IEEE second workshop on eye tracking and visualization
     (ETVIS) (pp. 65–68).
 
-    Note 1: This is only a subset of the full GazeCom Dataset, containing hand-labelled samples. The full dataset with
+    Note 1: This dataset is extremely large and may take a long time to download.
+    Note 2: This is only a subset of the full GazeCom Dataset, containing hand-labelled samples. The full dataset with
     documentation can be found in https://www.inb.uni-luebeck.de/index.php?id=515.
-    Note 2: binocular data was recorded but only one pair of (x, y) coordinates is provided.
+    Note 3: binocular data was recorded but only one pair of (x, y) coordinates is provided.
 
     This loader is based on a previous implementation, see article:
     Startsev, M., Zemblys, R. Evaluating Eye Movement Event Detection: A Review of the State of the Art. Behav Res 55, 1653–1714 (2023)
