@@ -1,4 +1,5 @@
 import io
+import os
 import requests as req
 import zipfile as zp
 import posixpath as psx
@@ -23,7 +24,8 @@ class GazeComDataSetLoader(BaseDataSetLoader):
     movements recorded during dynamic scene viewing. In 2016 IEEE second workshop on eye tracking and visualization
     (ETVIS) (pp. 65–68).
 
-    Note 1: This dataset is extremely large and may take a long time to download.
+    Note 1: This dataset is extremely large and may take a long time to download. It is recommended to use the
+    load_from_disk method to load the dataset from a local directory.
     Note 2: This is only a subset of the full GazeCom Dataset, containing hand-labelled samples. The full dataset with
     documentation can be found in https://www.inb.uni-luebeck.de/index.php?id=515.
     Note 3: binocular data was recorded but only one pair of (x, y) coordinates is provided.
@@ -44,6 +46,7 @@ class GazeComDataSetLoader(BaseDataSetLoader):
     ]
 
     # Values used in the apparatus of the experiment.
+    __FILE_NAME = "gazecom_annotations-master.zip"
     __HANDLABELLER = "HL"
     __VIEWER_DISTANCE_CM_VAL = 56.5
     __SCREEN_MONITOR = ScreenMonitor(width=40, height=22.5, resolution=(1280, 720), refresh_rate=30)
@@ -59,12 +62,58 @@ class GazeComDataSetLoader(BaseDataSetLoader):
                          "handlabeller_final": f"{__HANDLABELLER}_FINAL"}
 
     @classmethod
+    def load_from_disk(cls, root: str = None) -> pd.DataFrame:
+        """
+        Loads the dataset from a zip file stored in a local directory.
+        :param root: path to the directory containing the zip file.
+        :return: DataFrame with the annotated gaze data.
+        """
+        if not root or not psx.isdir(root):
+            raise NotADirectoryError(f"Invalid directory: {root}")
+        zip_file = psx.join(root, cls.__FILE_NAME)
+        if not psx.isfile(zip_file):
+            raise FileNotFoundError(f"File not found: {zip_file}")
+        with zp.ZipFile(zip_file, 'r') as zip_ref:
+            return cls.__read_zipfile(zf=zip_ref)
+
+    @classmethod
     def _parse_response(cls, response: req.Response) -> pd.DataFrame:
         zip_file = zp.ZipFile(io.BytesIO(response.content))
+        return cls.__read_zipfile(zf=zip_file)
 
+    @classmethod
+    def _clean_data(cls, df: pd.DataFrame) -> pd.DataFrame:
+        # replace invalid samples with NaN:
+        trackloss = np.all(df[["x", "y"]] == 0, axis=1)
+        low_confidence = df["confidence"] < 0.5
+        invalid_idxs = np.where(trackloss | low_confidence)[0]
+        df.iloc[invalid_idxs, df.columns.get_indexer(["x", "y"])] = np.nan
+
+        # rename columns & drop confidence column:
+        df['time'] = df['time'] / cnst.MICROSECONDS_PER_MILLISECOND
+        df.drop(columns=['confidence'], inplace=True)
+        df.rename(columns=cls.__COLUMNS_MAPPING, inplace=True)
+
+        # add a column for trial number:
+        # trials are instances that share the same subject id & stimulus.
+        trial_counter = 1
+        df[cnst.TRIAL] = np.nan
+        for _, trial_df in df.groupby([cnst.SUBJECT_ID, cls._STIMULUS_NAME_STR]):
+            df.loc[trial_df.index, cnst.TRIAL] = trial_counter
+            trial_counter += 1
+        df[cnst.TRIAL] = df[cnst.TRIAL].astype(int)
+        return df
+
+    @classmethod
+    def __read_zipfile(cls, zf: zp.ZipFile) -> pd.DataFrame:
+        """
+        Reads the contents of a zip file and returns a DataFrame with the annotated data.
+        :param zf: ZipFile object
+        :return: DataFrame with annotated gaze data
+        """
         # Get Annotated Data
         prefix = psx.join('gazecom_annotations', 'ground_truth')
-        annotated_file_names = [f for f in zip_file.namelist() if (f.startswith(prefix) and f.endswith('.arff'))]
+        annotated_file_names = [f for f in zip_file.namelist() if (f.endswith('.arff') and prefix in f)]
         gaze_dfs = []
         for f in annotated_file_names:
             file = zip_file.open(f)
@@ -91,26 +140,3 @@ class GazeComDataSetLoader(BaseDataSetLoader):
         merged_df[cls._VIEWER_DISTANCE_CM_STR] = cls.__VIEWER_DISTANCE_CM_VAL
         merged_df[cls._PIXEL_SIZE_CM_STR] = cls.__SCREEN_MONITOR.pixel_size
         return merged_df
-
-    @classmethod
-    def _clean_data(cls, df: pd.DataFrame) -> pd.DataFrame:
-        # replace invalid samples with NaN:
-        trackloss = np.all(df[["x", "y"]] == 0, axis=1)
-        low_confidence = df["confidence"] < 0.5
-        invalid_idxs = np.where(trackloss | low_confidence)[0]
-        df.iloc[invalid_idxs, df.columns.get_indexer(["x", "y"])] = np.nan
-
-        # rename columns & drop confidence column:
-        df['time'] = df['time'] / cnst.MICROSECONDS_PER_MILLISECOND
-        df.drop(columns=['confidence'], inplace=True)
-        df.rename(columns=cls.__COLUMNS_MAPPING, inplace=True)
-
-        # add a column for trial number:
-        # trials are instances that share the same subject id & stimulus.
-        trial_counter = 1
-        df[cnst.TRIAL] = np.nan
-        for _, trial_df in df.groupby([cnst.SUBJECT_ID, cls._STIMULUS_NAME_STR]):
-            df.loc[trial_df.index, cnst.TRIAL] = trial_counter
-            trial_counter += 1
-        df[cnst.TRIAL] = df[cnst.TRIAL].astype(int)
-        return df
