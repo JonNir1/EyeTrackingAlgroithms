@@ -1,5 +1,4 @@
 import io
-import os
 import requests as req
 import zipfile as zp
 import posixpath as psx
@@ -74,7 +73,11 @@ class GazeComDataSetLoader(BaseDataSetLoader):
         if not psx.isfile(zip_file):
             raise FileNotFoundError(f"File not found: {zip_file}")
         with zp.ZipFile(zip_file, 'r') as zip_ref:
-            return cls.__read_zipfile(zf=zip_ref)
+            df = cls.__read_zipfile(zf=zip_ref)
+            df = cls._clean_data(df)
+            ordered_columns = sorted(df.columns, key=lambda col: cls.column_order().get(col, 10))
+            df = df[ordered_columns]  # reorder columns
+            return df
 
     @classmethod
     def _parse_response(cls, response: req.Response) -> pd.DataFrame:
@@ -113,10 +116,10 @@ class GazeComDataSetLoader(BaseDataSetLoader):
         """
         # Get Annotated Data
         prefix = psx.join('gazecom_annotations', 'ground_truth')
-        annotated_file_names = [f for f in zip_file.namelist() if (f.endswith('.arff') and prefix in f)]
+        annotated_file_names = [f for f in zf.namelist() if (f.endswith('.arff') and prefix in f)]
         gaze_dfs = []
         for f in annotated_file_names:
-            file = zip_file.open(f)
+            file = zf.open(f)
             file_str = file.read().decode('utf-8')
             data = arff.loads(file_str)
 
@@ -125,7 +128,8 @@ class GazeComDataSetLoader(BaseDataSetLoader):
 
             # add metadata columns:
             _path, file_name, _ext = ioutils.split_path(f)
-            subj_id, stimulus = file_name.split('_')  # filename format: <subject_id>_<stimulus name>.arff
+            subj_id = file_name.split('_')[0]  # filename format: <subject_id>_<stimulus>_<name>_<with>_<underscores>.arff
+            stimulus = '_'.join(file_name.split('_')[1:])
             df[cnst.SUBJECT_ID] = subj_id
             df[cls._STIMULUS_NAME_STR] = stimulus
 
