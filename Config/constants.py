@@ -25,7 +25,7 @@ MICROSECONDS = "microseconds"
 EVENT_TYPE = "event_type"
 SAMPLING_RATE = "sampling_rate"
 
-X, Y = 'x', 'y'
+T, X, Y = 't', 'x', 'y'
 LEFT = "left"
 RIGHT = "right"
 PUPIL = "pupil"

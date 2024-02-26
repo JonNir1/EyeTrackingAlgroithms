@@ -47,7 +47,7 @@ class BaseDataSetLoader(ABC):
     @classmethod
     def column_order(cls) -> Dict[str, float]:
         return {cnst.TRIAL: 0.1, cnst.SUBJECT_ID: 0.2, cnst.STIMULUS: 0.3, cls._STIMULUS_NAME_STR: 0.4,
-                cnst.MILLISECONDS: 1.1, cnst.X: 1.2, cnst.Y: 1.3, cnst.PUPIL: 1.4,
+                cnst.T: 1.0, cnst.MILLISECONDS: 1.1, cnst.X: 1.2, cnst.Y: 1.3, cnst.PUPIL: 1.4,
                 cnst.LEFT_X: 2.1, cnst.LEFT_Y: 2.2, cnst.LEFT_PUPIL: 2.3,
                 cnst.RIGHT_X: 3.1, cnst.RIGHT_Y: 3.2, cnst.RIGHT_PUPIL: 3.3,
                 cls._PIXEL_SIZE_CM_STR: 4.2, cls._VIEWER_DISTANCE_CM_STR: 4.3}
