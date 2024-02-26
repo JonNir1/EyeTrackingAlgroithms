@@ -77,10 +77,10 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
     def _clean_data(cls, df: pd.DataFrame) -> pd.DataFrame:
         # replace missing samples with NaNs:
         # this dataset marks missing samples with (0, 0) coordinates, instead of NaNs.
-        x_missing = df[cnst.RIGHT_X] == 0
-        y_missing = df[cnst.RIGHT_Y] == 0
+        x_missing = df[cnst.X] == 0
+        y_missing = df[cnst.Y] == 0
         missing_idxs = np.where(x_missing & y_missing)[0]
-        col_idxs = df.columns.get_indexer([cnst.RIGHT_X, cnst.RIGHT_Y])
+        col_idxs = df.columns.get_indexer([cnst.X, cnst.Y])
         df.iloc[missing_idxs, col_idxs] = np.nan
 
         # add a column for trial number:
