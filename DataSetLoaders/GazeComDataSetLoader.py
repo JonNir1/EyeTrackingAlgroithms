@@ -1,11 +1,9 @@
 import io
-import re
 import requests as req
 import zipfile as zp
 import posixpath as psx
 import pandas as pd
 import numpy as np
-import scipy.io as sio
 import arff
 
 from Config import constants as cnst
@@ -115,63 +113,3 @@ class GazeComDataSetLoader(BaseDataSetLoader):
             trial_counter += 1
         df[cnst.TRIAL] = df[cnst.TRIAL].astype(int)
         return df
-
-
-    # @staticmethod
-    # def __extract_event_mapping(description: str) -> dict:
-    #     """
-    #     Event mappings are lines in the description that are of format "<int> is <event_type>" (e.g. "1 is FIX")
-    #     Extracts these lines and returns a dictionary with the mappings.
-    #
-    #     :param description: string containing the description of the dataset
-    #     :return: event_dict: dictionary with the mappings
-    #     """
-    #     # TODO: check if these mappings are the same for all files (and can be a class attribute)
-    #     lines = [l for l in description.split('\n') if re.search(GazeComDataSetLoader.__METADATA_DICT_PATTERN, l)]
-    #     event_dict = {}
-    #     for l in lines:
-    #         substring = re.search(GazeComDataSetLoader.__METADATA_DICT_PATTERN, l).group(0)
-    #         key, value = substring.split(' is ')
-    #         value = value.lower()
-    #
-    #         # convert value to GazeEventTypeEnum
-    #         if any([e in value for e in ["noise", "unknown", "undefined"]]):
-    #             ev = cnst.EVENTS.UNDEFINED
-    #         elif any([e in value for e in ["fix", "fixation"]]):
-    #             ev = cnst.EVENTS.FIXATION
-    #         elif any([e in value for e in ["sac", "saccade"]]):
-    #             ev = cnst.EVENTS.SACCADE
-    #         elif any([e in value for e in ["pursuit", "smooth pursuit", "sp"]]):
-    #             ev = cnst.EVENTS.SMOOTH_PURSUIT
-    #         elif any([e in value for e in ["blink"]]):
-    #             ev = cnst.EVENTS.BLINK
-    #         else:
-    #             raise ValueError(f"Unknown event type: {value}")
-    #
-    #         event_dict[int(key)] = ev
-    #         event_dict[str(key)] = ev
-    #     return event_dict
-    #
-    # @staticmethod
-    # def __extract_subject_metadata(description: str) -> (ScreenMonitor, float):
-    #     """
-    #     Extracts the metadata of the subject from the description string. Metadata lines are prefixed with '@METADATA'.
-    #     :param description: string containing the description of the dataset
-    #     :return: metadata: dictionary with the metadata
-    #     """
-    #     # TODO: check if these metadata are the same for all files (and can be a class attribute)
-    #     prefix = '@METADATA '
-    #     lines = [l[len(prefix):] for l in description.split('\n') if l.startswith(prefix)]
-    #     metadata = {}
-    #     for l in lines:
-    #         key, value = l.split(' ')
-    #         key = key.lower()
-    #         value = float(value)
-    #         metadata[key] = value
-    #
-    #     distance_cm = metadata['distance_mm'] / 10
-    #     screen = ScreenMonitor(width=metadata['width_mm'] / 10, height=metadata['height_mm'] / 10,
-    #                            resolution=(int(metadata['width_px']), int(metadata['height_px'])),
-    #                            refresh_rate=30)  # default refresh rate
-    #     return screen, distance_cm
-
