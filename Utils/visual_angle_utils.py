@@ -93,7 +93,7 @@ def calculates_angular_velocities_from_pixels(xs: np.ndarray, ys: np.ndarray, ti
     assert len(xs) == len(ys) == len(timestamps), "x-array, y-array and timestamps-array must be of the same length"
     angles = calculate_angles_from_pixels(xs, ys, d, pixel_size, use_radians)
     cum_angles = np.cumsum(angles)
-    return arr_utils.temporal_derivative(cum_angles, timestamps, deg=1, time_coeff=cnst.MILLISECONDS_PER_SECOND)
+    return arr_utils.numeric_derivative(cum_angles, timestamps, deg=1, mul_const=cnst.MILLISECONDS_PER_SECOND)
 
 
 def calculate_angular_accelerations_from_pixels(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray,
@@ -114,7 +114,7 @@ def calculate_angular_accelerations_from_pixels(xs: np.ndarray, ys: np.ndarray, 
     assert len(xs) == len(ys) == len(timestamps), "x-array, y-array and timestamps-array must be of the same length"
     angles = calculate_angles_from_pixels(xs, ys, d, pixel_size, use_radians)
     cum_angles = np.cumsum(angles)
-    return arr_utils.temporal_derivative(cum_angles, timestamps, deg=2, time_coeff=cnst.MILLISECONDS_PER_SECOND)
+    return arr_utils.numeric_derivative(cum_angles, timestamps, deg=2, mul_const=cnst.MILLISECONDS_PER_SECOND)
 
 
 def visual_angle_between_pixels(p1: Tuple[float, float], p2: Tuple[float, float],

@@ -21,7 +21,7 @@ def calculate_euclidean_distances(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
 
 def calculate_velocities(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray) -> np.ndarray:
     """
-    Calculates the velocity of the gaze in pixels per milliseconds.
+    Calculates the velocity of the gaze in pixels per second.
     :param xs: 1D array of x coordinates
     :param ys: 1D array of y coordinates
     :param timestamps: 1D array of timestamps (in milliseconds)
@@ -30,7 +30,7 @@ def calculate_velocities(xs: np.ndarray, ys: np.ndarray, timestamps: np.ndarray)
     assert len(xs) == len(ys) == len(timestamps), "x-array, y-array and timestamps-array must be of the same length"
     dist = calculate_euclidean_distances(xs, ys)
     cum_dist = np.cumsum(dist)
-    velocities = arr_utils.temporal_derivative(cum_dist, timestamps, deg=1, time_coeff=cnst.MILLISECONDS_PER_SECOND)
+    velocities = arr_utils.numeric_derivative(cum_dist, timestamps, deg=1, mul_const=cnst.MILLISECONDS_PER_SECOND)
     return velocities
 
 

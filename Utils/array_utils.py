@@ -16,21 +16,23 @@ def is_one_dimensional(arr) -> bool:
     return False
 
 
-def temporal_derivative(f, t, deg: int = 1, time_coeff: float = cnst.MILLISECONDS_PER_SECOND) -> np.ndarray:
-    if not is_one_dimensional(f) or not is_one_dimensional(t):
-        raise ValueError("`f` and `t` must be one-dimensional")
-    if len(f) != len(t):
-        raise ValueError("`f` and `t` must be of the same length")
+def numeric_derivative(y, x, deg: int = 1, mul_const: float = 1) -> np.ndarray:
+    """
+    Calculates the `deg`-th derivative of the given numeric function `y` with respect to `x`.
+    Argument `mul_const` is a constant multiplier for the derivative.
+    """
+    if not is_one_dimensional(y) or not is_one_dimensional(x):
+        raise ValueError("`y` and `x` must be one-dimensional")
+    if len(y) != len(x):
+        raise ValueError("`y` and `x` must be of the same length")
     if deg < 0:
         raise ValueError("`deg` must be non-negative")
-    if time_coeff <= 0:
-        raise ValueError("`time_coeff` must be positive")
     if deg == 0:
-        return f
-    df = np.concatenate([np.array([0]), np.diff(f)])  # first element is 0
-    dt = np.concatenate([np.array([np.nan]), np.diff(t)])  # first element is NaN
-    df_dt = np.divide(df, dt) * time_coeff
-    return temporal_derivative(df_dt, t, deg=deg-1, time_coeff=time_coeff)
+        return y
+    dy = np.concatenate([np.array([0]), np.diff(y)])        # first element is 0
+    dx = np.concatenate([np.array([np.nan]), np.diff(x)])   # first element is NaN
+    dy_dx = np.divide(dy, dx) * mul_const
+    return numeric_derivative(dy_dx, x, deg=deg-1, mul_const=mul_const)
 
 
 def extract_column_safe(data: pd.DataFrame, colname: str, warn: bool = True) -> np.ndarray:
