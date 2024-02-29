@@ -158,7 +158,8 @@ class BaseDetector(ABC):
         3. Sets chunks that are shorter than the minimum event duration to cnst.EVENTS.UNDEFINED
         """
         # calculate number of samples in the minimum event duration
-        min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS.values())))
+        min_event_duration = min([cnfg.EVENT_MAPPING[e]["min_duration"] for e in cnfg.EVENT_MAPPING.keys()
+                                  if e != cnst.EVENTS.UNDEFINED])
         ns = self._calc_num_samples(min_event_duration, self._sr)
         min_samples = max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
         cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENTS.UNDEFINED)

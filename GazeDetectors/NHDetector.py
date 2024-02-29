@@ -172,7 +172,7 @@ class NHDetector(BaseDetector):
         # for each peak, find the index of the offset: the first sample following the peak with velocity below the
         # offset threshold (OfT = a * OnT + b * OtT), AND is a local minimum
         # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples prior to saccade onset
-        min_fixation_duration = cnfg.EVENT_DURATIONS[cnst.EVENTS.FIXATION][0]
+        min_fixation_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
         min_fixation_samples = self._calc_num_samples(min_fixation_duration, sr)
 
         saccades_info = {}  # peak_idx -> (start_idx, end_idx, offset_threshold)
@@ -222,7 +222,7 @@ class NHDetector(BaseDetector):
         :return: list of PSO start & end idxs
         """
         # calculate the size of the window where PSO may occur after each saccade
-        min_fixation_duration = cnfg.EVENT_DURATIONS[cnst.EVENTS.FIXATION][0]
+        min_fixation_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
         min_fixation_samples = self._calc_num_samples(min_fixation_duration, sr)
 
         # find PSO start & end idxs after each saccade
