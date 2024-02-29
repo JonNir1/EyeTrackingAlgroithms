@@ -21,32 +21,23 @@ class EngbertDetector(BaseDetector):
         3. Calculate the noise threshold as the multiple of the median-standard-deviation with the constant `lambda_noise_threshold`
         4. Identify saccade candidates as samples with velocity greater than the noise threshold
 
-    :param lambda_noise_threshold: the threshold for the noise, as a multiple of the median-standard-deviation. Default
+    :param lambda: the threshold for the noise, as a multiple of the median-standard-deviation. Default
         is 5, as suggested in the original paper
-    :param derivation_window_size: the size of the window used to calculate the velocity. Default is 2, as suggested in
+    :param window_size: the size of the window used to calculate the velocity. Default is 2, as suggested in
         the original paper
     """
 
-    __LAMBDA_NOISE_THRESHOLD = 5
-    __DERIVATION_WINDOW_SIZE = 2
+    __DEFAULT_LAMBDAA = 5       # lambda noise threshold
+    __DEFAULT_WINDOW_SIZE = 2   # (half) number of samples used to calculate axial-velocity
 
-    def __init__(self,
-                 lambda_noise_threshold: float = __LAMBDA_NOISE_THRESHOLD,
-                 derivation_window_size: int = __DERIVATION_WINDOW_SIZE,
-                 missing_value=BaseDetector.DEFAULT_MISSING_VALUE,
-                 viewer_distance: float = BaseDetector.DEFAULT_VIEWER_DISTANCE,
-                 pixel_size: float = BaseDetector.DEFAULT_PIXEL_SIZE,
-                 pad_blinks_by: float = BaseDetector.DEFAULT_BLINK_PADDING):
-        super().__init__(missing_value=missing_value,
-                         viewer_distance=viewer_distance,
-                         pixel_size=pixel_size,
-                         pad_blinks_by=pad_blinks_by)
-        if lambda_noise_threshold <= 1:
-            raise ValueError("lambda_noise_threshold must be greater than 1")
-        self._lambda_noise_threshold = lambda_noise_threshold
-        if derivation_window_size <= 0:
-            raise ValueError("derivation_window_size must be positive")
-        self._derivation_window_size = round(derivation_window_size)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if kwargs.get('lambdaa', EngbertDetector.__DEFAULT_LAMBDAA) <= 0:
+            raise ValueError("lambdaa must be positive")
+        if kwargs.get('window_size', EngbertDetector.__DEFAULT_WINDOW_SIZE) <= 0:
+            raise ValueError("window_size must be positive")
+        self._lambda = kwargs.get('lambdaa', self.__DEFAULT_LAMBDAA)
+        self._window_size = kwargs.get('window_size', self.__DEFAULT_WINDOW_SIZE)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
         candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
@@ -54,9 +45,9 @@ class EngbertDetector(BaseDetector):
         # Calculate the velocity of the gaze data in both axes
         sr = self._calculate_sampling_rate(t)
         x_velocity = self._calculate_axial_velocity(x, sr)
-        thresh_x = self._median_standard_deviation(x_velocity) * self._lambda_noise_threshold
+        thresh_x = self._median_standard_deviation(x_velocity) * self._lambda
         y_velocity = self._calculate_axial_velocity(y, sr)
-        thresh_y = self._median_standard_deviation(y_velocity) * self._lambda_noise_threshold
+        thresh_y = self._median_standard_deviation(y_velocity) * self._lambda
 
         # Identify saccade candidates as samples with velocity greater than the noise threshold
         ellipse = (x_velocity / thresh_x) ** 2 + (y_velocity / thresh_y) ** 2
@@ -78,7 +69,7 @@ class EngbertDetector(BaseDetector):
         5. For the first and last `window_size` samples, the velocity is np.nan
         """
         arr_copy = np.copy(arr)
-        ws = self._derivation_window_size
+        ws = self._window_size
         velocities = np.full_like(arr_copy, np.nan)
         for t in range(ws, len(arr_copy) - ws):
             sum_before = np.sum(arr_copy[t - ws:t])
@@ -90,8 +81,8 @@ class EngbertDetector(BaseDetector):
     @override
     def _verify_inputs(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
         t, x, y = super()._verify_inputs(t, x, y)
-        if len(x) < 2 * self._derivation_window_size:
-            raise ValueError(f"derivation window size ({self._derivation_window_size}) is too large for the given data")
+        if len(x) < 2 * self._window_size:
+            raise ValueError(f"derivation window size ({self._window_size}) is too large for the given data")
         return t, x, y
 
     @staticmethod

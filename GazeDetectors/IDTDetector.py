@@ -26,27 +26,17 @@ class IDTDetector(BaseDetector):
         (2016), Andersson et al.
     """
 
+    __DEFAULT_DISPERSION_THRESHOLD = 0.5    # visual degrees
+    __DEFAULT_WINDOW_DURATION = 100         # ms
 
-    __DEFAULT_DISPERION_THRESHOLD = 0.5  # degrees
-    __DEFAULT_WINDOW_DURATION = 100  # ms
-
-    def __init__(self,
-                 dispersion_threshold: float = __DEFAULT_DISPERION_THRESHOLD,
-                 window_duration: float = __DEFAULT_WINDOW_DURATION,
-                 missing_value=BaseDetector.DEFAULT_MISSING_VALUE,
-                 viewer_distance: float = BaseDetector.DEFAULT_VIEWER_DISTANCE,
-                 pixel_size: float = BaseDetector.DEFAULT_PIXEL_SIZE,
-                 pad_blinks_by: float = BaseDetector.DEFAULT_BLINK_PADDING):
-        super().__init__(missing_value=missing_value,
-                         viewer_distance=viewer_distance,
-                         pixel_size=pixel_size,
-                         pad_blinks_by=pad_blinks_by)
-        if dispersion_threshold <= 0:
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if kwargs.get('dispersion_threshold', self.__DEFAULT_DISPERSION_THRESHOLD) <= 0:
             raise ValueError("dispersion_threshold must be positive")
-        self._dispersion_threshold = dispersion_threshold
-        if window_duration <= 0:
+        if kwargs.get('window_duration', self.__DEFAULT_WINDOW_DURATION) <= 0:
             raise ValueError("window_duration must be positive")
-        self._window_duration = window_duration
+        self._dispersion_threshold = kwargs.get('dispersion_threshold', self.__DEFAULT_DISPERSION_THRESHOLD)
+        self._window_duration = kwargs.get('window_duration', self.__DEFAULT_WINDOW_DURATION)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
         candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()

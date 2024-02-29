@@ -34,21 +34,33 @@ class BaseDetector(ABC):
     DEFAULT_PIXEL_SIZE = cnfg.SCREEN_MONITOR.pixel_size   # cm
     DEFAULT_BLINK_PADDING = 0  # ms
 
-    def __init__(self,
-                 missing_value=DEFAULT_MISSING_VALUE,
-                 viewer_distance: float = DEFAULT_VIEWER_DISTANCE,
-                 pixel_size: float = DEFAULT_PIXEL_SIZE,
-                 pad_blinks_by: float = DEFAULT_BLINK_PADDING):
-        self._missing_value = np.nan if missing_value is None else missing_value
-        self._viewer_distance = viewer_distance if viewer_distance is not None else self.DEFAULT_VIEWER_DISTANCE
-        if self._viewer_distance <= 0:
+    def __init__(self, **kwargs):
+        if kwargs.get('viewer_distance', BaseDetector.DEFAULT_VIEWER_DISTANCE) <= 0:
             raise ValueError("viewer_distance must be positive")
-        self._pixel_size = pixel_size if pixel_size is not None else self.DEFAULT_PIXEL_SIZE
-        if pixel_size <= 0:
+        if kwargs.get('pixel_size', BaseDetector.DEFAULT_PIXEL_SIZE) <= 0:
             raise ValueError("pixel_size must be positive")
-        if pad_blinks_by < 0:
+        if kwargs.get('pad_blinks_by', BaseDetector.DEFAULT_BLINK_PADDING) < 0:
             raise ValueError("pad_blinks_by must be non-negative")
-        self._pad_blinks_by = pad_blinks_by                     # ms
+        self._missing_value = kwargs.get('missing_value', self.DEFAULT_MISSING_VALUE)
+        self._viewer_distance = kwargs.get('viewer_distance', self.DEFAULT_VIEWER_DISTANCE)
+        self._pixel_size = kwargs.get('pixel_size', self.DEFAULT_PIXEL_SIZE)
+        self._pad_blinks_by = kwargs.get('pad_blinks_by', self.DEFAULT_BLINK_PADDING)  # ms
+
+    # def __init__(self,
+    #              missing_value=DEFAULT_MISSING_VALUE,
+    #              viewer_distance: float = DEFAULT_VIEWER_DISTANCE,
+    #              pixel_size: float = DEFAULT_PIXEL_SIZE,
+    #              pad_blinks_by: float = DEFAULT_BLINK_PADDING):
+    #     self._missing_value = np.nan if missing_value is None else missing_value
+    #     self._viewer_distance = viewer_distance if viewer_distance is not None else self.DEFAULT_VIEWER_DISTANCE
+    #     if self._viewer_distance <= 0:
+    #         raise ValueError("viewer_distance must be positive")
+    #     self._pixel_size = pixel_size if pixel_size is not None else self.DEFAULT_PIXEL_SIZE
+    #     if pixel_size <= 0:
+    #         raise ValueError("pixel_size must be positive")
+    #     if pad_blinks_by < 0:
+    #         raise ValueError("pad_blinks_by must be non-negative")
+    #     self._pad_blinks_by = pad_blinks_by                     # ms
 
     def minimum_event_samples(self, sr: float) -> int:
         min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS.values())))
@@ -61,7 +73,7 @@ class BaseDetector(ABC):
         candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
         try:
             # detect blinks
-            candidates = self.detect_blinks(t, x, y, candidates)
+            candidates = self._detect_blinks(t, x, y, candidates)
             # set x and y to nan where blinks are detected
             x_copy, y_copy = x.copy(), y.copy()
             x_copy[candidates == cnst.EVENTS.BLINK] = np.nan
@@ -76,11 +88,11 @@ class BaseDetector(ABC):
         return candidates
 
     @final
-    def detect_blinks(self,
-                      t: np.ndarray,
-                      x: np.ndarray,
-                      y: np.ndarray,
-                      candidates: np.ndarray) -> np.ndarray:
+    def _detect_blinks(self,
+                       t: np.ndarray,
+                       x: np.ndarray,
+                       y: np.ndarray,
+                       candidates: np.ndarray) -> np.ndarray:
         """
         Detects blink candidates in the given gaze data:
         1. Identifies samples where x or y are missing as blinks
