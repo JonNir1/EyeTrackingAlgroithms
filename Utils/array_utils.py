@@ -57,6 +57,41 @@ def get_chunk_indices(arr) -> List[np.ndarray]:
     return chunk_indices
 
 
+def merge_close_chunks(arr: np.ndarray, min_size: int, default_value: float) -> np.ndarray:
+    """
+    1. Splits the array into chunks of identical values
+    2. Sets chunks that are shorter than the minimum size to default value
+    3. Merges consecutive chunks of the same value into a single chunk with that value
+    :return: array of merged chunks
+    """
+    if not is_one_dimensional(arr):
+        raise ValueError("arr must be one-dimensional")
+    if min_size < 0:
+        raise ValueError("min_size must be at non-negative")
+    arr_copy = arr.copy()
+    # set short chunks to default value
+    chunk_indices = get_chunk_indices(arr_copy)
+    for chunk_idxs in chunk_indices:
+        if len(chunk_idxs) < min_size:
+            arr_copy[chunk_idxs] = default_value
+
+    # merge close chunks of the same type
+    chunk_indices = get_chunk_indices(arr_copy)  # re-calculate chunks after setting short chunks to default value
+    for i, middle_chunk_idxs in enumerate(chunk_indices):
+        if i == 0 or i == len(chunk_indices) - 1:
+            # don't attempt to merge the first or last chunk
+            continue
+        if len(middle_chunk_idxs) >= min_size:
+            # skip chunks that are long enough
+            continue
+        prev_chunk_value = arr_copy[chunk_indices[i - 1][-1]]  # value of the previous chunk
+        next_chunk_value = arr_copy[chunk_indices[i + 1][0]]  # value of the next chunk
+        if prev_chunk_value == next_chunk_value:
+            # set the middle chunk to the same value as the previous and next chunks (essentially merging them)
+            arr_copy[middle_chunk_idxs] = prev_chunk_value
+    return arr_copy
+
+
 def find_sequences_in_sparse_array(sparse_array: np.ndarray, sequence: np.ndarray) -> List[Tuple[int, int]]:
     """
     Finds all occurrences of the given sequence in the given sparse array, while ignoring intermediate NaN values.

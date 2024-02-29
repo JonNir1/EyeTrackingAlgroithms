@@ -97,6 +97,28 @@ class TestIOUtils(unittest.TestCase):
         exp = [np.array([i]) for i in range(10)]
         self.assertTrue(all([np.array_equal(o, e, equal_nan=True) for o, e in zip(obs, exp)]))
 
+    def test_merge_close_chunks(self):
+        MIN_SIZE = 2
+        DEF_VAL = 0
+
+        arr = np.array([])
+        self.assertTrue(np.array_equal(arr_utils.merge_close_chunks(arr, MIN_SIZE, DEF_VAL), arr))
+
+        arr = np.array([1] * 1)
+        expected = np.array([DEF_VAL] * 1)
+        res = arr_utils.merge_close_chunks(arr, MIN_SIZE, DEF_VAL)
+        self.assertTrue(np.array_equal(res, expected))
+
+        arr = np.array([1] * 3 + [2] * 1 + [1] * 2)
+        expected = np.array([1] * 6)
+        res = arr_utils.merge_close_chunks(arr, MIN_SIZE, DEF_VAL)
+        self.assertTrue(np.array_equal(res, expected))
+
+        arr = np.array([1] * 3 + [2] * 1 + [5] * 2)
+        expected = np.array([1] * 3 + [0] * 1 + [5] * 2)
+        res = arr_utils.merge_close_chunks(arr, MIN_SIZE, DEF_VAL)
+        self.assertTrue(np.array_equal(res, expected))
+
     def test_find_sequences_in_sparse_array(self):
         seq = np.array([1, 2, 3])
 
