@@ -27,8 +27,8 @@ def temporal_derivative(f, t, deg: int = 1, time_coeff: float = cnst.MILLISECOND
         raise ValueError("`time_coeff` must be positive")
     if deg == 0:
         return f
-    df = np.concatenate([[0], np.diff(f)])  # first element is 0
-    dt = np.concatenate([[np.nan], np.diff(t)])  # first element is NaN
+    df = np.concatenate([np.array([0]), np.diff(f)])  # first element is 0
+    dt = np.concatenate([np.array([np.nan]), np.diff(t)])  # first element is NaN
     df_dt = np.divide(df, dt) * time_coeff
     return temporal_derivative(df_dt, t, deg=deg-1, time_coeff=time_coeff)
 
