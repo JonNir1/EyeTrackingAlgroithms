@@ -57,26 +57,22 @@ def get_chunk_indices(arr) -> List[np.ndarray]:
     return chunk_indices
 
 
-def merge_close_chunks(arr: np.ndarray, min_size: int, default_value: float) -> np.ndarray:
+def merge_close_chunks(arr: np.ndarray, min_size: int, default_value) -> np.ndarray:
     """
     1. Splits the array into chunks of identical values
-    2. Sets chunks that are shorter than the minimum size to default value
-    3. Merges consecutive chunks of the same value into a single chunk with that value
+    2. If two chunks of the same value are separated by a chunk of a different value, and the middle chunk is shorter
+         than `min_size`, it is set to the same value as the other two chunks
+    3. Sets chunks that are shorter than the minimum size to default value
     :return: array of merged chunks
     """
     if not is_one_dimensional(arr):
         raise ValueError("arr must be one-dimensional")
     if min_size < 0:
         raise ValueError("min_size must be at non-negative")
-    arr_copy = arr.copy()
-    # set short chunks to default value
-    chunk_indices = get_chunk_indices(arr_copy)
-    for chunk_idxs in chunk_indices:
-        if len(chunk_idxs) < min_size:
-            arr_copy[chunk_idxs] = default_value
 
-    # merge close chunks of the same type
-    chunk_indices = get_chunk_indices(arr_copy)  # re-calculate chunks after setting short chunks to default value
+    arr_copy = arr.copy()
+    # merge consecutive chunks of the same value
+    chunk_indices = get_chunk_indices(arr_copy)
     for i, middle_chunk_idxs in enumerate(chunk_indices):
         if i == 0 or i == len(chunk_indices) - 1:
             # don't attempt to merge the first or last chunk
@@ -89,6 +85,12 @@ def merge_close_chunks(arr: np.ndarray, min_size: int, default_value: float) -> 
         if prev_chunk_value == next_chunk_value:
             # set the middle chunk to the same value as the previous and next chunks (essentially merging them)
             arr_copy[middle_chunk_idxs] = prev_chunk_value
+
+    # set short chunks to default value
+    chunk_indices = get_chunk_indices(arr_copy)     # re-calculating the chunks after the previous step
+    for chunk_idxs in chunk_indices:
+        if len(chunk_idxs) < min_size:
+            arr_copy[chunk_idxs] = default_value
     return arr_copy
 
 

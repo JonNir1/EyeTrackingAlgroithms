@@ -57,18 +57,17 @@ class NHDetector(BaseDetector):
         self._beta = kwargs.get('beta', self.__DEFAULT_BETA)
         self._detect_high_psos = kwargs.get('detect_high_psos', False)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         # detect noise
         sr = self._calculate_sampling_rate(t)
         v, a = self._calculate_velocity_and_acceleration(x, y, sr)
         is_noise = self._detect_noise(v, a)
 
         # denoise the data
-        x_copy, y_copy, v_copy, a_copy = x.copy(), y.copy(), v.copy(), a.copy()
+        x_copy, y_copy, v_copy = x.copy(), y.copy(), v.copy()
         x_copy[is_noise] = np.nan
         y_copy[is_noise] = np.nan
         v_copy[is_noise] = np.nan
-        a_copy[is_noise] = np.nan
 
         # detect saccades
         peak_threshold = self._find_saccade_peak_threshold(v_copy)  # threshold velocity for detecting saccade-peaks
@@ -86,11 +85,19 @@ class NHDetector(BaseDetector):
         assert not np.any(is_saccades & is_psos), "PSO and saccade overlap"  # sanity  # TODO: remove
 
         # mark events on the candidates array
-        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
+        candidates_copy = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         is_blinks = candidates_copy == cnst.EVENTS.BLINK
         candidates_copy[is_saccades] = cnst.EVENTS.SACCADE
         candidates_copy[is_psos] = cnst.EVENTS.PSO
         candidates_copy[~(is_noise | is_saccades | is_psos | is_blinks)] = cnst.EVENTS.FIXATION
+
+        # save important values to self.data
+        df = self.data[cnst.GAZE]
+        df[cnst.VELOCITY] = v
+        df[cnst.ACCELERATION] = a
+        self.data[cnst.GAZE] = df
+        self.data["saccade_peak_threshold"] = peak_threshold
+        self.data["saccade_onset_threshold"] = onset_threshold
         return candidates_copy
 
     def _calculate_velocity_and_acceleration(self, x: np.ndarray, y: np.ndarray, sr: float) -> (np.ndarray, np.ndarray):

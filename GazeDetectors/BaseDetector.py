@@ -1,5 +1,6 @@
 import traceback
 import numpy as np
+import pandas as pd
 from abc import ABC, abstractmethod
 from typing import final
 
@@ -45,54 +46,45 @@ class BaseDetector(ABC):
         self._viewer_distance = kwargs.get('viewer_distance', self.DEFAULT_VIEWER_DISTANCE)
         self._pixel_size = kwargs.get('pixel_size', self.DEFAULT_PIXEL_SIZE)
         self._pad_blinks_by = kwargs.get('pad_blinks_by', self.DEFAULT_BLINK_PADDING)  # ms
-
-    # def __init__(self,
-    #              missing_value=DEFAULT_MISSING_VALUE,
-    #              viewer_distance: float = DEFAULT_VIEWER_DISTANCE,
-    #              pixel_size: float = DEFAULT_PIXEL_SIZE,
-    #              pad_blinks_by: float = DEFAULT_BLINK_PADDING):
-    #     self._missing_value = np.nan if missing_value is None else missing_value
-    #     self._viewer_distance = viewer_distance if viewer_distance is not None else self.DEFAULT_VIEWER_DISTANCE
-    #     if self._viewer_distance <= 0:
-    #         raise ValueError("viewer_distance must be positive")
-    #     self._pixel_size = pixel_size if pixel_size is not None else self.DEFAULT_PIXEL_SIZE
-    #     if pixel_size <= 0:
-    #         raise ValueError("pixel_size must be positive")
-    #     if pad_blinks_by < 0:
-    #         raise ValueError("pad_blinks_by must be non-negative")
-    #     self._pad_blinks_by = pad_blinks_by                     # ms
-
-    def minimum_event_samples(self, sr: float) -> int:
-        min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS.values())))
-        ns = self._calc_num_samples(min_event_duration, sr)
-        return max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
+        self._sr = np.nan   # sampling rate
+        self._candidates = None  # event candidates
+        self.data: dict = {}  # gaze data
 
     @final
-    def detect(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def detect(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> dict:
         t, x, y = self._verify_inputs(t, x, y)
-        candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
+        self._candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
+        self.data[cnst.GAZE] = pd.DataFrame({cnst.T: t, cnst.X: x, cnst.Y: y, cnst.EVENT_TYPE: self._candidates})
         try:
-            # detect blinks
-            candidates = self._detect_blinks(t, x, y, candidates)
-            # set x and y to nan where blinks are detected
+            self._sr = self._calculate_sampling_rate(t)
+
+            # detect blinks and remove blink samples from the data
+            self._candidates = self._detect_blinks(t, x, y)
             x_copy, y_copy = x.copy(), y.copy()
-            x_copy[candidates == cnst.EVENTS.BLINK] = np.nan
-            y_copy[candidates == cnst.EVENTS.BLINK] = np.nan
-            # detect gaze events
-            candidates = self._detect_impl(t, x_copy, y_copy, candidates)
-            sr = self._calculate_sampling_rate(t)
-            candidates = self._merge_consecutive_chunks(candidates, sr)
+            x_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
+            y_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
+
+            # detect gaze-event candidates
+            candidates = self._detect_impl(t, x, y)
+            self._candidates = self._merge_close_events(candidates)
+
+            # add important values to self.data
+            self.data[cnst.SAMPLING_RATE] = self._sr
+            self.data[cnst.GAZE][cnst.EVENT_TYPE] = self._candidates    # update the event-type column
         except ValueError as e:
             trace = traceback.format_exc()
             print(f"Failed to detect gaze-event candidates:\t{e.__class__.__name__}\n\t{trace}")
-        return candidates
+        return self.data
+
+    @abstractmethod
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        raise NotImplementedError
 
     @final
     def _detect_blinks(self,
                        t: np.ndarray,
                        x: np.ndarray,
-                       y: np.ndarray,
-                       candidates: np.ndarray) -> np.ndarray:
+                       y: np.ndarray) -> np.ndarray:
         """
         Detects blink candidates in the given gaze data:
         1. Identifies samples where x or y are missing as blinks
@@ -103,36 +95,27 @@ class BaseDetector(ABC):
         :param t: timestamps in milliseconds
         :param x: x-coordinates
         :param y: y-coordinates
-        :param candidates: array of event candidates
 
-        :return: array of blink candidates
+        :return: array of candidates
         """
-        if len(candidates) != len(t) or len(candidates) != len(x) or len(candidates) != len(y):
-            raise ValueError("arrays t, x, y and candidates must have the same length")
+        candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
 
         # identify samples where x or y are missing as blinks
         is_missing_x = np.array([self._is_missing_value(xi) for xi in x])
         is_missing_y = np.array([self._is_missing_value(yi) for yi in y])
         candidates[is_missing_x | is_missing_y] = cnst.EVENTS.BLINK
-
-        # ignore short blinks and merge consecutive blinks
-        sr = self._calculate_sampling_rate(t)
-        candidates = self._merge_consecutive_chunks(candidates, sr)
+        candidates = self._merge_close_events(candidates)  # ignore short blinks and merge consecutive blinks
 
         # pad blinks by the given amount
         if self._pad_blinks_by == 0:
             return candidates
-        pad_samples = self._calc_num_samples(self._pad_blinks_by, sr)
+        pad_samples = self._calc_num_samples(self._pad_blinks_by, self._sr)
         for i, c in enumerate(candidates):
             if c == cnst.EVENTS.BLINK:
                 start = max(0, i - pad_samples)
                 end = min(len(candidates), i + pad_samples)
                 candidates[start:end] = cnst.EVENTS.BLINK
         return candidates
-
-    @abstractmethod
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
 
     def _verify_inputs(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
         if not arr_utils.is_one_dimensional(t):
@@ -167,41 +150,19 @@ class BaseDetector(ABC):
             raise RuntimeError("Error calculating sampling rate")
         return sr
 
-    def _merge_consecutive_chunks(self, candidates: np.ndarray, sr: float) -> np.ndarray:
+    def _merge_close_events(self, candidates) -> np.ndarray:
         """
-        1. Splits the candidates array into chunks of identical values
-        2. Sets chunks that are shorter than the minimum event duration to cnst.EVENTS.UNDEFINED
-        3. Merges consecutive chunks of the same type into a single chunk with the same type
-
-        :param candidates: array of event candidates
-        :param sr: sampling rate in Hz
-
-        :return: array of merged event candidates
+        1. Splits the candidates array into chunks of identical event-types
+        2. If two chunks of the same event-type are separated by a chunk of a different event-type, and the middle
+            chunk is shorter than the minimum event duration, it is set to the same event-type as the other two chunks
+        3. Sets chunks that are shorter than the minimum event duration to cnst.EVENTS.UNDEFINED
         """
-        min_samples = self.minimum_event_samples(sr)
-        cand_copy = np.asarray(candidates).copy()
-
-        # set short chunks to undefined
-        chunk_indices = arr_utils.get_chunk_indices(candidates)
-        for chunk_idxs in chunk_indices:
-            if len(chunk_idxs) < min_samples:
-                cand_copy[chunk_idxs] = cnst.EVENTS.UNDEFINED
-
-        # merge consecutive events of the same type
-        chunk_indices = arr_utils.get_chunk_indices(candidates)  # re-calculate chunks after setting short chunks to undefined
-        for i, middle_chunk_idxs in enumerate(chunk_indices):
-            if i == 0 or i == len(chunk_indices) - 1:
-                # don't attempt to merge the first or last chunk
-                continue
-            if len(middle_chunk_idxs) >= min_samples:
-                # skip chunks that are long enough
-                continue
-            prev_chunk_value = cand_copy[chunk_indices[i - 1][-1]]  # value of the previous chunk
-            next_chunk_value = cand_copy[chunk_indices[i + 1][0]]  # value of the next chunk
-            if prev_chunk_value == next_chunk_value:
-                # set the middle chunk to the same value as the previous and next chunks (essentially merging them)
-                cand_copy[middle_chunk_idxs] = prev_chunk_value
-        return cand_copy
+        # calculate number of samples in the minimum event duration
+        min_event_duration = min(list(map(lambda tup: tup[0], cnfg.EVENT_DURATIONS.values())))
+        ns = self._calc_num_samples(min_event_duration, self._sr)
+        min_samples = max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
+        cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENTS.UNDEFINED)
+        return cand
 
     @staticmethod
     def _calc_num_samples(duration: float, sampling_rate: float) -> int:

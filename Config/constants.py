@@ -13,6 +13,7 @@ MICROSECONDS_PER_SECOND = MICROSECONDS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
 SUBJECT = "subject"
 SUBJECT_ID = f"{SUBJECT}_id"
 TRIAL = "trial"
+GAZE = "gaze"
 TIME = "time"
 TRIGGER = "trigger"
 TARGET = "target"
@@ -24,6 +25,8 @@ MILLISECONDS = "milliseconds"
 MICROSECONDS = "microseconds"
 EVENT_TYPE = "event_type"
 SAMPLING_RATE = "sampling_rate"
+VELOCITY = "velocity"
+ACCELERATION = "acceleration"
 
 T, X, Y = 't', 'x', 'y'
 LEFT = "left"

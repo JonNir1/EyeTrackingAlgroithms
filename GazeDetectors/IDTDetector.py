@@ -38,10 +38,9 @@ class IDTDetector(BaseDetector):
         self._dispersion_threshold = kwargs.get('dispersion_threshold', self.__DEFAULT_DISPERSION_THRESHOLD)
         self._window_duration = kwargs.get('window_duration', self.__DEFAULT_WINDOW_DURATION)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         ws = self._calculate_window_size(t)
-
         start_idx, end_idx = 0, ws
         is_fixation = False
         while end_idx <= len(t):
@@ -49,7 +48,7 @@ class IDTDetector(BaseDetector):
             if dispersion < self._dispersion_threshold:
                 # label all samples in the window as fixation and expand window to the right
                 is_fixation = True
-                candidates_copy[start_idx: end_idx] = cnst.EVENTS.FIXATION
+                candidates[start_idx: end_idx] = cnst.EVENTS.FIXATION
                 end_idx += 1
             elif is_fixation:
                 # start new window in the end of the old one
@@ -58,10 +57,10 @@ class IDTDetector(BaseDetector):
                 is_fixation = False
             else:
                 # label current sample as saccade and start new window in the next sample
-                candidates_copy[start_idx] = cnst.EVENTS.SACCADE
+                candidates[start_idx] = cnst.EVENTS.SACCADE
                 start_idx += 1
                 end_idx += 1
-        return candidates_copy
+        return candidates
 
     def _calculate_window_size(self, t: np.ndarray) -> int:
         sr = self._calculate_sampling_rate(t)

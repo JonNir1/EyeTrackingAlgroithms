@@ -39,23 +39,30 @@ class EngbertDetector(BaseDetector):
         self._lambda = kwargs.get('lambdaa', self.__DEFAULT_LAMBDAA)
         self._window_size = kwargs.get('window_size', self.__DEFAULT_WINDOW_SIZE)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, candidates: np.ndarray) -> np.ndarray:
-        candidates_copy = np.asarray(candidates, dtype=cnst.EVENTS).copy()
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
 
         # Calculate the velocity of the gaze data in both axes
-        sr = self._calculate_sampling_rate(t)
-        x_velocity = self._calculate_axial_velocity(x, sr)
+        x_velocity = self._calculate_axial_velocity(x)
         thresh_x = self._median_standard_deviation(x_velocity) * self._lambda
-        y_velocity = self._calculate_axial_velocity(y, sr)
+        y_velocity = self._calculate_axial_velocity(y)
         thresh_y = self._median_standard_deviation(y_velocity) * self._lambda
 
         # Identify saccade candidates as samples with velocity greater than the noise threshold
         ellipse = (x_velocity / thresh_x) ** 2 + (y_velocity / thresh_y) ** 2
-        candidates_copy[ellipse < 1] = cnst.EVENTS.FIXATION
-        candidates_copy[ellipse >= 1] = cnst.EVENTS.SACCADE
-        return candidates_copy
+        candidates[ellipse < 1] = cnst.EVENTS.FIXATION
+        candidates[ellipse >= 1] = cnst.EVENTS.SACCADE
 
-    def _calculate_axial_velocity(self, arr, sr) -> np.ndarray:
+        # add important values to self.data
+        df = self.data[cnst.GAZE]
+        df[f"{cnst.X}_{cnst.VELOCITY}"] = x_velocity
+        df[f"{cnst.Y}_{cnst.VELOCITY}"] = y_velocity
+        self.data[cnst.GAZE] = df
+        self.data[f'thresh_V{cnst.X}'] = thresh_x
+        self.data[f'thresh_V{cnst.Y}'] = thresh_y
+        return candidates
+
+    def _calculate_axial_velocity(self, arr) -> np.ndarray:
         """
         Calculates the velocity along a single axis, based on the algorithm described in the original paper:
         1. Sum values in a window of size window_size, *before* the current sample:
@@ -75,7 +82,7 @@ class EngbertDetector(BaseDetector):
             sum_before = np.sum(arr_copy[t - ws:t])
             sum_after = np.sum(arr_copy[t + 1:t + ws + 1])
             diff = sum_after - sum_before
-            velocities[t] = diff * (sr / (2 * (ws + 1)))
+            velocities[t] = diff * (self._sr / (2 * (ws + 1)))
         return velocities
 
     @override
