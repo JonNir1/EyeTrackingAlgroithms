@@ -28,15 +28,15 @@ class EventFactory(ABC):
             return BlinkEvent(timestamps=t)
         if et == cnst.EVENTS.SACCADE:
             return SaccadeEvent(timestamps=t,
-                                x=event_data.get("x", None),
-                                y=event_data.get("y", None),
-                                viewer_distance=event_data.get("viewer_distance", None))
+                                x=event_data.get("x", np.array([])),
+                                y=event_data.get("y", np.array([])),
+                                viewer_distance=event_data.get("viewer_distance", np.nan))
         if et == cnst.EVENTS.FIXATION:
             return FixationEvent(timestamps=t,
-                                 x=event_data.get("x", None),
-                                 y=event_data.get("y", None),
-                                 pupil=event_data.get("pupil", None),
-                                 viewer_distance=event_data.get("viewer_distance", None))
+                                 x=event_data.get("x", np.array([])),
+                                 y=event_data.get("y", np.array([])),
+                                 pupil=event_data.get("pupil", np.array([])),
+                                 viewer_distance=event_data.get("viewer_distance", np.nan))
         raise ValueError(f"Invalid event type: {et}")
 
     @staticmethod
