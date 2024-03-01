@@ -131,11 +131,13 @@ class BaseDetector(ABC):
             raise ValueError("t, x and y must have the same length")
         return t, x, y
 
+    @final
     def _is_missing_value(self, value: float) -> bool:
         if np.isnan(self._missing_value):
             return np.isnan(value)
         return value == self._missing_value
 
+    @final
     def _merge_close_events(self, candidates) -> np.ndarray:
         """
         1. Splits the candidates array into chunks of identical event-types
@@ -151,6 +153,7 @@ class BaseDetector(ABC):
         cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENTS.UNDEFINED)
         return cand
 
+    @final
     def _calc_num_samples(self, duration: float) -> int:
         if not np.isfinite(duration) or duration < 0:
             raise ValueError("duration must be a non-negative finite number")
