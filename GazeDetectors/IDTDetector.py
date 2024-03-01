@@ -65,9 +65,9 @@ class IDTDetector(BaseDetector):
     def _calculate_window_size(self, t: np.ndarray) -> int:
         ws = self._calc_num_samples(self._window_duration)
         if ws < 2:
-            raise ValueError("window_duration is too short for the given sampling rate")
+            raise ValueError(f"window_duration={ws} is too short for the given sampling rate")
         if ws >= len(t):
-            raise ValueError("window_duration is too long for the given input data")
+            raise ValueError(f"window_duration={ws} is too long for the given input data")
         return ws
 
     def _calculate_dispersion(self, x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -> float:
