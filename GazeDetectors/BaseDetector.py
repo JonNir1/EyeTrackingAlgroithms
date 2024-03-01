@@ -136,20 +136,6 @@ class BaseDetector(ABC):
             return np.isnan(value)
         return value == self._missing_value
 
-    @staticmethod
-    @final
-    def _calculate_sampling_rate(ms: np.ndarray) -> float:
-        """
-        Calculates the sampling rate of the given timestamps in Hz.
-        :param ms: timestamps in milliseconds (floating-point, not integer)
-        """
-        if len(ms) < 2:
-            raise ValueError("timestamps must be of length at least 2")
-        sr = cnst.MILLISECONDS_PER_SECOND / np.median(np.diff(ms))
-        if not np.isfinite(sr):
-            raise RuntimeError("Error calculating sampling rate")
-        return sr
-
     def _merge_close_events(self, candidates) -> np.ndarray:
         """
         1. Splits the candidates array into chunks of identical event-types
@@ -171,3 +157,17 @@ class BaseDetector(ABC):
         if not np.isfinite(self._sr) or self._sr <= 0:
             raise ValueError("sampling rate must be a positive finite number")
         return round(duration * self._sr / cnst.MILLISECONDS_PER_SECOND)
+
+    @staticmethod
+    @final
+    def _calculate_sampling_rate(ms: np.ndarray) -> float:
+        """
+        Calculates the sampling rate of the given timestamps in Hz.
+        :param ms: timestamps in milliseconds (floating-point, not integer)
+        """
+        if len(ms) < 2:
+            raise ValueError("timestamps must be of length at least 2")
+        sr = cnst.MILLISECONDS_PER_SECOND / np.median(np.diff(ms))
+        if not np.isfinite(sr):
+            raise RuntimeError("Error calculating sampling rate")
+        return sr
