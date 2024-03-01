@@ -28,7 +28,7 @@ class NHDetector(BaseDetector):
             5a. Detect samples that are not part of a saccade, PSO or noise
             5b. Ignore fixations that are too short
     """
-    __DEFAULT_FILTER_DURATION = 10  # ms
+    __DEFAULT_FILTER_DURATION = cnfg.EVENT_MAPPING[cnst.EVENTS.SACCADE]["min_duration"] * 2  # default: 10*2 ms
     __DEFAULT_FILTER_POLYORDER = 2
     __DEFAULT_MAX_SACCADE_VELOCITY, __DEFAULT_MAX_SACCADE_ACCELERATION = 1000, 100000  # deg/s, deg/s^2
     __DEFAULT_ALPHA = 0.7   # weight for saccade onset threshold when calculating saccade_offset_threshold
