@@ -60,7 +60,7 @@ class NHDetector(BaseDetector):
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         # detect noise
         sr = self._calculate_sampling_rate(t)
-        v, a = self._calculate_velocity_and_acceleration(x, y, sr)
+        v, a = self._calculate_velocity_and_acceleration(x, y)
         is_noise = self._detect_noise(v, a)
 
         # denoise the data
@@ -100,30 +100,38 @@ class NHDetector(BaseDetector):
         self.data["saccade_onset_threshold"] = onset_threshold
         return candidates_copy
 
-    def _calculate_velocity_and_acceleration(self, x: np.ndarray, y: np.ndarray, sr: float) -> (np.ndarray, np.ndarray):
+    def _calculate_velocity_and_acceleration(self, x: np.ndarray, y: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Calculates the angular velocity and acceleration of the gaze data using SAVGOL filter for denoising.
+        Calculates the 1st and 2nd derivatives of the gaze data, using SAVGOL filter. Then calculates the angular
+        velocity and acceleration from the derivatives.
+
+        Note the original paper calculates the velocity and acceleration using:
+            v = sr * sqrt[(x')^2 + (y')^2] * pixel-to-angle-constant
+            a = sr * sqrt[(x'')^2 + (y'')^2] * pixel-to-angle-constant
+        We use `delta=1/self._sr` when calculating the derivatives, to account for sampling time, so we don't need to
+        multiply by sr when computing `v` and `a`. See more in the scipy documentation and in the following links:
+            - https://stackoverflow.com/q/56168730/8543025
+            - https://github.com/scipy/scipy/issues/9910
+
         :param x: 1D array of x coordinates
         :param y: 1D array of y coordinates
-        :param sr: sampling rate of the data
-        :return: angular velocity and acceleration of each point (first is NaN)
+        :return: angular velocity and acceleration of each point
         """
         pixel_to_angle_constant = vis_utils.pixels_to_visual_angle(1, self._viewer_distance, self._pixel_size)
-        window_size = self._calc_num_samples(self._filter_duration, sr)
-        order = self._filter_polyorder
-        if window_size <= order:
-            raise RuntimeError(f"Cannot compute {order}-order SAVGOL filter with duration {self._filter_duration}ms " +
-                               f"on data with sampling rate {sr}Hz")
+        window_size = self._calc_num_samples(self._filter_duration, self._sr)
+        if window_size <= self._filter_polyorder:
+            raise RuntimeError(f"Cannot compute {self._filter_polyorder}-order SAVGOL filter with duration " +
+                               f"{self._filter_duration}ms on data with sampling rate {self._sr}Hz")
 
-        # calculate angular velocity: v = sr * sqrt((x')^2 + (y')^2) * pixel-to-angle-constant
-        dx = savgol_filter(x, window_size, order, deriv=1)
-        dy = savgol_filter(y, window_size, order, deriv=1)
-        velocity = sr * np.sqrt(dx ** 2 + dy ** 2) * pixel_to_angle_constant
+        # calculate angular velocity (deg/s): v = sqrt((x')^2 + (y')^2) * pixel-to-angle-constant
+        dx = savgol_filter(x, window_size, self._filter_polyorder, deriv=1, delta=1/self._sr)
+        dy = savgol_filter(y, window_size, self._filter_polyorder, deriv=1, delta=1/self._sr)
+        velocity = np.sqrt(dx ** 2 + dy ** 2) * pixel_to_angle_constant
 
-        # calculate angular acceleration: a = sr * sqrt((x'')^2 + (y'')^2) * pixel-to-angle-constant
-        ddx = savgol_filter(x, window_size, order, deriv=2)
-        ddy = savgol_filter(y, window_size, order, deriv=2)
-        acceleration = sr * np.sqrt(ddx ** 2 + ddy ** 2) * pixel_to_angle_constant
+        # calculate angular acceleration (deg/s^2): a = sqrt((x'')^2 + (y'')^2) * pixel-to-angle-constant
+        ddx = savgol_filter(x, window_size, self._filter_polyorder, deriv=2, delta=1/self._sr)
+        ddy = savgol_filter(y, window_size, self._filter_polyorder, deriv=2, delta=1/self._sr)
+        acceleration = np.sqrt(ddx ** 2 + ddy ** 2) * pixel_to_angle_constant
         return velocity, acceleration
 
     def _detect_noise(self, v: np.ndarray, a: np.ndarray) -> np.ndarray:
