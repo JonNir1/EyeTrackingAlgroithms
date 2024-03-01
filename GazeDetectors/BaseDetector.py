@@ -167,8 +167,8 @@ class BaseDetector(ABC):
 
     @staticmethod
     def _calc_num_samples(duration: float, sampling_rate: float) -> int:
-        if duration < 0:
-            raise ValueError("duration must be non-negative")
-        if sampling_rate <= 0:
-            raise ValueError("sampling_rate must be positive")
+        if not np.isfinite(duration) or duration < 0:
+            raise ValueError("duration must be a non-negative finite number")
+        if not np.isfinite(sampling_rate) or sampling_rate <= 0:
+            raise ValueError("sampling_rate must be a positive finite number")
         return round(duration * sampling_rate / cnst.MILLISECONDS_PER_SECOND)
