@@ -64,7 +64,7 @@ class IDTDetector(BaseDetector):
 
     def _calculate_window_size(self, t: np.ndarray) -> int:
         sr = self._calculate_sampling_rate(t)
-        ws = self._calc_num_samples(self._window_duration, sr)
+        ws = self._calc_num_samples(self._window_duration)
         if ws < 2:
             raise ValueError("window_duration is too short for the given sampling rate")
         if ws >= len(t):

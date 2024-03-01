@@ -109,7 +109,7 @@ class BaseDetector(ABC):
         # pad blinks by the given amount
         if self._pad_blinks_by == 0:
             return candidates
-        pad_samples = self._calc_num_samples(self._pad_blinks_by, self._sr)
+        pad_samples = self._calc_num_samples(self._pad_blinks_by)
         for i, c in enumerate(candidates):
             if c == cnst.EVENTS.BLINK:
                 start = max(0, i - pad_samples)
@@ -160,15 +160,14 @@ class BaseDetector(ABC):
         # calculate number of samples in the minimum event duration
         min_event_duration = min([cnfg.EVENT_MAPPING[e]["min_duration"] for e in cnfg.EVENT_MAPPING.keys()
                                   if e != cnst.EVENTS.UNDEFINED])
-        ns = self._calc_num_samples(min_event_duration, self._sr)
+        ns = self._calc_num_samples(min_event_duration)
         min_samples = max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
         cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENTS.UNDEFINED)
         return cand
 
-    @staticmethod
-    def _calc_num_samples(duration: float, sampling_rate: float) -> int:
+    def _calc_num_samples(self, duration: float) -> int:
         if not np.isfinite(duration) or duration < 0:
             raise ValueError("duration must be a non-negative finite number")
-        if not np.isfinite(sampling_rate) or sampling_rate <= 0:
-            raise ValueError("sampling_rate must be a positive finite number")
-        return round(duration * sampling_rate / cnst.MILLISECONDS_PER_SECOND)
+        if not np.isfinite(self._sr) or self._sr <= 0:
+            raise ValueError("sampling rate must be a positive finite number")
+        return round(duration * self._sr / cnst.MILLISECONDS_PER_SECOND)

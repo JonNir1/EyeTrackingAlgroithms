@@ -118,7 +118,7 @@ class NHDetector(BaseDetector):
         :return: angular velocity and acceleration of each point
         """
         pixel_to_angle_constant = vis_utils.pixels_to_visual_angle(1, self._viewer_distance, self._pixel_size)
-        window_size = self._calc_num_samples(self._filter_duration, self._sr)
+        window_size = self._calc_num_samples(self._filter_duration)
         if window_size <= self._filter_polyorder:
             raise RuntimeError(f"Cannot compute {self._filter_polyorder}-order SAVGOL filter with duration " +
                                f"{self._filter_duration}ms on data with sampling rate {self._sr}Hz")
@@ -181,7 +181,7 @@ class NHDetector(BaseDetector):
         # offset threshold (OfT = a * OnT + b * OtT), AND is a local minimum
         # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples prior to saccade onset
         min_fixation_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
-        min_fixation_samples = self._calc_num_samples(min_fixation_duration, sr)
+        min_fixation_samples = self._calc_num_samples(min_fixation_duration)
 
         saccades_info = {}  # peak_idx -> (start_idx, end_idx, offset_threshold)
         for saccade_id, peak_idx in enumerate(is_peak_idxs):
@@ -231,7 +231,7 @@ class NHDetector(BaseDetector):
         """
         # calculate the size of the window where PSO may occur after each saccade
         min_fixation_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
-        min_fixation_samples = self._calc_num_samples(min_fixation_duration, sr)
+        min_fixation_samples = self._calc_num_samples(min_fixation_duration)
 
         # find PSO start & end idxs after each saccade
         saccade_info_list = sorted(saccade_info.items(), key=lambda x: x[0])
