@@ -59,7 +59,6 @@ class NHDetector(BaseDetector):
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         # detect noise
-        sr = self._calculate_sampling_rate(t)
         v, a = self._calculate_velocity_and_acceleration(x, y)
         is_noise = self._detect_noise(v, a)
 
@@ -72,13 +71,13 @@ class NHDetector(BaseDetector):
         # detect saccades
         peak_threshold = self._find_saccade_peak_threshold(v_copy)  # threshold velocity for detecting saccade-peaks
         onset_threshold = np.nanmean(v_copy[v_copy < peak_threshold]) + 3 * np.nanstd(v_copy[v_copy < peak_threshold])  # global saccade-onset threshold velocity
-        saccades_info = self._detect_saccades(v_copy, sr, peak_threshold, onset_threshold)  # peak_idx -> (start_idx, end_idx, offset_threshold)
+        saccades_info = self._detect_saccades(v_copy, peak_threshold, onset_threshold)  # peak_idx -> (start_idx, end_idx, offset_threshold)
         is_saccades = np.zeros(len(t), dtype=bool)
         for _p_idx, (start_idx, end_idx, _) in saccades_info.items():
             is_saccades[start_idx: end_idx] = True
 
         # detect PSOs
-        psos_info = self._detect_psos(v_copy, saccades_info, sr, peak_threshold, onset_threshold)
+        psos_info = self._detect_psos(v_copy, saccades_info, peak_threshold, onset_threshold)
         is_psos = np.zeros(len(t), dtype=bool)
         for start_idx, end_idx in psos_info:
             is_psos[start_idx: end_idx] = True
@@ -157,7 +156,7 @@ class NHDetector(BaseDetector):
             is_noise[start:end] = True
         return is_noise
 
-    def _detect_saccades(self, v: np.ndarray, sr: float, pt: float, ont: float) -> Dict[int, Tuple[int, int, float]]:
+    def _detect_saccades(self, v: np.ndarray, pt: float, ont: float) -> Dict[int, Tuple[int, int, float]]:
         """
         Detects saccades in the gaze data based on the angular velocity:
         1. Detect samples with velocity exceeding the saccade peak threshold (PT)
@@ -167,7 +166,6 @@ class NHDetector(BaseDetector):
         5. Match each saccade peak-idx with its onset-idx, offset-idx and offset-threshold-velocity
 
         :param v: angular velocity of the gaze data
-        :param sr: sampling rate of the data
         :param pt: saccades' peak threshold velocity
         :param ont: saccades' onset threshold velocity
 
@@ -210,7 +208,6 @@ class NHDetector(BaseDetector):
     def _detect_psos(self,
                      v: np.ndarray,
                      saccade_info: Dict[int, Tuple[int, int, float]],
-                     sr: float,
                      pt: float,
                      ont: float) -> List[Tuple[int, int]]:
         """
@@ -223,7 +220,6 @@ class NHDetector(BaseDetector):
 
         :param v: angular velocity of the gaze data
         :param saccade_info: dictionary of saccade peak-idx -> (onset-idx, offset-idx, offset-threshold-velocity)
-        :param sr: sampling rate of the data
         :param pt: saccades' peak threshold velocity (used for determining PSOs' threshold velocity)
         :param ont: saccades' onset threshold velocity (used for determining PSOs' threshold velocity)
 
