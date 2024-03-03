@@ -63,10 +63,11 @@ class NHDetector(BaseDetector):
         is_noise = self._detect_noise(v, a)
 
         # denoise the data
-        x_copy, y_copy, v_copy = x.copy(), y.copy(), v.copy()
+        x_copy, y_copy, v_copy, a_copy = x.copy(), y.copy(), v.copy(), v.copy()
         x_copy[is_noise] = np.nan
         y_copy[is_noise] = np.nan
         v_copy[is_noise] = np.nan
+        a_copy[is_noise] = np.nan
 
         # detect saccades
         peak_threshold = self._find_saccade_peak_threshold(v_copy)  # threshold velocity for detecting saccade-peaks
