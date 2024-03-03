@@ -76,8 +76,7 @@ class NHDetector(BaseDetector):
         a_copy[is_noise] = np.nan
 
         # detect saccades
-        peak_threshold = self._find_saccade_peak_threshold(v_copy)  # threshold velocity for detecting saccade-peaks
-        onset_threshold = np.nanmean(v_copy[v_copy < peak_threshold]) + 3 * np.nanstd(v_copy[v_copy < peak_threshold])  # global saccade-onset threshold velocity
+        peak_threshold, onset_threshold = self._estimate_saccade_thresholds(v_copy)  # global velocity thresholds
         saccades_info = self._detect_saccades(v_copy, peak_threshold, onset_threshold)  # peak_idx -> (start_idx, end_idx, offset_threshold)
         is_saccades = np.zeros(len(t), dtype=bool)
         for _p_idx, (start_idx, end_idx, _) in saccades_info.items():
@@ -271,7 +270,10 @@ class NHDetector(BaseDetector):
             pso_idxs.append((pso_start_idx, pso_end_idx))
         return pso_idxs
 
-    def _find_saccade_peak_threshold(self, v: np.ndarray, max_iters: int = 100, enforce_min_dur: bool = True) -> float:
+    def _estimate_saccade_thresholds(self,
+                                     v: np.ndarray,
+                                     max_iters: int = 100,
+                                     enforce_min_dur: bool = True) -> (float, float):
         """
         Finds threshold velocity (PT) for detecting saccade peaks, using an iterative algorithm:
         1. Start with PT_1 = max(300, 250, 200, 150, 100) s.t. there is at least 1 sample with higher velocity (deg / s)
@@ -300,6 +302,7 @@ class NHDetector(BaseDetector):
                 pt = np.median(start_criteria)
 
         # iteratively update PT value until convergence
+        is_below_pt = v <= pt
         pt_prev = 0
         while abs(pt - pt_prev) > 1 and max_iters > 0:
             max_iters -= 1
@@ -322,7 +325,9 @@ class NHDetector(BaseDetector):
             pt = mu + 6 * sigma
         if max_iters == 0:
             raise RuntimeError("Failed to converge on PT_1 value for saccade detection")
-        return pt
+
+        ont = np.nanmean(v[is_below_pt]) + 3 * np.nanstd(v[is_below_pt])
+        return pt, ont
 
     @staticmethod
     def __find_local_minimum_index(arr: np.ndarray, idx: int, min_thresh=np.inf, move_back=False) -> int:
