@@ -162,6 +162,65 @@ class NHDetector(BaseDetector):
             is_noise[start:end] = True
         return is_noise
 
+    def _estimate_saccade_thresholds(self,
+                                     v: np.ndarray,
+                                     max_iters: int = 100,
+                                     enforce_min_dur: bool = True) -> (float, float):
+        """
+        Finds threshold velocity (PT) for detecting saccade peaks, using an iterative algorithm:
+        1. Start with PT_1 = max(300, 250, 200, 150, 100) s.t. there is at least 1 sample with higher velocity (deg / s)
+        2. Find indices of samples with velocity below PT
+        3. If enforce_min_dur is True, ignores samples that aren't part of a chunk of length >= least min_fixation_samples
+        4. Calculate mean & std of velocity below PT
+        5. Update PT = mean + 6 * std
+        6. Repeat steps 2-5 until PT converges
+
+        :param v: angular velocity of the gaze data
+        :param max_iters: maximum number of iterations
+        :param enforce_min_dur: if true, calculates thresholds only based on chunks of consecutive samples that are
+            longer than the minimum duration of a fixation. This is meant to help convergence of the peak threshold.
+            See more details in https://shorturl.at/wyCH7.
+
+        :return: the threshold velocity for detecting saccade peaks
+        """
+        # find the starting PT value, by making sure there are at least 1 peak with higher velocity
+        start_criteria = np.arange(300, 74, -25)
+        pt = start_criteria[0]
+        for i, pt in enumerate(start_criteria):
+            if any(v > pt):
+                break
+            if i == len(start_criteria) - 1:
+                # raise RuntimeError("Could not find a suitable PT_1 value for saccade detection")
+                pt = np.median(start_criteria)
+
+        # iteratively update PT value until convergence
+        is_below_pt = v <= pt
+        pt_prev = 0
+        while abs(pt - pt_prev) > 1 and max_iters > 0:
+            max_iters -= 1
+            pt_prev = pt
+
+            # find indices of samples with velocity below PT
+            is_below_pt = v <= pt
+            if enforce_min_dur:
+                chunks_below_pt = [ch for ch in arr_utils.get_chunk_indices(is_below_pt)
+                                   if is_below_pt[ch[0]] and len(ch) >= self._minimum_fixation_samples]
+                # calc number of samples to ignore at the edges of each chunk (to avoid contamination from saccades)
+                num_edge_idxs = self._calc_num_samples(cnfg.EVENT_MAPPING[cnst.EVENTS.SACCADE]["min_duration"] // 3)
+                chunks_below_pt = [ch[num_edge_idxs: -num_edge_idxs] for ch in chunks_below_pt]
+                is_below_pt = np.concatenate(chunks_below_pt)
+
+            # calculate mean & std of velocity below PT
+            mu = np.nanmean(v[is_below_pt])
+            sigma = np.nanstd(v[is_below_pt])
+            # update PT
+            pt = mu + 6 * sigma
+        if max_iters == 0:
+            raise RuntimeError("Failed to converge on PT_1 value for saccade detection")
+
+        ont = np.nanmean(v[is_below_pt]) + 3 * np.nanstd(v[is_below_pt])
+        return pt, ont
+
     def _detect_saccades(self, v: np.ndarray, pt: float, ont: float) -> Dict[int, Tuple[int, int, float]]:
         """
         Detects saccades in the gaze data based on the angular velocity:
@@ -269,65 +328,6 @@ class NHDetector(BaseDetector):
             # save PSO info
             pso_idxs.append((pso_start_idx, pso_end_idx))
         return pso_idxs
-
-    def _estimate_saccade_thresholds(self,
-                                     v: np.ndarray,
-                                     max_iters: int = 100,
-                                     enforce_min_dur: bool = True) -> (float, float):
-        """
-        Finds threshold velocity (PT) for detecting saccade peaks, using an iterative algorithm:
-        1. Start with PT_1 = max(300, 250, 200, 150, 100) s.t. there is at least 1 sample with higher velocity (deg / s)
-        2. Find indices of samples with velocity below PT
-        3. If enforce_min_dur is True, ignores samples that aren't part of a chunk of length >= least min_fixation_samples
-        4. Calculate mean & std of velocity below PT
-        5. Update PT = mean + 6 * std
-        6. Repeat steps 2-5 until PT converges
-
-        :param v: angular velocity of the gaze data
-        :param max_iters: maximum number of iterations
-        :param enforce_min_dur: if true, calculates thresholds only based on chunks of consecutive samples that are
-            longer than the minimum duration of a fixation. This is meant to help convergence of the peak threshold.
-            See more details in https://shorturl.at/wyCH7.
-
-        :return: the threshold velocity for detecting saccade peaks
-        """
-        # find the starting PT value, by making sure there are at least 1 peak with higher velocity
-        start_criteria = np.arange(300, 74, -25)
-        pt = start_criteria[0]
-        for i, pt in enumerate(start_criteria):
-            if any(v > pt):
-                break
-            if i == len(start_criteria) - 1:
-                # raise RuntimeError("Could not find a suitable PT_1 value for saccade detection")
-                pt = np.median(start_criteria)
-
-        # iteratively update PT value until convergence
-        is_below_pt = v <= pt
-        pt_prev = 0
-        while abs(pt - pt_prev) > 1 and max_iters > 0:
-            max_iters -= 1
-            pt_prev = pt
-
-            # find indices of samples with velocity below PT
-            is_below_pt = v <= pt
-            if enforce_min_dur:
-                chunks_below_pt = [ch for ch in arr_utils.get_chunk_indices(is_below_pt)
-                                   if is_below_pt[ch[0]] and len(ch) >= self._minimum_fixation_samples]
-                # calc number of samples to ignore at the edges of each chunk (to avoid contamination from saccades)
-                num_edge_idxs = self._calc_num_samples(cnfg.EVENT_MAPPING[cnst.EVENTS.SACCADE]["min_duration"] // 3)
-                chunks_below_pt = [ch[num_edge_idxs: -num_edge_idxs] for ch in chunks_below_pt]
-                is_below_pt = np.concatenate(chunks_below_pt)
-
-            # calculate mean & std of velocity below PT
-            mu = np.nanmean(v[is_below_pt])
-            sigma = np.nanstd(v[is_below_pt])
-            # update PT
-            pt = mu + 6 * sigma
-        if max_iters == 0:
-            raise RuntimeError("Failed to converge on PT_1 value for saccade detection")
-
-        ont = np.nanmean(v[is_below_pt]) + 3 * np.nanstd(v[is_below_pt])
-        return pt, ont
 
     @staticmethod
     def __find_local_minimum_index(arr: np.ndarray, idx: int, min_thresh=np.inf, move_back=False) -> int:
