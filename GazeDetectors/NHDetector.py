@@ -275,7 +275,7 @@ class NHDetector(BaseDetector):
     def _find_saccade_peak_threshold(v: np.ndarray, max_iters: int = 100) -> float:
         """
         Finds threshold velocity (PT) for detecting saccade peaks, using an iterative algorithm:
-        1. Start with PT_1 = max(300, 250, 200, 150, 100) s.t. there is at least 1 sample with higher velocity
+        1. Start with PT_1 = max(300, 250, 200, 150, 100) s.t. there is at least 1 sample with higher velocity (deg / s)
         2. Calculate mean & std of velocity below PT
         3. Update PT = mean + 6 * std
         4. Repeat steps 2-3 until PT converges
