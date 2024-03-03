@@ -298,9 +298,11 @@ class NHDetector(BaseDetector):
         while abs(pt - pt_prev) > 1 and max_iters > 0:
             max_iters -= 1
             pt_prev = pt
+            # find indices of samples with velocity below PT
+            is_below_pt = v <= pt
             # calculate mean & std of velocity below PT
-            mu = np.nanmean(v[v <= pt])
-            sigma = np.nanstd(v[v <= pt])
+            mu = np.nanmean(v[is_below_pt])
+            sigma = np.nanstd(v[is_below_pt])
             # update PT
             pt = mu + 6 * sigma
         if max_iters == 0:
