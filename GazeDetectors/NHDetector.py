@@ -57,6 +57,11 @@ class NHDetector(BaseDetector):
         self._beta = kwargs.get('beta', self.__DEFAULT_BETA)
         self._detect_high_psos = kwargs.get('detect_high_psos', False)
 
+    @property
+    def _minimum_fixation_samples(self) -> int:
+        min_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
+        return self._calc_num_samples(min_duration)
+
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         # detect noise
         v, a = self._calculate_velocity_and_acceleration(x, y)
@@ -179,14 +184,11 @@ class NHDetector(BaseDetector):
         # for each peak, find the index of the offset: the first sample following the peak with velocity below the
         # offset threshold (OfT = a * OnT + b * OtT), AND is a local minimum
         # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples prior to saccade onset
-        min_fixation_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
-        min_fixation_samples = self._calc_num_samples(min_fixation_duration)
-
         saccades_info = {}  # peak_idx -> (start_idx, end_idx, offset_threshold)
         for saccade_id, peak_idx in enumerate(is_peak_idxs):
             # calculate velocity in the window prior to saccade onset
             saccade_start_idx = start_idxs[saccade_id]
-            window_start_idx = max(0, saccade_start_idx - min_fixation_samples)
+            window_start_idx = max(0, saccade_start_idx - self._minimum_fixation_samples)
             window = v[window_start_idx: saccade_start_idx]
             window_mean, window_std = np.nanmean(window), np.nanstd(window)
             if window_mean > pt:
@@ -226,10 +228,6 @@ class NHDetector(BaseDetector):
 
         :return: list of PSO start & end idxs
         """
-        # calculate the size of the window where PSO may occur after each saccade
-        min_fixation_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
-        min_fixation_samples = self._calc_num_samples(min_fixation_duration)
-
         # find PSO start & end idxs after each saccade
         saccade_info_list = sorted(saccade_info.items(), key=lambda x: x[0])
         pso_idxs = []
@@ -239,7 +237,7 @@ class NHDetector(BaseDetector):
             v_thresh = max(possible_thresh) if self._detect_high_psos else min(possible_thresh)
 
             # if a window succeeding a saccade has samples above AND below the threshold, there is a PSO
-            window = v[sac_end_idx + 1: sac_end_idx + 1 + min_fixation_samples]
+            window = v[sac_end_idx + 1: sac_end_idx + 1 + self._minimum_fixation_samples]
             is_above = window > v_thresh
             is_below = window < v_thresh
             if not any(is_above) or not any(is_below):
