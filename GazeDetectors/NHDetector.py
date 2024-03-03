@@ -80,7 +80,7 @@ class NHDetector(BaseDetector):
         saccades_info = self._detect_saccades(v_copy, peak_threshold, onset_threshold)  # peak_idx -> (start_idx, end_idx, offset_threshold)
         is_saccades = np.zeros(len(t), dtype=bool)
         for _p_idx, (start_idx, end_idx, _) in saccades_info.items():
-            is_saccades[start_idx: end_idx] = True
+            is_saccades[start_idx: min([end_idx + 1, len(is_saccades)])] = True
 
         # detect PSOs
         psos_info = self._detect_psos(v_copy, saccades_info, peak_threshold, onset_threshold)
@@ -221,7 +221,11 @@ class NHDetector(BaseDetector):
         ont = np.nanmean(v[is_below_pt]) + 3 * np.nanstd(v[is_below_pt])
         return pt, ont
 
-    def _detect_saccades(self, v: np.ndarray, pt: float, ont: float) -> Dict[int, Tuple[int, int, float]]:
+    def _detect_saccades(self,
+                         v: np.ndarray,
+                         pt: float,
+                         ont: float,
+                         min_peak_samples: int = 2) -> Dict[int, Tuple[int, int, float]]:
         """
         Detects saccades in the gaze data based on the angular velocity:
         1. Detect samples with velocity exceeding the saccade peak threshold (PT)
@@ -233,38 +237,34 @@ class NHDetector(BaseDetector):
         :param v: angular velocity of the gaze data
         :param pt: saccades' peak threshold velocity
         :param ont: saccades' onset threshold velocity
+        :param min_peak_samples: minimum number of samples for a peak to be considered a saccade, otherwise ignored
 
         :return: dictionary of saccade peak-idx -> (onset-idx, offset-idx, offset-threshold-velocity)
         """
-        # find saccades' onsets by moving backwards from a peak until finding a local minimum below the onset threshold
-        is_peak_idxs = (np.where(v > pt)[0]).astype(int)
-        start_idxs = [self.__find_local_minimum_index(v, idx, ont, move_back=True) for idx in is_peak_idxs]
+        # find idxs of samples above PT
+        is_above_pt = v > pt
+        chunks_above_pt = [ch for ch in arr_utils.get_chunk_indices(is_above_pt)
+                           if is_above_pt[ch[0]] and len(ch) >= min_peak_samples]   # assume very short peaks are noise
 
-        # for each peak, find the index of the offset: the first sample following the peak with velocity below the
-        # offset threshold (OfT = a * OnT + b * OtT), AND is a local minimum
-        # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples prior to saccade onset
+        # each chunk is a possible saccade, find the onset and offset of each saccade
         saccades_info = {}  # peak_idx -> (start_idx, end_idx, offset_threshold)
-        for saccade_id, peak_idx in enumerate(is_peak_idxs):
-            # calculate velocity in the window prior to saccade onset
-            saccade_start_idx = start_idxs[saccade_id]
-            window_start_idx = max(0, saccade_start_idx - self._minimum_fixation_samples)
-            window = v[window_start_idx: saccade_start_idx]
-            window_mean, window_std = np.nanmean(window), np.nanstd(window)
-            if window_mean > pt:
-                # exclude saccades whose preceding window has mean velocity above PT
-                continue
+        for chunk in chunks_above_pt:
+            onset_idx = self.__find_local_minimum_index(v, chunk[0], ont, move_back=True)
 
-            # calculate offset threshold
-            locally_adaptive_threshold = window_mean + 3 * window_std
-            locally_adaptive_threshold = locally_adaptive_threshold if np.isfinite(locally_adaptive_threshold) else ont  # if window is empty, use global threshold
-            offset_threshold = self._alpha * ont + self._beta * locally_adaptive_threshold
-
-            # find saccade offset index
-            end = is_peak_idxs[saccade_id] + 1
-            end = self.__find_local_minimum_index(v, end, offset_threshold, move_back=False)
+            # calculate the offset threshold: OfT = a * OnT + b * OtT
+            # note the locally adaptive term: OtT = mean(v) + 3 * std(v) for the min_fixation_samples before saccade onset
+            window_start_idx = max(0, onset_idx - self._minimum_fixation_samples)
+            window_vel = v[window_start_idx: onset_idx]
+            local_threshold = np.nanmean(window_vel) + 3 * np.nanstd(window_vel)
+            # check if the local velocity threshold exceeds the peak velocity threshold
+            if np.isfinite(local_threshold) and local_threshold < pt:
+                offset_threshold = self._alpha * ont + self._beta * local_threshold
+            else:
+                offset_threshold = ont
 
             # save saccade info
-            saccades_info[peak_idx] = (saccade_start_idx, end, offset_threshold)
+            offset_idx = self.__find_local_minimum_index(v, chunk[-1] + 1, offset_threshold, move_back=False)
+            saccades_info[chunk[0]] = (onset_idx, offset_idx, offset_threshold)
         return saccades_info
 
     def _detect_psos(self,
