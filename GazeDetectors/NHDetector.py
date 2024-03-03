@@ -78,23 +78,23 @@ class NHDetector(BaseDetector):
         # detect saccades
         peak_threshold, onset_threshold = self._estimate_saccade_thresholds(v_copy)  # global velocity thresholds
         saccades_info = self._detect_saccades(v_copy, peak_threshold, onset_threshold)  # peak_idx -> (start_idx, end_idx, offset_threshold)
-        is_saccades = np.zeros(len(t), dtype=bool)
+        is_saccade = np.zeros(len(t), dtype=bool)
         for _p_idx, (start_idx, end_idx, _) in saccades_info.items():
-            is_saccades[start_idx: min([end_idx + 1, len(is_saccades)])] = True
+            is_saccade[start_idx: min([end_idx + 1, len(is_saccade)])] = True
 
         # detect PSOs
         psos_info = self._detect_psos(v_copy, saccades_info, peak_threshold, onset_threshold)
         is_psos = np.zeros(len(t), dtype=bool)
         for start_idx, end_idx in psos_info:
             is_psos[start_idx: end_idx] = True
-        assert not np.any(is_saccades & is_psos), "PSO and saccade overlap"  # sanity  # TODO: remove
+        assert not np.any(is_saccade & is_psos), "PSO and saccade overlap"  # sanity  # TODO: remove
 
         # mark events on the candidates array
         candidates_copy = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         is_blinks = candidates_copy == cnst.EVENTS.BLINK
-        candidates_copy[is_saccades] = cnst.EVENTS.SACCADE
+        candidates_copy[is_saccade] = cnst.EVENTS.SACCADE
         candidates_copy[is_psos] = cnst.EVENTS.PSO
-        candidates_copy[~(is_noise | is_saccades | is_psos | is_blinks)] = cnst.EVENTS.FIXATION
+        candidates_copy[~(is_noise | is_saccade | is_psos | is_blinks)] = cnst.EVENTS.FIXATION
 
         # save important values to self.data
         df = self.data[cnst.GAZE]
