@@ -231,8 +231,7 @@ class NHDetector(BaseDetector):
         1. Detect samples with velocity exceeding the saccade peak threshold (PT)
         2. Find the 1st sample preceding each peak with velocity below the onset threshold (OnT) and is a local minimum
         3. Find the 1st sample following each peak with velocity below the offset threshold (OfT) and is a local minimum
-        4. Ignore saccades whose preceding samples have mean velocity above PT
-        5. Match each saccade peak-idx with its onset-idx, offset-idx and offset-threshold-velocity
+        4. Match each saccade peak-idx with its onset-idx, offset-idx and offset-threshold-velocity
 
         :param v: angular velocity of the gaze data
         :param pt: saccades' peak threshold velocity
