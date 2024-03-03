@@ -236,8 +236,11 @@ class NHDetector(BaseDetector):
             possible_thresh = [pt, ont, sac_offset_threshold]
             v_thresh = max(possible_thresh) if self._detect_high_psos else min(possible_thresh)
 
+            # PSO's start index is the first sample after a saccade offset
+            pso_start_idx = sac_end_idx + 1
+
             # if a window succeeding a saccade has samples above AND below the threshold, there is a PSO
-            window = v[sac_end_idx + 1: sac_end_idx + 1 + self._minimum_fixation_samples]
+            window = v[pso_start_idx : pso_start_idx + self._minimum_fixation_samples]
             is_above = window > v_thresh
             is_below = window < v_thresh
             if not any(is_above) or not any(is_below):
@@ -246,9 +249,6 @@ class NHDetector(BaseDetector):
             if max(window) > v_thresh:
                 # Ignore PSOs with amplitude exceeding the preceding saccade
                 continue
-
-            # PSO's start index is the first sample after a saccade offset
-            pso_start_idx = sac_end_idx + 1
 
             # PSO's end index is the *first* local minimum after the *last* sample above the threshold
             # PSO must end before the next saccade starts
