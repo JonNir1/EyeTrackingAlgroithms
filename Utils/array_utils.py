@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 from typing import List, Tuple
 
-from Config import constants as cnst
-
 
 def is_one_dimensional(arr) -> bool:
     """ Returns true if the array's shape is (n,) or (1, n) or (n, 1) """
