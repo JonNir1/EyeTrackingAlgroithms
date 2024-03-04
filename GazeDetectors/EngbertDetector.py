@@ -39,7 +39,7 @@ class EngbertDetector(BaseDetector):
         self._lambda = kwargs.get('lambdaa', self.__DEFAULT_LAMBDAA)
         self._window_size = kwargs.get('window_size', self.__DEFAULT_WINDOW_SIZE)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
 
         # Calculate the velocity of the gaze data in both axes

@@ -38,13 +38,13 @@ class IDTDetector(BaseDetector):
         self._dispersion_threshold = kwargs.get('dispersion_threshold', self.__DEFAULT_DISPERSION_THRESHOLD)
         self._window_duration = kwargs.get('window_duration', self.__DEFAULT_WINDOW_DURATION)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         ws = self._calculate_window_size(t)
         start_idx, end_idx = 0, ws
         is_fixation = False
         while end_idx <= len(t):
-            dispersion = self._calculate_dispersion(x, y, start_idx, end_idx, vd, ps)
+            dispersion = self._calculate_dispersion(x, y, start_idx, end_idx)
             if dispersion < self._dispersion_threshold:
                 # label all samples in the window as fixation and expand window to the right
                 is_fixation = True
@@ -70,29 +70,23 @@ class IDTDetector(BaseDetector):
             raise ValueError(f"window_duration={ws} is too long for the given input data")
         return ws
 
-    @staticmethod
-    def _calculate_dispersion(x: np.ndarray,
-                              y: np.ndarray,
-                              start_idx: int,
-                              end_idx: int,
-                              vd: float,
-                              ps: float) -> float:
+    def _calculate_dispersion(self, x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -> float:
         window_x, window_y = x[start_idx: end_idx], y[start_idx: end_idx]
         dispersion = max(window_x) - min(window_x) + max(window_y) - min(window_y)
-        ang_dispersion = vis_utils.pixels_to_visual_angle(num_px=dispersion, d=vd, pixel_size=ps)
+        ang_dispersion = vis_utils.pixels_to_visual_angle(num_px=dispersion,
+                                                          d=self._viewer_distance,
+                                                          pixel_size=self._pixel_size)
         return ang_dispersion
 
-    @staticmethod
-    def _calculate_dispersion_area(x: np.ndarray,
-                                   y: np.ndarray,
-                                   start_idx: int,
-                                   end_idx: int,
-                                   vd: float,
-                                   ps: float) -> float:
+    def _calculate_dispersion_area(self, x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -> float:
         # TODO: check if yields better results
         window_x, window_y = x[start_idx: end_idx + 1], y[start_idx: end_idx + 1]
         horiz_axis = 0.5 * (max(window_x) - min(window_x))
-        ang_horiz_axis = vis_utils.pixels_to_visual_angle(num_px=horiz_axis, d=vd, pixel_size=ps)
+        ang_horiz_axis = vis_utils.pixels_to_visual_angle(num_px=horiz_axis,
+                                                          d=self._viewer_distance,
+                                                          pixel_size=self._pixel_size)
         vert_axis = 0.5 * (max(window_y) - min(window_y))
-        ang_vert_axis = vis_utils.pixels_to_visual_angle(num_px=vert_axis, d=vd, pixel_size=ps)
+        ang_vert_axis = vis_utils.pixels_to_visual_angle(num_px=vert_axis,
+                                                         d=self._viewer_distance,
+                                                         pixel_size=self._pixel_size)
         return np.pi * ang_horiz_axis * ang_vert_axis

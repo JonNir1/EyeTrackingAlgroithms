@@ -62,8 +62,8 @@ class BaseDetector(ABC):
         t, x, y = self._verify_inputs(t, x, y)
         self._candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
         self.data[cnst.GAZE] = pd.DataFrame({cnst.T: t, cnst.X: x, cnst.Y: y, cnst.EVENT_TYPE: self._candidates})
-        self.data[cnst.VIEWER_DISTANCE] = vd
-        self.data[cnst.PIXEL_SIZE] = ps
+        self._viewer_distance = vd
+        self._pixel_size = ps
         try:
             self._sr = self._calculate_sampling_rate(t)
 
@@ -74,19 +74,21 @@ class BaseDetector(ABC):
             y_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
 
             # detect gaze-event candidates
-            candidates = self._detect_impl(t, x, y, vd, ps)
+            candidates = self._detect_impl(t, x, y)
             self._candidates = self._merge_close_events(candidates)
 
             # add important values to self.data
             self.data[cnst.SAMPLING_RATE] = self._sr
             self.data[cnst.GAZE][cnst.EVENT_TYPE] = self._candidates    # update the event-type column
+            self.data[cnst.VIEWER_DISTANCE] = self._viewer_distance
+            self.data[cnst.PIXEL_SIZE] = self._pixel_size
         except ValueError as e:
             trace = traceback.format_exc()
             print(f"Failed to detect gaze-event candidates:\t{e.__class__.__name__}\n\t{trace}")
         return self.data
 
     @abstractmethod
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         raise NotImplementedError
 
     @final
