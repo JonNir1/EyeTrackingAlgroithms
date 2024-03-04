@@ -3,6 +3,7 @@ This file contains the configuration for each specific experiment.
 """
 
 import os
+import numpy as np
 
 import Config.constants as cnst
 from Config.ScreenMonitor import ScreenMonitor
@@ -19,6 +20,12 @@ EVENT_MAPPING = {
     cnst.EVENTS.SMOOTH_PURSUIT: {"label": "Smooth Pursuit", "color": "#fb9a99", "min_duration": 10, "max_duration": 2000},
     cnst.EVENTS.BLINK: {"label": "Blink", "color": "#222222", "min_duration": 10, "max_duration": 2000}
 }
+
+DEFAULT_MISSING_VALUE = np.nan  # default value for missing data
+
+DEFAULT_VIEWER_DISTANCE = 60  # cm
+
+DEFAULT_BLINK_PADDING = 0  # amount (ms) by which to extend before and after each blink
 
 # DIRECTORIES
 BASE_DIR = ""

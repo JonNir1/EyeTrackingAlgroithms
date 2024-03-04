@@ -30,25 +30,23 @@ class BaseDetector(ABC):
     :param pad_blinks_by: the amount of time to pad blinks by, in milliseconds. Default is 0 ms (no padding)
     """
 
-    DEFAULT_MISSING_VALUE = np.nan
-    DEFAULT_VIEWER_DISTANCE = 60  # cm
-    DEFAULT_PIXEL_SIZE = cnfg.SCREEN_MONITOR.pixel_size   # cm
-    DEFAULT_BLINK_PADDING = 0  # ms
-
     def __init__(self, **kwargs):
-        if kwargs.get('viewer_distance', BaseDetector.DEFAULT_VIEWER_DISTANCE) <= 0:
-            raise ValueError("viewer_distance must be positive")
-        if kwargs.get('pixel_size', BaseDetector.DEFAULT_PIXEL_SIZE) <= 0:
-            raise ValueError("pixel_size must be positive")
-        if kwargs.get('pad_blinks_by', BaseDetector.DEFAULT_BLINK_PADDING) < 0:
-            raise ValueError("pad_blinks_by must be non-negative")
-        self._missing_value = kwargs.get('missing_value', self.DEFAULT_MISSING_VALUE)
-        self._viewer_distance = kwargs.get('viewer_distance', self.DEFAULT_VIEWER_DISTANCE)
-        self._pixel_size = kwargs.get('pixel_size', self.DEFAULT_PIXEL_SIZE)
-        self._pad_blinks_by = kwargs.get('pad_blinks_by', self.DEFAULT_BLINK_PADDING)  # ms
-        self._sr = np.nan   # sampling rate
+        self._missing_value = kwargs.get('missing_value', cnfg.DEFAULT_MISSING_VALUE)
+        self._sr = np.nan  # sampling rate
         self._candidates = None  # event candidates
         self.data: dict = {}  # gaze data
+
+        self._viewer_distance = kwargs.get('viewer_distance', cnfg.DEFAULT_VIEWER_DISTANCE)  # cm
+        if self._viewer_distance <= 0:
+            raise ValueError("viewer_distance must be positive")
+
+        self._pixel_size = kwargs.get('pixel_size', cnfg.SCREEN_MONITOR.pixel_size)  # cm
+        if self._pixel_size <= 0:
+            raise ValueError("pixel_size must be positive")
+
+        self._pad_blinks_by = kwargs.get('pad_blinks_by', cnfg.DEFAULT_BLINK_PADDING)  # ms
+        if self._pad_blinks_by < 0:
+            raise ValueError("pad_blinks_by must be non-negative")
 
     @final
     def detect(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> dict:
