@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from typing import final
 
-import Config.experiment_config as cnfg
 import Utils.pixel_utils as pixel_utils
 import Utils.visual_angle_utils as visang_utils
 from GazeEvents.BaseEvent import BaseEvent
