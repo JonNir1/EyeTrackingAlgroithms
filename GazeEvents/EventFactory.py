@@ -5,11 +5,11 @@ from abc import ABC
 from typing import List
 
 import Config.constants as cnst
+import Utils.array_utils as arr_utils
 from GazeEvents.BaseEvent import BaseEvent
 from GazeEvents.BlinkEvent import BlinkEvent
 from GazeEvents.FixationEvent import FixationEvent
 from GazeEvents.SaccadeEvent import SaccadeEvent
-import Utils.array_utils as arr_utils
 
 
 class EventFactory(ABC):
