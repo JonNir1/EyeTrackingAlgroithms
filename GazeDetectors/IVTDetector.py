@@ -29,7 +29,7 @@ class IVTDetector(BaseDetector):
             raise ValueError("velocity_threshold must be positive")
         self._velocity_threshold = kwargs.get('velocity_threshold', self.__DEFAULT_VELOCITY_THRESHOLD)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         angular_velocities = vis_utils.calculates_angular_velocities_from_pixels(xs=x, ys=y, timestamps=t,
                                                                                  d=self._viewer_distance,

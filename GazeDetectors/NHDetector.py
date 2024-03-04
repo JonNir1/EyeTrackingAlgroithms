@@ -67,7 +67,7 @@ class NHDetector(BaseDetector):
         min_duration = cnfg.EVENT_MAPPING[cnst.EVENTS.FIXATION]["min_duration"]
         return self._calc_num_samples(min_duration)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
         # detect noise
         v, a = self._calculate_velocity_and_acceleration(x, y)
         is_noise = self._detect_noise(v, a)

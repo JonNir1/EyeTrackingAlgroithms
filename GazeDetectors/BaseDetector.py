@@ -49,10 +49,21 @@ class BaseDetector(ABC):
             raise ValueError("pad_blinks_by must be non-negative")
 
     @final
-    def detect(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> dict:
+    def detect(self,
+               t: np.ndarray,
+               x: np.ndarray,
+               y: np.ndarray,
+               vd: float = cnfg.DEFAULT_VIEWER_DISTANCE,
+               ps: float = cnfg.SCREEN_MONITOR.pixel_size) -> dict:
+        if not np.isfinite(vd) or vd <= 0:
+            raise ValueError("viewer distance must be a positive finite number")
+        if not np.isfinite(ps) or ps <= 0:
+            raise ValueError("pixel size must be a positive finite number")
         t, x, y = self._verify_inputs(t, x, y)
         self._candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
         self.data[cnst.GAZE] = pd.DataFrame({cnst.T: t, cnst.X: x, cnst.Y: y, cnst.EVENT_TYPE: self._candidates})
+        self.data[cnst.VIEWER_DISTANCE] = vd
+        self.data[cnst.PIXEL_SIZE] = ps
         try:
             self._sr = self._calculate_sampling_rate(t)
 
@@ -63,7 +74,7 @@ class BaseDetector(ABC):
             y_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
 
             # detect gaze-event candidates
-            candidates = self._detect_impl(t, x, y)
+            candidates = self._detect_impl(t, x, y, vd, ps)
             self._candidates = self._merge_close_events(candidates)
 
             # add important values to self.data
@@ -75,7 +86,7 @@ class BaseDetector(ABC):
         return self.data
 
     @abstractmethod
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
         raise NotImplementedError
 
     @final

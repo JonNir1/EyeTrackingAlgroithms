@@ -38,7 +38,7 @@ class IDTDetector(BaseDetector):
         self._dispersion_threshold = kwargs.get('dispersion_threshold', self.__DEFAULT_DISPERSION_THRESHOLD)
         self._window_duration = kwargs.get('window_duration', self.__DEFAULT_WINDOW_DURATION)
 
-    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         ws = self._calculate_window_size(t)
         start_idx, end_idx = 0, ws
