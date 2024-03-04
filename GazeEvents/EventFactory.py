@@ -67,13 +67,13 @@ class EventFactory(ABC):
         return event_list
 
     @staticmethod
-    def make_from_gaze_data(gaze: pd.DataFrame, vd: float) -> List[BaseEvent]:
+    def make_from_gaze_data(gaze: pd.DataFrame, vd: float, ps: float) -> List[BaseEvent]:
         t = EventFactory.__extract_field(gaze, cnst.TIME, safe=False)
         e = EventFactory.__extract_field(gaze, cnst.EVENT_TYPE, safe=False)  # event type
         x = EventFactory.__extract_field(gaze, cnst.X, safe=True)
         y = EventFactory.__extract_field(gaze, cnst.Y, safe=True)
         p = EventFactory.__extract_field(gaze, cnst.PUPIL, safe=True)  # pupil size
-        return EventFactory.make_multiple(e, t, x=x, y=y, pupil=p, viewer_distance=vd)
+        return EventFactory.make_multiple(e, t, x=x, y=y, pupil=p, viewer_distance=vd, pixel_size=ps)
 
     @staticmethod
     def __extract_field(gaze: pd.DataFrame, field: str, safe: bool = True) -> np.ndarray:
