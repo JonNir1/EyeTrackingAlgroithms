@@ -32,13 +32,15 @@ class EventFactory(ABC):
             return SaccadeEvent(timestamps=t,
                                 x=event_data.get("x", np.array([])),
                                 y=event_data.get("y", np.array([])),
-                                viewer_distance=event_data.get("viewer_distance", np.nan))
+                                viewer_distance=event_data.get("viewer_distance", np.nan),
+                                pixel_size=event_data.get("pixel_size", np.nan))
         if et == cnst.EVENTS.FIXATION:
             return FixationEvent(timestamps=t,
                                  x=event_data.get("x", np.array([])),
                                  y=event_data.get("y", np.array([])),
                                  pupil=event_data.get("pupil", np.array([])),
-                                 viewer_distance=event_data.get("viewer_distance", np.nan))
+                                 viewer_distance=event_data.get("viewer_distance", np.nan),
+                                 pixel_size=event_data.get("pixel_size", np.nan))
         raise ValueError(f"Invalid event type: {et}")
 
     @staticmethod

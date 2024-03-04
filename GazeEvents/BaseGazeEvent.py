@@ -13,13 +13,16 @@ class BaseGazeEvent(BaseEvent):
     Base class for events that contain gaze data (x,y coordinates).
     """
 
-    def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, viewer_distance: float):
+    def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, viewer_distance: float, pixel_size: float):
         super().__init__(timestamps=timestamps)
         if x is None or y is None or len(x) != len(y) or len(x) != len(timestamps):
             raise ValueError("Arrays `x` and `y` must have the same length as `timestamps`")
-        if viewer_distance is None or viewer_distance <= 0 or not np.isfinite(viewer_distance):
+        if viewer_distance is None or not np.isfinite(viewer_distance) or viewer_distance <= 0:
             raise ValueError("viewer_distance must be a positive finite number")
+        if pixel_size is None or not np.isfinite(pixel_size) or pixel_size <= 0:
+            raise ValueError("pixel_size must be a positive finite number")
         self._viewer_distance = viewer_distance  # in cm
+        self._pixel_size = pixel_size  # in cm
         self._x = x
         self._y = y
         self._velocities = pixel_utils.calculate_velocities(xs=self._x,
@@ -37,8 +40,9 @@ class BaseGazeEvent(BaseEvent):
     def peak_velocity_deg(self) -> float:
         """ Returns the maximum velocity of the event in degrees per second """
         px_vel = self.peak_velocity
-        return visang_utils.pixels_to_visual_angle(num_px=px_vel, d=self._viewer_distance,
-                                                   pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+        return visang_utils.pixels_to_visual_angle(num_px=px_vel,
+                                                   d=self._viewer_distance,
+                                                   pixel_size=self._pixel_size,
                                                    use_radians=False)
 
     @final
@@ -52,8 +56,9 @@ class BaseGazeEvent(BaseEvent):
     def mean_velocity_deg(self) -> float:
         """ Returns the mean velocity of the event in degrees per second """
         px_vel = self.mean_velocity
-        return visang_utils.pixels_to_visual_angle(num_px=px_vel, d=self._viewer_distance,
-                                                   pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+        return visang_utils.pixels_to_visual_angle(num_px=px_vel,
+                                                   d=self._viewer_distance,
+                                                   pixel_size=self._pixel_size,
                                                    use_radians=False)
 
     @final
@@ -79,6 +84,8 @@ class BaseGazeEvent(BaseEvent):
         if not super().__eq__(other):
             return False
         if self._viewer_distance != other._viewer_distance:
+            return False
+        if self._pixel_size != other._pixel_size:
             return False
         if not np.array_equal(self._x, other._x, equal_nan=True):
             return False

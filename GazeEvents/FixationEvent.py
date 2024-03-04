@@ -9,8 +9,9 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 class FixationEvent(BaseGazeEvent):
     _EVENT_TYPE = cnst.EVENTS.FIXATION
 
-    def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, pupil: np.ndarray, viewer_distance: float):
-        super().__init__(timestamps=timestamps, x=x, y=y, viewer_distance=viewer_distance)
+    def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, pupil: np.ndarray,
+                 viewer_distance: float, pixel_size: float):
+        super().__init__(timestamps=timestamps, x=x, y=y, viewer_distance=viewer_distance, pixel_size=pixel_size)
         if pupil is None or len(pupil) != len(timestamps):
             raise ValueError("Array `pupil` must have the same length as `timestamps`")
         self._pupil: np.ndarray = pupil  # pupil size (in mm)

@@ -31,8 +31,9 @@ class SaccadeEvent(BaseGazeEvent):
 
     @property
     def amplitude(self) -> float:
-        return visang_utils.pixels_to_visual_angle(num_px=self.distance, d=self._viewer_distance,
-                                                   pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+        return visang_utils.pixels_to_visual_angle(num_px=self.distance,
+                                                   d=self._viewer_distance,
+                                                   pixel_size=self._pixel_size,
                                                    use_radians=False)
 
     @property
