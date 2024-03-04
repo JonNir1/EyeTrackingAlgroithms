@@ -1,4 +1,6 @@
+import warnings
 import numpy as np
+import pandas as pd
 from abc import ABC
 from typing import List
 
@@ -62,4 +64,21 @@ class EventFactory(ABC):
             event_list.append(event)
         return event_list
 
+    @staticmethod
+    def make_from_gaze_data(gaze: pd.DataFrame, vd: float) -> List[BaseEvent]:
+        t = EventFactory.__extract_field(gaze, cnst.TIME, safe=False)
+        e = EventFactory.__extract_field(gaze, cnst.EVENT_TYPE, safe=False)  # event type
+        x = EventFactory.__extract_field(gaze, cnst.X, safe=True)
+        y = EventFactory.__extract_field(gaze, cnst.Y, safe=True)
+        p = EventFactory.__extract_field(gaze, cnst.PUPIL, safe=True)  # pupil size
+        return EventFactory.make_multiple(e, t, x=x, y=y, pupil=p, viewer_distance=vd)
 
+    @staticmethod
+    def __extract_field(gaze: pd.DataFrame, field: str, safe: bool = True) -> np.ndarray:
+        try:
+            return gaze[field].values
+        except KeyError:
+            if safe:
+                warnings.warn(f"Column {field} not found in the given DataFrame")
+                return np.full(shape=gaze.shape[0], fill_value=np.nan)
+            raise ValueError(f"Column {field} not found in the given DataFrame")
