@@ -44,7 +44,7 @@ class IDTDetector(BaseDetector):
         start_idx, end_idx = 0, ws
         is_fixation = False
         while end_idx <= len(t):
-            dispersion = self._calculate_dispersion(x, y, start_idx, end_idx)
+            dispersion = self._calculate_dispersion(x, y, start_idx, end_idx, vd, ps)
             if dispersion < self._dispersion_threshold:
                 # label all samples in the window as fixation and expand window to the right
                 is_fixation = True
@@ -70,23 +70,29 @@ class IDTDetector(BaseDetector):
             raise ValueError(f"window_duration={ws} is too long for the given input data")
         return ws
 
-    def _calculate_dispersion(self, x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -> float:
+    @staticmethod
+    def _calculate_dispersion(x: np.ndarray,
+                              y: np.ndarray,
+                              start_idx: int,
+                              end_idx: int,
+                              vd: float,
+                              ps: float) -> float:
         window_x, window_y = x[start_idx: end_idx], y[start_idx: end_idx]
         dispersion = max(window_x) - min(window_x) + max(window_y) - min(window_y)
-        ang_dispersion = vis_utils.pixels_to_visual_angle(num_px=dispersion,
-                                                          d=self._viewer_distance,
-                                                          pixel_size=self._pixel_size)
+        ang_dispersion = vis_utils.pixels_to_visual_angle(num_px=dispersion, d=vd, pixel_size=ps)
         return ang_dispersion
 
-    def _calculate_dispersion_area(self, x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -> float:
+    @staticmethod
+    def _calculate_dispersion_area(x: np.ndarray,
+                                   y: np.ndarray,
+                                   start_idx: int,
+                                   end_idx: int,
+                                   vd: float,
+                                   ps: float) -> float:
         # TODO: check if yields better results
         window_x, window_y = x[start_idx: end_idx + 1], y[start_idx: end_idx + 1]
         horiz_axis = 0.5 * (max(window_x) - min(window_x))
-        ang_horiz_axis = vis_utils.pixels_to_visual_angle(num_px=horiz_axis,
-                                                          d=self._viewer_distance,
-                                                          pixel_size=self._pixel_size)
+        ang_horiz_axis = vis_utils.pixels_to_visual_angle(num_px=horiz_axis, d=vd, pixel_size=ps)
         vert_axis = 0.5 * (max(window_y) - min(window_y))
-        ang_vert_axis = vis_utils.pixels_to_visual_angle(num_px=vert_axis,
-                                                         d=self._viewer_distance,
-                                                         pixel_size=self._pixel_size)
+        ang_vert_axis = vis_utils.pixels_to_visual_angle(num_px=vert_axis, d=vd, pixel_size=ps)
         return np.pi * ang_horiz_axis * ang_vert_axis
