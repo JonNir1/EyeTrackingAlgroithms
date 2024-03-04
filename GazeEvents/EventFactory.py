@@ -11,6 +11,7 @@ from GazeEvents.BaseEvent import BaseEvent
 from GazeEvents.BlinkEvent import BlinkEvent
 from GazeEvents.FixationEvent import FixationEvent
 from GazeEvents.SaccadeEvent import SaccadeEvent
+from GazeEvents.PSOEvent import PSOEvent
 
 
 class EventFactory(ABC):
@@ -35,6 +36,12 @@ class EventFactory(ABC):
                                 y=event_data.get("y", np.array([])),
                                 viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
                                 pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
+        if et == cnst.EVENTS.PSO:
+            return PSOEvent(timestamps=t,
+                            x=event_data.get("x", np.array([])),
+                            y=event_data.get("y", np.array([])),
+                            viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
+                            pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
         if et == cnst.EVENTS.FIXATION:
             return FixationEvent(timestamps=t,
                                  x=event_data.get("x", np.array([])),
