@@ -32,8 +32,7 @@ class IVTDetector(BaseDetector):
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray, vd: float, ps: float) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
         angular_velocities = vis_utils.calculates_angular_velocities_from_pixels(xs=x, ys=y, timestamps=t,
-                                                                                 d=self._viewer_distance,
-                                                                                 pixel_size=self._pixel_size)
+                                                                                 d=vd, pixel_size=ps)
         assert len(angular_velocities) == len(x), (f"angular velocities (shape {angular_velocities.shape}) do not " +
                                                    f"match the length of x (shape {x.shape})")
 
