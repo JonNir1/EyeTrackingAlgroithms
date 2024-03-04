@@ -5,6 +5,7 @@ from abc import ABC
 from typing import List
 
 import Config.constants as cnst
+import Config.experiment_config as cnfg
 import Utils.array_utils as arr_utils
 from GazeEvents.BaseEvent import BaseEvent
 from GazeEvents.BlinkEvent import BlinkEvent
@@ -32,15 +33,15 @@ class EventFactory(ABC):
             return SaccadeEvent(timestamps=t,
                                 x=event_data.get("x", np.array([])),
                                 y=event_data.get("y", np.array([])),
-                                viewer_distance=event_data.get("viewer_distance", np.nan),
-                                pixel_size=event_data.get("pixel_size", np.nan))
+                                viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
+                                pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
         if et == cnst.EVENTS.FIXATION:
             return FixationEvent(timestamps=t,
                                  x=event_data.get("x", np.array([])),
                                  y=event_data.get("y", np.array([])),
                                  pupil=event_data.get("pupil", np.array([])),
-                                 viewer_distance=event_data.get("viewer_distance", np.nan),
-                                 pixel_size=event_data.get("pixel_size", np.nan))
+                                 viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
+                                 pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
         raise ValueError(f"Invalid event type: {et}")
 
     @staticmethod
@@ -67,7 +68,9 @@ class EventFactory(ABC):
         return event_list
 
     @staticmethod
-    def make_from_gaze_data(gaze: pd.DataFrame, vd: float, ps: float) -> List[BaseEvent]:
+    def make_from_gaze_data(gaze: pd.DataFrame,
+                            vd: float = cnfg.DEFAULT_VIEWER_DISTANCE,
+                            ps: float = cnfg.SCREEN_MONITOR.pixel_size) -> List[BaseEvent]:
         t = EventFactory.__extract_field(gaze, cnst.TIME, safe=False)
         e = EventFactory.__extract_field(gaze, cnst.EVENT_TYPE, safe=False)  # event type
         x = EventFactory.__extract_field(gaze, cnst.X, safe=True)
