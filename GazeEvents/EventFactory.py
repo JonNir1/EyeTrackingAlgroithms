@@ -30,25 +30,27 @@ class EventFactory(ABC):
         """
         if et == cnst.EVENTS.BLINK:
             return BlinkEvent(timestamps=t)
+        vd = event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE)
+        ps = event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size)
         if et == cnst.EVENTS.SACCADE:
             return SaccadeEvent(timestamps=t,
                                 x=event_data.get("x", np.array([])),
                                 y=event_data.get("y", np.array([])),
-                                viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
-                                pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
+                                viewer_distance=vd,
+                                pixel_size=ps)
         if et == cnst.EVENTS.PSO:
             return PSOEvent(timestamps=t,
                             x=event_data.get("x", np.array([])),
                             y=event_data.get("y", np.array([])),
-                            viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
-                            pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
+                            viewer_distance=vd,
+                            pixel_size=ps)
         if et == cnst.EVENTS.FIXATION:
             return FixationEvent(timestamps=t,
                                  x=event_data.get("x", np.array([])),
                                  y=event_data.get("y", np.array([])),
                                  pupil=event_data.get("pupil", np.array([])),
-                                 viewer_distance=event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE),
-                                 pixel_size=event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size))
+                                 viewer_distance=vd,
+                                 pixel_size=ps)
         raise ValueError(f"Invalid event type: {et}")
 
     @staticmethod
