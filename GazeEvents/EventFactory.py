@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from abc import ABC
-from typing import List
+from typing import List, Optional
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
@@ -17,7 +17,7 @@ from GazeEvents.PSOEvent import PSOEvent
 class EventFactory(ABC):
 
     @staticmethod
-    def make(et: cnst.EVENTS, t: np.ndarray, **event_data) -> BaseEvent:
+    def make(et: cnst.EVENTS, t: np.ndarray, **event_data) -> Optional[BaseEvent]:
         """
         Creates a single GazeEvent from the given data.
 
@@ -28,6 +28,8 @@ class EventFactory(ABC):
         :return: a GazeEvent object
         :raise: ValueError if the given event type is not valid
         """
+        if et == cnst.EVENTS.UNDEFINED:
+            return None
         if et == cnst.EVENTS.BLINK:
             return BlinkEvent(timestamps=t)
         vd = event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE)
@@ -71,16 +73,19 @@ class EventFactory(ABC):
         event_list = []
         for idxs in chunk_idxs:
             et: cnst.EVENTS = ets[idxs[0]]
-            event_data = {k: v[idxs] for k, v in kwargs.items()}
+            event_data = {}
+            for k, v in kwargs.items():
+                event_data[k] = v[idxs] if hasattr(v, "__len__") else v
             event = EventFactory.make(et, t[idxs], **event_data)
             event_list.append(event)
+        event_list = [ev for ev in event_list if ev is not None]  # filter Undefined (=None) events
         return event_list
 
     @staticmethod
     def make_from_gaze_data(gaze: pd.DataFrame,
                             vd: float = cnfg.DEFAULT_VIEWER_DISTANCE,
                             ps: float = cnfg.SCREEN_MONITOR.pixel_size) -> List[BaseEvent]:
-        t = EventFactory.__extract_field(gaze, cnst.TIME, safe=False)
+        t = EventFactory.__extract_field(gaze, cnst.T, safe=False)
         e = EventFactory.__extract_field(gaze, cnst.EVENT_TYPE, safe=False)  # event type
         x = EventFactory.__extract_field(gaze, cnst.X, safe=True)
         y = EventFactory.__extract_field(gaze, cnst.Y, safe=True)
@@ -92,7 +97,8 @@ class EventFactory(ABC):
         try:
             return gaze[field].values
         except KeyError:
+            err_str = f"\"{field}\":\tUnable to extract \"{field}\" data from the given DataFrame."
             if safe:
-                warnings.warn(f"Column {field} not found in the given DataFrame")
+                warnings.warn(err_str, RuntimeWarning)
                 return np.full(shape=gaze.shape[0], fill_value=np.nan)
-            raise ValueError(f"Column {field} not found in the given DataFrame")
+            raise KeyError(err_str)
