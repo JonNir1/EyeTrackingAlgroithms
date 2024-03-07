@@ -1,6 +1,7 @@
 """
 This file contains the configuration for each specific experiment.
 """
+import os
 
 import numpy as np
 import posixpath as psx
@@ -28,7 +29,7 @@ DEFAULT_VIEWER_DISTANCE = 60  # cm
 DEFAULT_BLINK_PADDING = 0  # amount (ms) by which to extend before and after each blink
 
 # DIRECTORIES
-BASE_DIR = ""  # TODO: set the base directory for the experiment
+BASE_DIR = os.getcwd()  # TODO: set the base directory for the experiment
 STIMULI_DIR = psx.join(BASE_DIR, "Stimuli")
 RAW_DATA_DIR = psx.join(BASE_DIR, "RawData")
 OUTPUT_DIR = psx.join(BASE_DIR, "Results")
