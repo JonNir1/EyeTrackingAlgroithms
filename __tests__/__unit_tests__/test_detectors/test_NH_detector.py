@@ -16,7 +16,7 @@ class TestNHDetector(unittest.TestCase):
                      GazeEventTypeEnum.SMOOTH_PURSUIT: 4, GazeEventTypeEnum.BLINK: 5, GazeEventTypeEnum.UNDEFINED: 0}
 
         # data = LoadAnderssonData.load_from_url()
-        data = Lund2013DataSetLoader.download()
+        data = Lund2013DataSetLoader.download_from_remote()
 
         pixel_size = 0.037824
         labels = np.array(data[cnst.EVENT_TYPE])

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import requests as req
 from abc import ABC, abstractmethod
-from typing import final, List, Dict, Union
+from typing import final, List, Dict, Union, Optional
 
 from Config import constants as cnst
 from Config import experiment_config as cnfg
@@ -21,8 +21,29 @@ class BaseDataSetLoader(ABC):
 
     @classmethod
     @final
-    def download(cls) -> pd.DataFrame:
-        """ Downloads the dataset, parses it and returns a DataFrame with cleaned data """
+    def load(cls, directory: Optional[str] = cnfg.DATASETS_DIR, should_save: bool = False) -> pd.DataFrame:
+        """
+        Loads the dataset from the specified directory. If the dataset is not found, it is downloaded.
+        If `should_save` is True, the dataset is saved to the specified directory.
+
+        :return: a DataFrame containing the dataset
+        :raises ValueError: if `should_save` is True and `directory` is not specified
+        """
+        try:
+            p = os.path.join(directory, f"{cls.dataset_name()}.pkl")
+            dataset = pd.read_pickle(p)
+        except FileNotFoundError:
+            dataset = cls.download_from_remote()
+        if should_save:
+            if not directory:
+                raise ValueError("Directory must be specified to save the dataset")
+            _success = cls.save_pickle(dataset, directory)
+        return dataset
+
+    @classmethod
+    @final
+    def download_from_remote(cls) -> pd.DataFrame:
+        """ Downloads the dataset from the internet, parses it and returns a DataFrame with cleaned data """
         response = cls._download_raw_dataset()
         df = cls._parse_response(response)
         df = cls._clean_data(df)
@@ -32,12 +53,13 @@ class BaseDataSetLoader(ABC):
 
     @classmethod
     @final
-    def save_to_pickle(cls, df: pd.DataFrame, file_path: str = None) -> None:
-        if file_path is None:
-            file_path = f"{cls.__name__}.pkl"
-        if not file_path.endswith(".pkl"):
-            file_path += ".pkl"
-        df.to_pickle(file_path)
+    def save_pickle(cls, dataset: pd.DataFrame, directory: str = cnfg.DATASETS_DIR) -> bool:
+        filename = f"{cls.dataset_name()}.pkl"
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        file_path = os.path.join(directory, filename)
+        dataset.to_pickle(file_path)
+        return os.path.isfile(file_path)
 
     @classmethod
     @final
