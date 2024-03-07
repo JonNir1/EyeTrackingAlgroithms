@@ -2,8 +2,8 @@
 This file contains the configuration for each specific experiment.
 """
 
-import os
 import numpy as np
+import posixpath as psx
 
 import Config.constants as cnst
 from Config.ScreenMonitor import ScreenMonitor
@@ -29,9 +29,9 @@ DEFAULT_BLINK_PADDING = 0  # amount (ms) by which to extend before and after eac
 
 # DIRECTORIES
 BASE_DIR = ""  # TODO: set the base directory for the experiment
-STIMULI_DIR = os.path.join(BASE_DIR, "Stimuli", "generated_stim1")
-RAW_DATA_DIR = os.path.join(BASE_DIR, "RawData")
-OUTPUT_DIR = os.path.join(BASE_DIR, "Results")
-DATASETS_DIR = os.path.join(BASE_DIR, "Datasets")
+STIMULI_DIR = psx.join(BASE_DIR, "Stimuli")
+RAW_DATA_DIR = psx.join(BASE_DIR, "RawData")
+OUTPUT_DIR = psx.join(BASE_DIR, "Results")
+DATASETS_DIR = psx.join(BASE_DIR, "Datasets")
 
 EXPERIMENT_SPECIFIC_VARIABLES = []  # additional variable recorded in the experiment and extracted from the raw data
