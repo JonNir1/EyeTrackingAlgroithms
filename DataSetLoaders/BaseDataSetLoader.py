@@ -29,12 +29,12 @@ class BaseDataSetLoader(ABC):
 
     @classmethod
     @final
-    def save_to_pickle(cls, df: pd.DataFrame, path_file: str = None) -> None:
-        if path_file is None:
-            path_file = f"{cls.__name__}.pkl"
-        if not path_file.endswith(".pkl"):
-            path_file += ".pkl"
-        df.to_pickle(path_file)
+    def save_to_pickle(cls, df: pd.DataFrame, file_path: str = None) -> None:
+        if file_path is None:
+            file_path = f"{cls.__name__}.pkl"
+        if not file_path.endswith(".pkl"):
+            file_path += ".pkl"
+        df.to_pickle(file_path)
 
     @classmethod
     @final
