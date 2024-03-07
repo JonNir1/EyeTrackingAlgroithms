@@ -34,5 +34,6 @@ STIMULI_DIR = psx.join(BASE_DIR, "Stimuli")
 RAW_DATA_DIR = psx.join(BASE_DIR, "RawData")
 OUTPUT_DIR = psx.join(BASE_DIR, "Results")
 DATASETS_DIR = psx.join(BASE_DIR, "Datasets")
+LOGS_DIR = psx.join(BASE_DIR, "Logs")
 
 EXPERIMENT_SPECIFIC_VARIABLES = []  # additional variable recorded in the experiment and extracted from the raw data
