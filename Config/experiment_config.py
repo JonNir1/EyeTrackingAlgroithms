@@ -28,7 +28,7 @@ DEFAULT_VIEWER_DISTANCE = 60  # cm
 DEFAULT_BLINK_PADDING = 0  # amount (ms) by which to extend before and after each blink
 
 # DIRECTORIES
-BASE_DIR = ""
+BASE_DIR = ""  # TODO: set the base directory for the experiment
 STIMULI_DIR = os.path.join(BASE_DIR, "Stimuli", "generated_stim1")
 RAW_DATA_DIR = os.path.join(BASE_DIR, "RawData")
 OUTPUT_DIR = os.path.join(BASE_DIR, "Results")
