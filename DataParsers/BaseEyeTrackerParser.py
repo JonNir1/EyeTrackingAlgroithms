@@ -222,7 +222,7 @@ class BaseEyeTrackerParser(ABC):
         return list(filter(lambda col: cls.__is_valid_column_name(col), columns))
 
     @classmethod
-    def _column_name_mapper(cls, column_name: str) -> Optional[str]:
+    def _column_name_mapper(cls, column_name: str) -> str:
         # maps column names to constants
         if column_name == cls.TRIAL_COLUMN():
             return cnst.TRIAL
