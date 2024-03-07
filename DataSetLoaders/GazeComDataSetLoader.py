@@ -43,6 +43,7 @@ class GazeComDataSetLoader(BaseDataSetLoader):
         "viewing dynamic natural scenes. Journal of Vision, 10(10):1-17, 2010.",
         "Startsev, M., Agtzidis, I., & Dorr, M. (2016). Smooth pursuit. http://michaeldorr.de/smoothpursuit/"
     ]
+    _NAME: str = "GazeCom"
 
     # Values used in the apparatus of the experiment.
     __FILE_NAME = "gazecom_annotations-master.zip"

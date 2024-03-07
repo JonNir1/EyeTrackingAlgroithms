@@ -28,7 +28,6 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
     """
 
     _URL = 'https://github.com/richardandersson/EyeMovementDetectorEvaluation/archive/refs/heads/master.zip'
-
     _ARTICLES = [
         "Andersson, R., Larsson, L., Holmqvist, K., Stridh, M., & Nyström, M. (2017): One algorithm to rule them " +
         "all? An evaluation and discussion of ten eye movement event-detection algorithms. Behavior Research Methods, " +
@@ -37,6 +36,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         "Zemblys, R., Niehorster, D. C., Komogortsev, O., & Holmqvist, K. (2018). Using machine learning to detect " +
         "events in eye-tracking data. Behavior Research Methods, 50(1), 160–181."
     ]
+    _NAME: str = "Lund2013"
 
     @classmethod
     def _parse_response(cls, response: req.Response) -> pd.DataFrame:

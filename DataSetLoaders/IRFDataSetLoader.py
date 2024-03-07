@@ -27,11 +27,11 @@ class IRFDataSetLoader(BaseDataSetLoader):
     """
 
     _URL = r'https://github.com/r-zemblys/irf/archive/refs/heads/master.zip'
-
     _ARTICLES = [
         "Zemblys, Raimondas and Niehorster, Diederick C and Komogortsev, Oleg and Holmqvist, Kenneth. Using machine " +
         "learning to detect events in eye-tracking data. Behavior Research Methods, 50(1), 160–181 (2018)."
     ]
+    _NAME: str = "IRF"
 
     # Values used in the apparatus of the experiment.
     # see https://github.com/r-zemblys/irf/blob/master/etdata/lookAtPoint_EL/db_config.json

@@ -1,9 +1,11 @@
+import os
 import pandas as pd
 import requests as req
 from abc import ABC, abstractmethod
 from typing import final, List, Dict, Union
 
 from Config import constants as cnst
+from Config import experiment_config as cnfg
 from Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
@@ -15,6 +17,7 @@ class BaseDataSetLoader(ABC):
 
     _URL: str = None
     _ARTICLES: List[str] = None
+    _NAME: str = None
 
     @classmethod
     @final
@@ -35,6 +38,14 @@ class BaseDataSetLoader(ABC):
         if not file_path.endswith(".pkl"):
             file_path += ".pkl"
         df.to_pickle(file_path)
+
+    @classmethod
+    @final
+    def dataset_name(cls) -> str:
+        """ Name of the dataset """
+        if not cls._NAME:
+            raise AttributeError(f"Class {cls.__name__} must implement class attribute `_NAME`")
+        return cls._NAME
 
     @classmethod
     @final

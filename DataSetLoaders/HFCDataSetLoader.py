@@ -27,13 +27,13 @@ class HFCDataSetLoader(BaseDataSetLoader):
     """
 
     _URL = r'https://github.com/dcnieho/humanFixationClassification/archive/refs/heads/master.zip'
-
     _ARTICLES = [
         "Hooge, I.T.C., Niehorster, D.C., Nyström, M., Andersson, R. & Hessels, R.S. (2018). Is human classification " +
         "by experienced untrained observers a gold standard in fixation detection?",
         "Hessels, R.S., Hooge, I.T.C., & Kemner, C. (2016). An in-depth look at saccadic search in infancy. " +
         "Journal of Vision, 16(8), 10."
     ]
+    _NAME: str = "HFC"
 
     __SUBJECT_TYPE = "subject_type"
 
