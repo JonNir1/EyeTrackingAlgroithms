@@ -32,5 +32,6 @@ BASE_DIR = ""  # TODO: set the base directory for the experiment
 STIMULI_DIR = os.path.join(BASE_DIR, "Stimuli", "generated_stim1")
 RAW_DATA_DIR = os.path.join(BASE_DIR, "RawData")
 OUTPUT_DIR = os.path.join(BASE_DIR, "Results")
+DATASETS_DIR = os.path.join(BASE_DIR, "Datasets")
 
 EXPERIMENT_SPECIFIC_VARIABLES = []  # additional variable recorded in the experiment and extracted from the raw data
