@@ -12,6 +12,7 @@ from GazeEvents.BlinkEvent import BlinkEvent
 from GazeEvents.FixationEvent import FixationEvent
 from GazeEvents.SaccadeEvent import SaccadeEvent
 from GazeEvents.PSOEvent import PSOEvent
+from GazeEvents.SmoothPursuitEvent import SmoothPursuitEvent
 
 
 class EventFactory(ABC):
@@ -55,6 +56,13 @@ class EventFactory(ABC):
                                  pupil=event_data.get("pupil", np.array([])),
                                  viewer_distance=vd,
                                  pixel_size=ps)
+        if et == cnst.EVENTS.SMOOTH_PURSUIT:
+            return SmoothPursuitEvent(timestamps=t,
+                                      x=event_data.get("x", np.array([])),
+                                      y=event_data.get("y", np.array([])),
+                                      pupil=event_data.get("pupil", np.array([])),
+                                      viewer_distance=vd,
+                                      pixel_size=ps)
         raise ValueError(f"Invalid event type: {et}")
 
     @staticmethod
