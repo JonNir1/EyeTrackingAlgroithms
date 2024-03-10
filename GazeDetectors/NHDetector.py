@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import savgol_filter
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
