@@ -45,7 +45,7 @@ class GazeComDataSetLoader(BaseDataSetLoader):
     _NAME: str = "GazeCom"
 
     # Values used in the apparatus of the experiment.
-    __FILE_NAME = "gazecom_annotations-master.zip"
+    __ZIPFILE_NAME = "gazecom_annotations-master.zip"
     __HANDLABELLER = "HL"
     __VIEWER_DISTANCE_CM_VAL = 56.5
     __SCREEN_MONITOR = ScreenMonitor(width=40, height=22.5, resolution=(1280, 720), refresh_rate=30)
@@ -61,15 +61,15 @@ class GazeComDataSetLoader(BaseDataSetLoader):
                          "handlabeller_final": f"{__HANDLABELLER}_FINAL"}
 
     @classmethod
-    def load_from_disk(cls, root: str = None) -> pd.DataFrame:
+    def load_from_zipfile(cls, root: str = None) -> pd.DataFrame:
         """
-        Loads the dataset from a zip file stored in a local directory.
+        Loads the dataset from a zip file stored in a local directory (so it doesn't need to be downloaded again).
         :param root: path to the directory containing the zip file.
         :return: DataFrame with the annotated gaze data.
         """
         if not root or not psx.isdir(root):
             raise NotADirectoryError(f"Invalid directory: {root}")
-        zip_file = psx.join(root, cls.__FILE_NAME)
+        zip_file = psx.join(root, cls.__ZIPFILE_NAME)
         if not psx.isfile(zip_file):
             raise FileNotFoundError(f"File not found: {zip_file}")
         with zp.ZipFile(zip_file, 'r') as zip_ref:
