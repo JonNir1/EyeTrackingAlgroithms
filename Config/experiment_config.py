@@ -25,7 +25,7 @@ DEFAULT_MISSING_VALUE = np.nan  # default value for missing data
 
 DEFAULT_VIEWER_DISTANCE = 60  # cm
 
-DEFAULT_BLINK_PADDING = 0  # amount (ms) by which to extend before and after each blink
+DEFAULT_NAN_PADDING = 0  # amount (ms) by which to extend before and after periods of data loss
 
 # DIRECTORIES
 BASE_DIR = os.getcwd()  # TODO: set the base directory for the experiment

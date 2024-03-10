@@ -16,7 +16,7 @@ class BaseDetector(ABC):
     gaze event detection process.
 
     Detection process:
-    1. Detect blinks, including padding them by the amount in `pad_blinks_by`
+    1. Detect blinks, including padding them by the amount in `dilate_nans_by`
     2. Set x and y to nan where blinks are detected
     3. Detect gaze events (using the class-specific logic, implemented in `_detect_impl` method)
     4. Ignore chunks of gaze-events that are shorter than `minimum_event_duration`
@@ -27,7 +27,7 @@ class BaseDetector(ABC):
     :param pixel_size: the size of a single pixel on the screen, in centimeters. Default is the pixel size of the
         screen monitor
     :param minimum_event_duration: the minimum duration of a gaze event, in milliseconds. Default is 5 ms
-    :param pad_blinks_by: the amount of time to pad blinks by, in milliseconds. Default is 0 ms (no padding)
+    :param dilate_nans_by: the amount of time to pad nans by, in milliseconds. Default is 0 ms (no padding)
     """
 
     def __init__(self, **kwargs):
@@ -44,9 +44,9 @@ class BaseDetector(ABC):
         if self._pixel_size <= 0:
             raise ValueError("pixel_size must be positive")
 
-        self._pad_blinks_by = kwargs.get('pad_blinks_by', cnfg.DEFAULT_BLINK_PADDING)  # ms
-        if self._pad_blinks_by < 0:
-            raise ValueError("pad_blinks_by must be non-negative")
+        self._dilate_nans_by = kwargs.get('dilate_nans_by', cnfg.DEFAULT_NAN_PADDING)  # ms
+        if self._dilate_nans_by < 0:
+            raise ValueError("dilate_nans_by must be non-negative")
 
     @final
     def detect(self,
@@ -100,7 +100,7 @@ class BaseDetector(ABC):
         1. Identifies samples where x or y are missing as blinks
         2. Ignores chunks of blinks that are shorter than the minimum event duration
         3. Merges consecutive blink chunks separated by less than the minimum event duration
-        4. Pads the blink candidates by the amount in `self._pad_blinks_by`
+        4. Pads the blink candidates by the amount in `self._dilate_nans_by`
 
         :param x: x-coordinates
         :param y: y-coordinates
@@ -116,9 +116,9 @@ class BaseDetector(ABC):
         candidates = self._merge_close_events(candidates)  # ignore short blinks and merge consecutive blinks
 
         # pad blinks by the given amount
-        if self._pad_blinks_by == 0:
+        if self._dilate_nans_by == 0:
             return candidates
-        pad_samples = self._calc_num_samples(self._pad_blinks_by)
+        pad_samples = self._calc_num_samples(self._dilate_nans_by)
         for i, c in enumerate(candidates):
             if c == cnst.EVENTS.BLINK:
                 start = max(0, i - pad_samples)
