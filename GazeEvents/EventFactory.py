@@ -38,12 +38,14 @@ class EventFactory(ABC):
             return SaccadeEvent(timestamps=t,
                                 x=event_data.get("x", np.array([])),
                                 y=event_data.get("y", np.array([])),
+                                pupil=event_data.get("pupil", np.array([])),
                                 viewer_distance=vd,
                                 pixel_size=ps)
         if et == cnst.EVENTS.PSO:
             return PSOEvent(timestamps=t,
                             x=event_data.get("x", np.array([])),
                             y=event_data.get("y", np.array([])),
+                            pupil=event_data.get("pupil", np.array([])),
                             viewer_distance=vd,
                             pixel_size=ps)
         if et == cnst.EVENTS.FIXATION:

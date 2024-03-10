@@ -9,13 +9,6 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 class FixationEvent(BaseGazeEvent):
     _EVENT_TYPE = cnst.EVENTS.FIXATION
 
-    def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, pupil: np.ndarray,
-                 viewer_distance: float, pixel_size: float):
-        super().__init__(timestamps=timestamps, x=x, y=y, viewer_distance=viewer_distance, pixel_size=pixel_size)
-        if pupil is None or len(pupil) != len(timestamps):
-            raise ValueError("Array `pupil` must have the same length as `timestamps`")
-        self._pupil: np.ndarray = pupil  # pupil size (in mm)
-
     @property
     def center_of_mass(self) -> Tuple[float, float]:
         """ returns the mean coordinates of the fixation on the X,Y axes """
@@ -38,20 +31,6 @@ class FixationEvent(BaseGazeEvent):
         max_dist = float(np.nanmax(distances))
         return max_dist
 
-    @property
-    def mean_pupil_size(self) -> float:
-        """ returns the mean pupil size during the fixation (in mm) """
-        return float(np.nanmean(self._pupil))
-
-    @property
-    def std_pupil_size(self) -> float:
-        """ returns the standard deviation of the pupil size during the fixation (in mm) """
-        return float(np.nanstd(self._pupil))
-
-    def get_pupil_sizes(self) -> np.ndarray:
-        """ returns the pupil size during the fixation (in mm) """
-        return self._pupil
-
     def to_series(self) -> pd.Series:
         """
         creates a pandas Series with summary of fixation information.
@@ -59,15 +38,11 @@ class FixationEvent(BaseGazeEvent):
             - center_of_mass: fixation's center of mass (2D pixel coordinates)
             - standard_deviation: fixation's standard deviation (in pixel units)
             - dispersion: maximum distance between any two points in the fixation (in pixels units)
-            - mean_pupil_size: mean pupil size during the fixation (in mm)
-            - std_pupil_size: standard deviation of the pupil size during the fixation (in mm)
         """
         series = super().to_series()
         series["center_of_mass"] = self.center_of_mass
         series["standard_deviation"] = self.standard_deviation
         series["dispersion"] = self.dispersion
-        series["mean_pupil_size"] = self.mean_pupil_size
-        series["std_pupil_size"] = self.std_pupil_size
         return series
 
 

@@ -12,10 +12,20 @@ class BaseGazeEvent(BaseEvent):
     Base class for events that contain gaze data (x,y coordinates).
     """
 
-    def __init__(self, timestamps: np.ndarray, x: np.ndarray, y: np.ndarray, viewer_distance: float, pixel_size: float):
+    def __init__(self,
+                 timestamps: np.ndarray,
+                 x: np.ndarray,
+                 y: np.ndarray,
+                 pupil: np.ndarray,
+                 viewer_distance: float,
+                 pixel_size: float):
         super().__init__(timestamps=timestamps)
-        if x is None or y is None or len(x) != len(y) or len(x) != len(timestamps):
-            raise ValueError("Arrays `x` and `y` must have the same length as `timestamps`")
+        if x is None or len(x) != len(timestamps):
+            raise ValueError("Array `x` must have the same length as `timestamps`")
+        if y is None or len(y) != len(timestamps):
+            raise ValueError("Array `y` must have the same length as `timestamps`")
+        if pupil is None or len(pupil) != len(timestamps):
+            raise ValueError("Array `pupil` must have the same length as `timestamps`")
         if viewer_distance is None or not np.isfinite(viewer_distance) or viewer_distance <= 0:
             raise ValueError("viewer_distance must be a positive finite number")
         if pixel_size is None or not np.isfinite(pixel_size) or pixel_size <= 0:
@@ -24,6 +34,7 @@ class BaseGazeEvent(BaseEvent):
         self._pixel_size = pixel_size  # in cm
         self._x = x
         self._y = y
+        self._pupil = pupil
         self._velocities = pixel_utils.calculate_velocities(xs=self._x,
                                                             ys=self._y,
                                                             timestamps=self._timestamps)  # units: px / ms
@@ -105,11 +116,28 @@ class BaseGazeEvent(BaseEvent):
                                                    use_radians=False)
 
     @final
+    @property
+    def mean_pupil_size(self) -> float:
+        """ returns the mean pupil size during the fixation (in mm) """
+        return float(np.nanmean(self._pupil))
+
+    @final
+    @property
+    def std_pupil_size(self) -> float:
+        """ returns the standard deviation of the pupil size during the fixation (in mm) """
+        return float(np.nanstd(self._pupil))
+
+    @final
     def get_velocities(self) -> np.ndarray:
         """
         Returns the velocities of the event in pixels per millisecond
         """
         return self._velocities
+
+    @final
+    def get_pupil_sizes(self) -> np.ndarray:
+        """ returns the pupil size during the fixation (in mm) """
+        return self._pupil
 
     def to_series(self) -> pd.Series:
         """
@@ -122,6 +150,8 @@ class BaseGazeEvent(BaseEvent):
             - azimuth: saccade's azimuth (in degrees)
             - peak_velocity: the maximum velocity of the event in pixels per second
             - mean_velocity: the mean velocity of the event in pixels per second
+            - mean_pupil_size: mean pupil size during the fixation (in mm)
+            - std_pupil_size: standard deviation of the pupil size during the fixation (in mm)
         """
         series = super().to_series()
         series["start_point"] = self.start_point
@@ -131,6 +161,8 @@ class BaseGazeEvent(BaseEvent):
         series["azimuth"] = self.azimuth
         series["peak_velocity"] = self.peak_velocity
         series["mean_velocity"] = self.mean_velocity
+        series["mean_pupil_size"] = self.mean_pupil_size
+        series["std_pupil_size"] = self.std_pupil_size
         return series
 
     def __eq__(self, other):
