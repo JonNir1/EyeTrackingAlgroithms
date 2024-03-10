@@ -8,7 +8,6 @@ import arff
 
 from Config import constants as cnst
 from Config.ScreenMonitor import ScreenMonitor
-import Utils.io_utils as ioutils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 
 
@@ -128,7 +127,7 @@ class GazeComDataSetLoader(BaseDataSetLoader):
             df = pd.DataFrame(data['data'], columns=[attr[0] for attr in data['attributes']])
 
             # add metadata columns:
-            _path, file_name, _ext = ioutils.split_path(f)
+            _path, file_name, _ext = GazeComDataSetLoader._extract_filename_and_extension(f)
             subj_id = file_name.split('_')[0]  # filename format: <subject_id>_<stimulus>_<name>_<with>_<underscores>.arff
             stimulus = '_'.join(file_name.split('_')[1:])
             df[cnst.SUBJECT_ID] = subj_id

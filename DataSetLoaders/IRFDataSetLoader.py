@@ -7,7 +7,6 @@ import requests as req
 from typing import Tuple, Dict
 
 from Config import constants as cnst
-import Utils.io_utils as ioutils
 import Utils.visual_angle_utils as vis_utils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
@@ -57,7 +56,7 @@ class IRFDataSetLoader(BaseDataSetLoader):
             gaze_data['evt'] = gaze_data['evt'].apply(lambda x: BaseDataSetLoader._parse_gaze_event(x, safe=True))
 
             # extract subject id:
-            _, file_name, _ = ioutils.split_path(f)
+            _, file_name, _ = IRFDataSetLoader._extract_filename_and_extension(f)
             subject_id = file_name.split('_')[-1]  # format: "lookAtPoint_EL_S<subject_num>"
             gaze_data[cnst.SUBJECT_ID] = subject_id
             gaze_dfs.append(gaze_data)

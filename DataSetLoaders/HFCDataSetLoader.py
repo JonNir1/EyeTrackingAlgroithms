@@ -9,7 +9,6 @@ from scipy.interpolate import interp1d
 from typing import Tuple, Dict
 
 from Config import constants as cnst
-import Utils.io_utils as ioutils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 
 
@@ -86,7 +85,7 @@ class HFCDataSetLoader(BaseDataSetLoader):
     @staticmethod
     def __read_gaze_data(file) -> Tuple[str, pd.DataFrame]:
         gaze_data = pd.read_csv(file, sep='\t', usecols=["time", "x", "y"])
-        _, trial_name, _ = ioutils.split_path(file.name)
+        _, trial_name, _ = HFCDataSetLoader._extract_filename_and_extension(file.name)
         subject_type, subject_id = trial_name.split('_')
         gaze_data[cnst.SUBJECT_ID] = subject_id
         gaze_data[HFCDataSetLoader.__SUBJECT_TYPE] = subject_type
@@ -96,7 +95,7 @@ class HFCDataSetLoader(BaseDataSetLoader):
     @staticmethod
     def __read_annotations(file) -> Tuple[str, pd.DataFrame]:
         rater_data = pd.read_csv(file, sep='\t')
-        _, rater_name, _ = ioutils.split_path(file.name)
+        _, rater_name, _ = HFCDataSetLoader._extract_filename_and_extension(file.name)
         return rater_name, rater_data
 
     @staticmethod

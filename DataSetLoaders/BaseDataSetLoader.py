@@ -109,6 +109,14 @@ class BaseDataSetLoader(ABC):
 
     @staticmethod
     @final
+    def _extract_filename_and_extension(full_path: str) -> (str, str, str):
+        """ Splits a full path into its components: path, filename and extension """
+        path, extension = os.path.splitext(full_path)
+        path, filename = os.path.split(path)
+        return path, filename, extension
+
+    @staticmethod
+    @final
     def _parse_gaze_event(ev: Union[GazeEventTypeEnum, int, str, float], safe: bool = True) -> GazeEventTypeEnum:
         """
         Parses a gaze label from the original dataset's type to type GazeEventTypeEnum
@@ -133,4 +141,3 @@ class BaseDataSetLoader(ABC):
             if safe and (isinstance(err, ValueError) or isinstance(err, TypeError)):
                 return GazeEventTypeEnum.UNDEFINED
             raise err
-
