@@ -2,7 +2,6 @@
 This file contains the configuration for each specific experiment.
 """
 import os
-
 import numpy as np
 import posixpath as psx
 
