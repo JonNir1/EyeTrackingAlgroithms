@@ -68,7 +68,7 @@ class BaseDetector(ABC):
             self._sr = self._calculate_sampling_rate(t)
 
             # detect blinks and remove blink samples from the data
-            self._candidates = self._detect_blinks(t, x, y)
+            self._candidates = self._detect_blinks(x, y)
             x_copy, y_copy = x.copy(), y.copy()
             x_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
             y_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
@@ -93,7 +93,6 @@ class BaseDetector(ABC):
 
     @final
     def _detect_blinks(self,
-                       t: np.ndarray,
                        x: np.ndarray,
                        y: np.ndarray) -> np.ndarray:
         """
@@ -103,7 +102,6 @@ class BaseDetector(ABC):
         3. Merges consecutive blink chunks separated by less than the minimum event duration
         4. Pads the blink candidates by the amount in `self._pad_blinks_by`
 
-        :param t: timestamps in milliseconds
         :param x: x-coordinates
         :param y: y-coordinates
 
