@@ -48,12 +48,6 @@ class FixationEvent(BaseGazeEvent):
         """ returns the standard deviation of the pupil size during the fixation (in mm) """
         return float(np.nanstd(self._pupil))
 
-    def get_outlier_reasons(self):
-        reasons = super().get_outlier_reasons()
-        # TODO: check max velocity, acceleration, dispersion
-        # TODO: check if inside the screen
-        return reasons
-
     def get_pupil_sizes(self) -> np.ndarray:
         """ returns the pupil size during the fixation (in mm) """
         return self._pupil
