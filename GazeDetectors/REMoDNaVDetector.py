@@ -9,9 +9,9 @@ from GazeDetectors.BaseDetector import BaseDetector
 
 class REMoDNaVDetector(BaseDetector):
     """
-    Uses an implementation of the REMoDNaV algorithm to detect gaze events in the gaze data.
-    This algorithm is based on the NHDetector algorithm, but extends and improves it by adding a more sophisticated
-    saccade/pso detection algorithm, and by adding a smooth pursuit detection algorithm.
+    This is a wrapper class that uses an implementation of the REMoDNaV algorithm to detect gaze events in the gaze
+        data. This algorithm is based on the NHDetector algorithm, but extends and improves it by adding a more
+        sophisticated saccade/pso detection algorithm, and by adding a smooth pursuit detection algorithm.
 
     See the REMoDNaV paper:
         Dar AH, Wagner AS, Hanke M. REMoDNaV: robust eye-movement classification for dynamic stimulation. Behav Res
