@@ -76,6 +76,14 @@ class BaseEvent(ABC):
         timestamps = np.round(timestamps, decimals=round_decimals)
         return timestamps
 
+    @final
+    def overlap_time(self, other: "BaseEvent") -> float:
+        if self.start_time > other.end_time:
+            return 0
+        if other.start_time > self.end_time:
+            return 0
+        return min(self.end_time, other.end_time) - max(self.start_time, other.start_time)
+
     @classmethod
     @final
     def event_type(cls) -> cnst.EVENTS:
