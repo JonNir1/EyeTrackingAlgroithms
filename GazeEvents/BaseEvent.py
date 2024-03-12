@@ -50,6 +50,18 @@ class BaseEvent(ABC):
             reasons.append(f"max_{cnst.DURATION}")
         return reasons
 
+    @final
+    def get_timestamps(self, round_decimals: int = 1, zero_corrected: bool = True) -> np.ndarray:
+        """
+        Returns the timestamps of the event, rounded to the specified number of decimals.
+        If zero_corrected is True, the timestamps will be relative to the first timestamp of the event.
+        """
+        timestamps = self._timestamps  # timestamps in milliseconds
+        if zero_corrected:
+            timestamps = timestamps - timestamps[0]  # start from 0
+        timestamps = np.round(timestamps, decimals=round_decimals)
+        return timestamps
+
     def to_series(self) -> pd.Series:
         """
         creates a pandas Series with summary of event information.
@@ -63,18 +75,6 @@ class BaseEvent(ABC):
         return pd.Series(data=[self._EVENT_TYPE.name, self.start_time, self.end_time, self.duration, self.is_outlier,
                                self.get_outlier_reasons()],
                          index=["event_type", "start_time", "end_time", "duration", "is_outlier", "outlier_reasons"])
-
-    @final
-    def get_timestamps(self, round_decimals: int = 1, zero_corrected: bool = True) -> np.ndarray:
-        """
-        Returns the timestamps of the event, rounded to the specified number of decimals.
-        If zero_corrected is True, the timestamps will be relative to the first timestamp of the event.
-        """
-        timestamps = self._timestamps  # timestamps in milliseconds
-        if zero_corrected:
-            timestamps = timestamps - timestamps[0]  # start from 0
-        timestamps = np.round(timestamps, decimals=round_decimals)
-        return timestamps
 
     @final
     def overlap_time(self, other: "BaseEvent") -> float:
