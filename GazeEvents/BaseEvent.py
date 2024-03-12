@@ -84,6 +84,17 @@ class BaseEvent(ABC):
             return 0
         return min(self.end_time, other.end_time) - max(self.start_time, other.start_time)
 
+    def intersection_over_union(self, other: "BaseEvent") -> float:
+        """
+        Calculate the intersection over union (IoU) between two events.
+        See Startsev & Zemblys (2023) for more information.
+        :param other: the other event
+        :return: IoU
+        """
+        intersection = self.overlap_time(other)
+        union = self.duration + other.duration - intersection
+        return intersection / union
+
     @classmethod
     @final
     def event_type(cls) -> cnst.EVENTS:
