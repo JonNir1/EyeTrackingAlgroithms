@@ -3,4 +3,4 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 
 
 class SmoothPursuitEvent(BaseGazeEvent):
-    _EVENT_TYPE = cnst.EVENTS.SMOOTH_PURSUIT
+    _EVENT_TYPE = cnst.EVENT_LABELS.SMOOTH_PURSUIT

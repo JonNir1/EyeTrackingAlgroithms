@@ -38,5 +38,5 @@ LEFT_PUPIL, RIGHT_PUPIL = f"{LEFT}_{PUPIL}", f"{RIGHT}_{PUPIL}"
 VIEWER_DISTANCE = "viewer_distance"
 PIXEL_SIZE = "pixel_size"
 
-EVENTS = GazeEventTypeEnum
+EVENT_LABELS = GazeEventTypeEnum
 MINIMUM_SAMPLES_IN_EVENT: int = 2  # minimum number of samples in an event

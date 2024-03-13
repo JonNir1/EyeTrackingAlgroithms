@@ -18,7 +18,7 @@ from GazeEvents.SmoothPursuitEvent import SmoothPursuitEvent
 class EventFactory(ABC):
 
     @staticmethod
-    def make(et: cnst.EVENTS, t: np.ndarray, **event_data) -> Optional[BaseEvent]:
+    def make(et: cnst.EVENT_LABELS, t: np.ndarray, **event_data) -> Optional[BaseEvent]:
         """
         Creates a single GazeEvent from the given data.
 
@@ -29,34 +29,34 @@ class EventFactory(ABC):
         :return: a GazeEvent object
         :raise: ValueError if the given event type is not valid
         """
-        if et == cnst.EVENTS.UNDEFINED:
+        if et == cnst.EVENT_LABELS.UNDEFINED:
             return None
-        if et == cnst.EVENTS.BLINK:
+        if et == cnst.EVENT_LABELS.BLINK:
             return BlinkEvent(timestamps=t)
         vd = event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE)
         ps = event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size)
-        if et == cnst.EVENTS.SACCADE:
+        if et == cnst.EVENT_LABELS.SACCADE:
             return SaccadeEvent(timestamps=t,
                                 x=event_data.get("x", np.array([])),
                                 y=event_data.get("y", np.array([])),
                                 pupil=event_data.get("pupil", np.array([])),
                                 viewer_distance=vd,
                                 pixel_size=ps)
-        if et == cnst.EVENTS.PSO:
+        if et == cnst.EVENT_LABELS.PSO:
             return PSOEvent(timestamps=t,
                             x=event_data.get("x", np.array([])),
                             y=event_data.get("y", np.array([])),
                             pupil=event_data.get("pupil", np.array([])),
                             viewer_distance=vd,
                             pixel_size=ps)
-        if et == cnst.EVENTS.FIXATION:
+        if et == cnst.EVENT_LABELS.FIXATION:
             return FixationEvent(timestamps=t,
                                  x=event_data.get("x", np.array([])),
                                  y=event_data.get("y", np.array([])),
                                  pupil=event_data.get("pupil", np.array([])),
                                  viewer_distance=vd,
                                  pixel_size=ps)
-        if et == cnst.EVENTS.SMOOTH_PURSUIT:
+        if et == cnst.EVENT_LABELS.SMOOTH_PURSUIT:
             return SmoothPursuitEvent(timestamps=t,
                                       x=event_data.get("x", np.array([])),
                                       y=event_data.get("y", np.array([])),
@@ -82,7 +82,7 @@ class EventFactory(ABC):
         chunk_idxs = arr_utils.get_chunk_indices(ets)
         event_list = []
         for idxs in chunk_idxs:
-            et: cnst.EVENTS = ets[idxs[0]]
+            et: cnst.EVENT_LABELS = ets[idxs[0]]
             event_data = {}
             for k, v in kwargs.items():
                 event_data[k] = v[idxs] if hasattr(v, "__len__") else v

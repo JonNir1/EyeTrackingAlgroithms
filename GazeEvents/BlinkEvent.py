@@ -3,5 +3,5 @@ from GazeEvents.BaseEvent import BaseEvent
 
 
 class BlinkEvent(BaseEvent):
-    _EVENT_TYPE = cnst.EVENTS.BLINK
+    _EVENT_TYPE = cnst.EVENT_LABELS.BLINK
 

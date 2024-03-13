@@ -60,7 +60,7 @@ class BaseDetector(ABC):
         if not np.isfinite(ps) or ps <= 0:
             raise ValueError("pixel size must be a positive finite number")
         t, x, y = self._verify_inputs(t, x, y)
-        self._candidates = np.full_like(t, cnst.EVENTS.UNDEFINED)
+        self._candidates = np.full_like(t, cnst.EVENT_LABELS.UNDEFINED)
         self.data[cnst.GAZE] = pd.DataFrame({cnst.T: t, cnst.X: x, cnst.Y: y, cnst.EVENT_TYPE: self._candidates})
         self._viewer_distance = vd
         self._pixel_size = ps
@@ -70,8 +70,8 @@ class BaseDetector(ABC):
             # detect blinks and remove blink samples from the data
             self._candidates = self._detect_blinks(x, y)
             x_copy, y_copy = x.copy(), y.copy()
-            x_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
-            y_copy[self._candidates == cnst.EVENTS.BLINK] = np.nan
+            x_copy[self._candidates == cnst.EVENT_LABELS.BLINK] = np.nan
+            y_copy[self._candidates == cnst.EVENT_LABELS.BLINK] = np.nan
 
             # detect gaze-event candidates
             candidates = self._detect_impl(t, x, y)
@@ -107,12 +107,12 @@ class BaseDetector(ABC):
 
         :return: array of candidates
         """
-        candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
+        candidates = np.asarray(self._candidates, dtype=cnst.EVENT_LABELS).copy()
 
         # identify samples where x or y are missing as blinks
         is_missing_x = np.array([self._is_missing_value(xi) for xi in x])
         is_missing_y = np.array([self._is_missing_value(yi) for yi in y])
-        candidates[is_missing_x | is_missing_y] = cnst.EVENTS.BLINK
+        candidates[is_missing_x | is_missing_y] = cnst.EVENT_LABELS.BLINK
         candidates = self._merge_close_events(candidates)  # ignore short blinks and merge consecutive blinks
 
         # pad blinks by the given amount
@@ -120,10 +120,10 @@ class BaseDetector(ABC):
             return candidates
         pad_samples = self._calc_num_samples(self._dilate_nans_by)
         for i, c in enumerate(candidates):
-            if c == cnst.EVENTS.BLINK:
+            if c == cnst.EVENT_LABELS.BLINK:
                 start = max(0, i - pad_samples)
                 end = min(len(candidates), i + pad_samples)
-                candidates[start:end] = cnst.EVENTS.BLINK
+                candidates[start:end] = cnst.EVENT_LABELS.BLINK
         return candidates
 
     def _verify_inputs(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
@@ -152,14 +152,14 @@ class BaseDetector(ABC):
         1. Splits the candidates array into chunks of identical event-types
         2. If two chunks of the same event-type are separated by a chunk of a different event-type, and the middle
             chunk is shorter than the minimum event duration, it is set to the same event-type as the other two chunks
-        3. Sets chunks that are shorter than the minimum event duration to cnst.EVENTS.UNDEFINED
+        3. Sets chunks that are shorter than the minimum event duration to cnst.EVENT_LABELS.UNDEFINED
         """
         # calculate number of samples in the minimum event duration
         min_event_duration = min([cnfg.EVENT_MAPPING[e]["min_duration"] for e in cnfg.EVENT_MAPPING.keys()
-                                  if e != cnst.EVENTS.UNDEFINED])
+                                  if e != cnst.EVENT_LABELS.UNDEFINED])
         ns = self._calc_num_samples(min_event_duration)
         min_samples = max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
-        cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENTS.UNDEFINED)
+        cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENT_LABELS.UNDEFINED)
         return cand
 
     @final

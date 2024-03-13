@@ -8,7 +8,7 @@ import Config.experiment_config as cnfg
 
 
 class BaseEvent(ABC):
-    _EVENT_TYPE: cnst.EVENTS
+    _EVENT_TYPE: cnst.EVENT_LABELS
 
     def __init__(self, timestamps: np.ndarray):
         if timestamps is None or len(timestamps) < cnst.MINIMUM_SAMPLES_IN_EVENT:
@@ -78,7 +78,7 @@ class BaseEvent(ABC):
 
     @classmethod
     @final
-    def event_type(cls) -> cnst.EVENTS:
+    def event_type(cls) -> cnst.EVENT_LABELS:
         return cls._EVENT_TYPE
 
     @classmethod
