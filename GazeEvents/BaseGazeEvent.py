@@ -178,3 +178,6 @@ class BaseGazeEvent(BaseEvent):
             return False
         return True
 
+    def __hash__(self):
+        super_hash = super().__hash__()
+        return hash((super_hash, self._viewer_distance, self._pixel_size, tuple(self._x), tuple(self._y)))
