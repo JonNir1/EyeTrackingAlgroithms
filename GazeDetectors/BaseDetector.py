@@ -78,8 +78,8 @@ class BaseDetector(ABC):
             self._candidates = self._merge_close_events(candidates)
 
             # add important values to self.data
-            self.data[cnst.SAMPLING_RATE] = self._sr
             self.data[cnst.GAZE][cnst.EVENT_TYPE] = self._candidates    # update the event-type column
+            self.data[cnst.SAMPLING_RATE] = self._sr
             self.data[cnst.VIEWER_DISTANCE] = self._viewer_distance
             self.data[cnst.PIXEL_SIZE] = self._pixel_size
         except ValueError as e:
