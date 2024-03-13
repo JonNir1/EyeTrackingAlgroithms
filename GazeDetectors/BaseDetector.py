@@ -77,15 +77,15 @@ class BaseDetector(ABC):
             # detect gaze-event candidates
             candidates = self._detect_impl(t, x, y)
             self._candidates = self._merge_close_events(candidates)
+            self.data[cnst.GAZE][cnst.EVENT_TYPE] = self._candidates  # update the event-type column
 
             # create gaze events
             events = EventFactory.make_from_gaze_data(gaze=self.data[cnst.GAZE],
                                                       vd=self._viewer_distance,
                                                       ps=self._pixel_size)
+            self.data[cnst.EVENTS] = events  # add the events to the output data
 
             # add important values to self.data
-            self.data[cnst.GAZE][cnst.EVENT_TYPE] = self._candidates    # update the event-type column
-            self.data[cnst.EVENTS] = events                             # add the events to the output data
             self.data[cnst.SAMPLING_RATE] = self._sr
             self.data[cnst.VIEWER_DISTANCE] = self._viewer_distance
             self.data[cnst.PIXEL_SIZE] = self._pixel_size
