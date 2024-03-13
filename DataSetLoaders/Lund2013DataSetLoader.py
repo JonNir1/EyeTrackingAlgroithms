@@ -57,7 +57,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
             gaze_data = Lund2013DataSetLoader.__read_gaze_data(file)
             subject_id, stimulus_type, stimulus_name, rater = Lund2013DataSetLoader.__extract_metadata(file)
             stimulus_name = stimulus_name.removesuffix("_labelled")
-            gaze_data.rename(columns={cnst.EVENT_TYPE: rater}, inplace=True)
+            gaze_data.rename(columns={"event_type": rater}, inplace=True)
 
             # write the DF to a dict based on the subject id, stimulus type, stimulus name, or add to existing DF
             existing_df = dataframes.get((subject_id, stimulus_type, stimulus_name), None)
@@ -115,7 +115,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         # create dataframe:
         df = pd.DataFrame(data={cnst.MILLISECONDS: timestamps,
                                 cnst.X: right_x, cnst.Y: right_y,
-                                cnst.EVENT_TYPE: labels})
+                                cnst.EVENT: labels})
         df[Lund2013DataSetLoader._VIEWER_DISTANCE_CM_STR] = view_dist
         df[Lund2013DataSetLoader._PIXEL_SIZE_CM_STR] = pixel_size
         return df

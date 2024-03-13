@@ -96,7 +96,7 @@ class EventFactory(ABC):
                             vd: float = cnfg.DEFAULT_VIEWER_DISTANCE,
                             ps: float = cnfg.SCREEN_MONITOR.pixel_size) -> List[BaseEvent]:
         t = EventFactory.__extract_field(gaze, cnst.T, safe=False)
-        e = EventFactory.__extract_field(gaze, cnst.EVENT_TYPE, safe=False)  # event type
+        e = EventFactory.__extract_field(gaze, cnst.EVENT, safe=False)  # event type
         x = EventFactory.__extract_field(gaze, cnst.X, safe=True)
         y = EventFactory.__extract_field(gaze, cnst.Y, safe=True)
         p = EventFactory.__extract_field(gaze, cnst.PUPIL, safe=True)  # pupil size

@@ -19,7 +19,7 @@ class TestNHDetector(unittest.TestCase):
         data = Lund2013DataSetLoader.download_from_remote()
 
         pixel_size = 0.037824
-        labels = np.array(data[cnst.EVENT_TYPE])
+        labels = np.array(data[cnst.EVENT])
         x_coords = np.array(data[cnst.RIGHT_X])
         y_coords = np.array(data[cnst.RIGHT_Y])
         timestamps = np.array(data[cnst.MILLISECONDS])
@@ -42,9 +42,9 @@ class TestNHDetector(unittest.TestCase):
         data['candidates'] = candidates
 
         # Group by the DataFrame by the "stimulus" column
-        grouped = data.groupby([cnst.EVENT_TYPE, 'stimulus'])
+        grouped = data.groupby([cnst.EVENT, 'stimulus'])
         # grouped = data.groupby(cnst.EVENT_TYPE)
-        mse = grouped.apply(lambda x: mean_squared_error(x['candidates'], x[cnst.EVENT_TYPE]))
+        mse = grouped.apply(lambda x: mean_squared_error(x['candidates'], x[cnst.EVENT]))
         print(mse)
 
 

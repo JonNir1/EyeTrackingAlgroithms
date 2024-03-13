@@ -62,7 +62,7 @@ class BaseDetector(ABC):
             raise ValueError("pixel size must be a positive finite number")
         t, x, y = self._verify_inputs(t, x, y)
         self._candidates = np.full_like(t, cnst.EVENT_LABELS.UNDEFINED)
-        self.data[cnst.GAZE] = pd.DataFrame({cnst.T: t, cnst.X: x, cnst.Y: y, cnst.EVENT_TYPE: self._candidates})
+        self.data[cnst.GAZE] = pd.DataFrame({cnst.T: t, cnst.X: x, cnst.Y: y, cnst.EVENT: self._candidates})
         self._viewer_distance = vd
         self._pixel_size = ps
         try:
@@ -77,7 +77,7 @@ class BaseDetector(ABC):
             # detect gaze-event candidates
             candidates = self._detect_impl(t, x, y)
             self._candidates = self._merge_close_events(candidates)
-            self.data[cnst.GAZE][cnst.EVENT_TYPE] = self._candidates  # update the event-type column
+            self.data[cnst.GAZE][cnst.EVENT] = self._candidates  # update the event-type column
 
             # create gaze events
             events = EventFactory.make_from_gaze_data(gaze=self.data[cnst.GAZE],
