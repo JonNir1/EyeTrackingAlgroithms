@@ -142,8 +142,13 @@ class BaseEvent(ABC):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
+        if self._EVENT_TYPE != other._EVENT_TYPE:
+            return False
         if self._timestamps.shape != other._timestamps.shape:
             return False
         if not np.allclose(self._timestamps, other._timestamps):
             return False
         return True
+
+    def __hash__(self):
+        return hash((self._EVENT_TYPE, self._timestamps.tobytes()))
