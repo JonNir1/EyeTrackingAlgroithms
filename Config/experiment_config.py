@@ -13,12 +13,12 @@ from Config.ExperimentTriggerEnum import ExperimentTriggerEnum
 SCREEN_MONITOR: ScreenMonitor = ScreenMonitor.from_tobii_default()  # global variable: screen monitor object
 TRIGGERS = ExperimentTriggerEnum  # global variable: triggers enum
 EVENT_MAPPING = {
-    cnst.EVENTS.UNDEFINED: {"label": "Undefined", "color": "#dddddd", "min_duration": 0, "max_duration": 1e6},
-    cnst.EVENTS.FIXATION: {"label": "Fixation", "color": "#1f78b4", "min_duration": 50, "max_duration": 2000},
-    cnst.EVENTS.SACCADE: {"label": "Saccade", "color": "#33a02c", "min_duration": 10, "max_duration": 250},
-    cnst.EVENTS.PSO: {"label": "PSO", "color": "#b2df8a", "min_duration": 10, "max_duration": 80},
-    cnst.EVENTS.SMOOTH_PURSUIT: {"label": "Smooth Pursuit", "color": "#fb9a99", "min_duration": 40, "max_duration": 2000},
-    cnst.EVENTS.BLINK: {"label": "Blink", "color": "#222222", "min_duration": 20, "max_duration": 2000}
+    cnst.EVENT_LABELS.UNDEFINED: {"label": "Undefined", "color": "#dddddd", "min_duration": 0, "max_duration": 1e6},
+    cnst.EVENT_LABELS.FIXATION: {"label": "Fixation", "color": "#1f78b4", "min_duration": 50, "max_duration": 2000},
+    cnst.EVENT_LABELS.SACCADE: {"label": "Saccade", "color": "#33a02c", "min_duration": 10, "max_duration": 250},
+    cnst.EVENT_LABELS.PSO: {"label": "PSO", "color": "#b2df8a", "min_duration": 10, "max_duration": 80},
+    cnst.EVENT_LABELS.SMOOTH_PURSUIT: {"label": "Smooth Pursuit", "color": "#fb9a99", "min_duration": 40, "max_duration": 2000},
+    cnst.EVENT_LABELS.BLINK: {"label": "Blink", "color": "#222222", "min_duration": 20, "max_duration": 2000}
 }
 
 DEFAULT_MISSING_VALUE = np.nan  # default value for missing data

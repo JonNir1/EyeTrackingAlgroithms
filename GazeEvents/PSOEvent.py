@@ -5,7 +5,7 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 
 
 class PSOEvent(BaseGazeEvent):
-    _EVENT_TYPE = cnst.EVENTS.PSO
+    _EVENT_TYPE = cnst.EVENT_LABELS.PSO
 
     def is_high(self, threshold: float) -> bool:
         if np.isnan(self.peak_velocity):

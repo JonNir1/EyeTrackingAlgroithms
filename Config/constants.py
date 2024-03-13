@@ -23,7 +23,8 @@ ANGLE = "angle"
 STIMULUS = "stimulus"
 MILLISECONDS = "milliseconds"
 MICROSECONDS = "microseconds"
-EVENT_TYPE = "event_type"
+EVENT, EVENTS = "event", "events"
+EVENT_TYPE = f"{EVENT}_type"
 SAMPLING_RATE = "sampling_rate"
 VELOCITY = "velocity"
 ACCELERATION = "acceleration"
@@ -38,5 +39,5 @@ LEFT_PUPIL, RIGHT_PUPIL = f"{LEFT}_{PUPIL}", f"{RIGHT}_{PUPIL}"
 VIEWER_DISTANCE = "viewer_distance"
 PIXEL_SIZE = "pixel_size"
 
-EVENTS = GazeEventTypeEnum
+EVENT_LABELS = GazeEventTypeEnum
 MINIMUM_SAMPLES_IN_EVENT: int = 2  # minimum number of samples in an event

@@ -40,7 +40,7 @@ class EngbertDetector(BaseDetector):
         self._window_size = kwargs.get('window_size', self.__DEFAULT_WINDOW_SIZE)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
+        candidates = np.asarray(self._candidates, dtype=cnst.EVENT_LABELS).copy()
 
         # Calculate the velocity of the gaze data in both axes
         x_velocity = self._calculate_axial_velocity(x)
@@ -50,8 +50,8 @@ class EngbertDetector(BaseDetector):
 
         # Identify saccade candidates as samples with velocity greater than the noise threshold
         ellipse = (x_velocity / thresh_x) ** 2 + (y_velocity / thresh_y) ** 2
-        candidates[ellipse < 1] = cnst.EVENTS.FIXATION
-        candidates[ellipse >= 1] = cnst.EVENTS.SACCADE
+        candidates[ellipse < 1] = cnst.EVENT_LABELS.FIXATION
+        candidates[ellipse >= 1] = cnst.EVENT_LABELS.SACCADE
 
         # add important values to self.data
         df = self.data[cnst.GAZE]

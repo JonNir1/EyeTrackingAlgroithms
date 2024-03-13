@@ -30,7 +30,7 @@ class IVTDetector(BaseDetector):
         self._velocity_threshold = kwargs.get('velocity_threshold', self.__DEFAULT_VELOCITY_THRESHOLD)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        candidates = np.asarray(self._candidates, dtype=cnst.EVENTS).copy()
+        candidates = np.asarray(self._candidates, dtype=cnst.EVENT_LABELS).copy()
         angular_velocities = vis_utils.calculates_angular_velocities_from_pixels(xs=x, ys=y, timestamps=t,
                                                                                  d=self._viewer_distance,
                                                                                  pixel_size=self._pixel_size)
@@ -38,6 +38,6 @@ class IVTDetector(BaseDetector):
                                                    f"match the length of x (shape {x.shape})")
 
         # assume undefined (non-blink) samples are fixations, unless angular velocity is above threshold
-        candidates[candidates == cnst.EVENTS.UNDEFINED] = cnst.EVENTS.FIXATION
-        candidates[angular_velocities >= self._velocity_threshold] = cnst.EVENTS.SACCADE
+        candidates[candidates == cnst.EVENT_LABELS.UNDEFINED] = cnst.EVENT_LABELS.FIXATION
+        candidates[angular_velocities >= self._velocity_threshold] = cnst.EVENT_LABELS.SACCADE
         return candidates

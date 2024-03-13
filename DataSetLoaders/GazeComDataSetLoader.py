@@ -50,11 +50,11 @@ class GazeComDataSetLoader(BaseDataSetLoader):
     __VIEWER_DISTANCE_CM_VAL = 56.5
     __SCREEN_MONITOR = ScreenMonitor(width=40, height=22.5, resolution=(1280, 720), refresh_rate=30)
     __EVENT_MAPPING = {
-        0: cnst.EVENTS.UNDEFINED,
-        1: cnst.EVENTS.FIXATION,
-        2: cnst.EVENTS.SACCADE,
-        3: cnst.EVENTS.SMOOTH_PURSUIT,
-        4: cnst.EVENTS.UNDEFINED  # noise
+        0: cnst.EVENT_LABELS.UNDEFINED,
+        1: cnst.EVENT_LABELS.FIXATION,
+        2: cnst.EVENT_LABELS.SACCADE,
+        3: cnst.EVENT_LABELS.SMOOTH_PURSUIT,
+        4: cnst.EVENT_LABELS.UNDEFINED  # noise
     }
     __COLUMNS_MAPPING = {"time": cnst.MILLISECONDS, "x": cnst.X, "y": cnst.Y,
                          "handlabeller1": f"{__HANDLABELLER}1", "handlabeller2": f"{__HANDLABELLER}2",

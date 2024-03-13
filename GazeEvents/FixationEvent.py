@@ -7,7 +7,7 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 
 
 class FixationEvent(BaseGazeEvent):
-    _EVENT_TYPE = cnst.EVENTS.FIXATION
+    _EVENT_TYPE = cnst.EVENT_LABELS.FIXATION
 
     @property
     def center_of_mass(self) -> Tuple[float, float]:
