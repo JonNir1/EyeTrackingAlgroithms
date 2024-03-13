@@ -23,13 +23,13 @@ class BaseEvent(ABC):
     @property
     def start_time(self) -> float:
         # Event's start time in milliseconds
-        return self._timestamps[0]
+        return float(self._timestamps[0])
 
     @final
     @property
     def end_time(self) -> float:
         # Event's end time in milliseconds
-        return self._timestamps[-1]
+        return float(self._timestamps[-1])
 
     @final
     @property
@@ -147,4 +147,3 @@ class BaseEvent(ABC):
         if not np.allclose(self._timestamps, other._timestamps):
             return False
         return True
-

@@ -372,7 +372,6 @@ class NHDetector(BaseDetector):
         candidates_copy[~(is_noise | is_saccade | is_pso | is_blinks)] = cnst.EVENT_LABELS.FIXATION
         return candidates_copy
 
-
     @staticmethod
     def __find_local_minimum_index(arr: np.ndarray, idx: int, min_thresh=np.inf, move_back=False) -> int:
         """
