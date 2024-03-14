@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from abc import ABC
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
@@ -94,7 +94,10 @@ class EventFactory(ABC):
     @staticmethod
     def make_from_gaze_data(gaze: pd.DataFrame,
                             vd: float = cnfg.DEFAULT_VIEWER_DISTANCE,
-                            ps: float = cnfg.SCREEN_MONITOR.pixel_size) -> List[BaseEvent]:
+                            ps: float = cnfg.SCREEN_MONITOR.pixel_size,
+                            column_mapping: Optional[Dict[str, str]] = None) -> List[BaseEvent]:
+        if column_mapping:
+            gaze = gaze.rename(columns=column_mapping, inplace=False)
         t = EventFactory.__extract_field(gaze, cnst.T, safe=False)
         e = EventFactory.__extract_field(gaze, cnst.EVENT, safe=False)  # event type
         x = EventFactory.__extract_field(gaze, cnst.X, safe=True)
