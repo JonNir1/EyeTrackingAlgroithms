@@ -22,7 +22,7 @@ class TestNHDetector(unittest.TestCase):
         labels = np.array(data[cnst.EVENT])
         x_coords = np.array(data[cnst.RIGHT_X])
         y_coords = np.array(data[cnst.RIGHT_Y])
-        timestamps = np.array(data[cnst.MILLISECONDS])
+        timestamps = np.array(data[cnst.T])
         detect_obj = NHDetector(sr=500, pixel_size=pixel_size, view_dist=0.6700, timestamps=list(timestamps))
         candidates = detect_obj.detect_candidates_monocular(timestamps, x_coords, y_coords)
 
