@@ -113,7 +113,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         labels = pd.Series(samples_data[:, 5]).apply(lambda x: BaseDataSetLoader._parse_gaze_event(x, safe=True))
 
         # create dataframe:
-        df = pd.DataFrame(data={cnst.MILLISECONDS: timestamps,
+        df = pd.DataFrame(data={cnst.T: timestamps,
                                 cnst.X: right_x, cnst.Y: right_y,
                                 cnst.EVENT: labels})
         df[Lund2013DataSetLoader._VIEWER_DISTANCE_CM_STR] = view_dist

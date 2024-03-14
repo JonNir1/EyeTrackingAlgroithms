@@ -77,12 +77,12 @@ class IRFDataSetLoader(BaseDataSetLoader):
 
         # rename columns: replace `t` with `milliseconds`, `evt` with `rater_name`
         # also, drop the `status` column that indicates whether the data is valid.
-        df.rename(columns={"t": cnst.MILLISECONDS, "evt": cls.__RATER_NAME, "x": cnst.X, "y": cnst.Y},
+        df.rename(columns={"t": cnst.T, "evt": cls.__RATER_NAME, "x": cnst.X, "y": cnst.Y},
                   inplace=True)
         df.drop(columns=["status"], inplace=True)
 
         # convert to milliseconds:
-        df[cnst.MILLISECONDS] = df[cnst.MILLISECONDS] * 1000
+        df[cnst.T] = df[cnst.T] * cnst.MILLISECONDS_PER_SECOND
 
         # convert x-y coordinates to pixels (use apparatus values):
         x, y = cls.__convert_coordinates(x=df[cnst.X], y=df[cnst.Y])

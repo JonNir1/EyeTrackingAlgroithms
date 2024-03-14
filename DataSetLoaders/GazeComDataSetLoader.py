@@ -56,7 +56,7 @@ class GazeComDataSetLoader(BaseDataSetLoader):
         3: cnst.EVENT_LABELS.SMOOTH_PURSUIT,
         4: cnst.EVENT_LABELS.UNDEFINED  # noise
     }
-    __COLUMNS_MAPPING = {"time": cnst.MILLISECONDS, "x": cnst.X, "y": cnst.Y,
+    __COLUMNS_MAPPING = {"time": cnst.T, "x": cnst.X, "y": cnst.Y,
                          "handlabeller1": f"{__HANDLABELLER}1", "handlabeller2": f"{__HANDLABELLER}2",
                          "handlabeller_final": f"{__HANDLABELLER}_FINAL"}
 
