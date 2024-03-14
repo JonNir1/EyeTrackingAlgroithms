@@ -31,6 +31,9 @@ class EventFactory(ABC):
         """
         if et == cnst.EVENT_LABELS.UNDEFINED:
             return None
+        if len(t) < cnst.MINIMUM_SAMPLES_IN_EVENT:
+            # todo: log warning
+            return None
         if et == cnst.EVENT_LABELS.BLINK:
             return BlinkEvent(timestamps=t)
         vd = event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE)
