@@ -74,7 +74,11 @@ engbert_events = engbert_res[cnst.EVENTS]
 nh_events = nh_res[cnst.EVENTS]
 
 onset_match__eng = EM.onset_latency_matching(gt_events, engbert_events, max_onset_latency=np.inf)
+onset_diffs__eng = [k.start_time - v[0].start_time for k, v in onset_match__eng.items()]
 onset_match__eng_no_xmatching = EM.onset_latency_matching(gt_events, engbert_events, max_onset_latency=np.inf, allow_cross_matching=False)
+onset_diffs__eng_no_xmatching = [k.start_time - v[0].start_time for k, v in onset_match__eng_no_xmatching.items()]
 
 onset_match__nh = EM.onset_latency_matching(gt_events, nh_events, max_onset_latency=np.inf)
+onset_diffs__nh = [k.start_time - v[0].start_time for k, v in onset_match__nh.items()]
 onset_match__nh_no_xmatching = EM.onset_latency_matching(gt_events, nh_events, max_onset_latency=np.inf, allow_cross_matching=False)
+onset_diffs__nh_no_xmatching = [k.start_time - v[0].start_time for k, v in onset_match__nh_no_xmatching.items()]
