@@ -45,22 +45,20 @@ start = time.time()
 trial2 = lund[lund[cnst.TRIAL] == 2]
 pixel_size = trial2["pixel_size_cm"].to_numpy()[0]
 viewer_distance = trial2["viewer_distance_cm"].to_numpy()[0]
-
 gt = trial2["MN"].to_numpy()
-# gt_events = EF.EventFactory.make_from_gaze_data(trial2, viewer_distance, pixel_size)  # todo: fixme
 
 engbert = EngbertDetector(viewer_distance=viewer_distance, pixel_size=pixel_size)
-engbert_res = engbert.detect(t=trial2[cnst.MILLISECONDS].to_numpy(),
+engbert_res = engbert.detect(t=trial2[cnst.T].to_numpy(),
                              x=trial2[cnst.X].to_numpy(),
                              y=trial2[cnst.Y].to_numpy())
 
 nh = NHDetector(viewer_distance=viewer_distance, pixel_size=pixel_size)
-nh_res = nh.detect(t=trial2[cnst.MILLISECONDS].to_numpy(),
+nh_res = nh.detect(t=trial2[cnst.T].to_numpy(),
                    x=trial2[cnst.X].to_numpy(),
                    y=trial2[cnst.Y].to_numpy())
 
 rmdnv = REMoDNaVDetector(viewer_distance=viewer_distance, pixel_size=pixel_size)
-rmdnv_res = rmdnv.detect(t=trial2[cnst.MILLISECONDS].to_numpy(),
+rmdnv_res = rmdnv.detect(t=trial2[cnst.T].to_numpy(),
                          x=trial2[cnst.X].to_numpy(),
                          y=trial2[cnst.Y].to_numpy())
 
@@ -71,5 +69,12 @@ del start, end
 ######################################
 # Event Matching
 
-iou_match__eng_nh = EM.iou_matching(engbert_res[cnst.EVENTS], nh_res[cnst.EVENTS])
-iou_match__nh_eng = EM.iou_matching(nh_res[cnst.EVENTS], engbert_res[cnst.EVENTS])
+gt_events = EF.EventFactory.make_from_gaze_data(trial2, viewer_distance, pixel_size, column_mapping={"MN": cnst.EVENT})
+engbert_events = engbert_res[cnst.EVENTS]
+nh_events = nh_res[cnst.EVENTS]
+
+onset_match__eng = EM.onset_latency_matching(gt_events, engbert_events, max_onset_latency=np.inf)
+onset_match__eng_no_xmatching = EM.onset_latency_matching(gt_events, engbert_events, max_onset_latency=np.inf, allow_cross_matching=False)
+
+onset_match__nh = EM.onset_latency_matching(gt_events, nh_events, max_onset_latency=np.inf)
+onset_match__nh_no_xmatching = EM.onset_latency_matching(gt_events, nh_events, max_onset_latency=np.inf, allow_cross_matching=False)
