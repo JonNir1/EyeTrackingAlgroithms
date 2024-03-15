@@ -167,7 +167,7 @@ def _find_matches(gt: BaseEvent,
     :return: sequence of predicted events that are possible matches for the ground-truth event
     """
     if not allow_cross_matching:
-        predictions = [p for p in predictions if p.event_type == gt.event_type]
+        predictions = [p for p in predictions if p.event_type() == gt.event_type()]
     predictions = [p for p in predictions if
                    gt.overlap_time(p) >= min_overlap and
                    gt.intersection_over_union(p) >= min_iou and
