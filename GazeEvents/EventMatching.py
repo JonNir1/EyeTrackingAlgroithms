@@ -142,7 +142,8 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
                                          max_onset_latency=max_onset_latency,
                                          max_offset_latency=max_offset_latency)
         p = _choose_match(gt, possible_matches, reduction)
-        matches[gt] = p
+        if len(p):
+            matches[gt] = p
     return matches
 
 
