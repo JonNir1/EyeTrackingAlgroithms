@@ -103,7 +103,7 @@ class BaseEvent(ABC):
     @classmethod
     @final
     def get_min_duration(cls) -> float:
-        return cnfg.EVENT_MAPPING[cls._EVENT_TYPE]["min_duration"]
+        return cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION]
 
     @classmethod
     @final
@@ -111,15 +111,15 @@ class BaseEvent(ABC):
         event_type = cls._EVENT_TYPE.name.capitalize()
         if min_duration < 0:
             raise ValueError(f"min_duration for {event_type} must be a positive number")
-        max_duration = cnfg.EVENT_MAPPING[cls._EVENT_TYPE]["max_duration"]
+        max_duration = cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MAX_DURATION]
         if min_duration > max_duration:
             raise ValueError(f"min_duration for {event_type} must be less than or equal to max_duration")
-        cnfg.EVENT_MAPPING[cls._EVENT_TYPE]["min_duration"] = min_duration
+        cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION] = min_duration
 
     @classmethod
     @final
     def get_max_duration(cls) -> float:
-        return cnfg.EVENT_MAPPING[cls._EVENT_TYPE]["max_duration"]
+        return cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION]
 
     @classmethod
     @final
@@ -127,10 +127,10 @@ class BaseEvent(ABC):
         event_type = cls._EVENT_TYPE.name.capitalize()
         if max_duration < 0:
             raise ValueError(f"max_duration for {event_type} must be a positive number")
-        min_duration = cnfg.EVENT_MAPPING[cls._EVENT_TYPE]["min_duration"]
+        min_duration = cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION]
         if max_duration < min_duration:
             raise ValueError(f"max_duration for {event_type} must be greater than or equal to min_duration")
-        cnfg.EVENT_MAPPING[cls._EVENT_TYPE]["max_duration"] = max_duration
+        cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MAX_DURATION] = max_duration
 
     def __repr__(self):
         event_type = self._EVENT_TYPE.name.capitalize()

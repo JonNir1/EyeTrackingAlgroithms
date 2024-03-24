@@ -33,7 +33,7 @@ class NHDetector(BaseDetector):
             5a. Detect samples that are not part of a saccade, PSO or noise
             5b. Ignore fixations that are too short
     """
-    __DEFAULT_FILTER_DURATION = cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.SACCADE]["min_duration"] * 2  # default: 10*2 ms
+    __DEFAULT_FILTER_DURATION = cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.SACCADE][cnst.MIN_DURATION] * 2  # default: 10*2 ms
     __DEFAULT_FILTER_POLYORDER = 2
     __DEFAULT_MAX_SACCADE_VELOCITY, __DEFAULT_MAX_SACCADE_ACCELERATION = 1000, 100000  # deg/s, deg/s^2
     __DEFAULT_ALPHA = 0.7   # weight for saccade onset threshold when calculating saccade_offset_threshold
@@ -64,7 +64,7 @@ class NHDetector(BaseDetector):
 
     @property
     def _minimum_fixation_samples(self) -> int:
-        min_duration = cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.FIXATION]["min_duration"]
+        min_duration = cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.FIXATION][cnst.MIN_DURATION]
         return self._calc_num_samples(min_duration)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -195,7 +195,7 @@ class NHDetector(BaseDetector):
                 chunks_below_pt = [ch for ch in arr_utils.get_chunk_indices(is_below_pt)
                                    if is_below_pt[ch[0]] and len(ch) >= self._minimum_fixation_samples]
                 # calc number of samples to ignore at the edges of each chunk (to avoid contamination from saccades)
-                num_edge_idxs = self._calc_num_samples(cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.SACCADE]["min_duration"] // 3)
+                num_edge_idxs = self._calc_num_samples(cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.SACCADE][cnst.MIN_DURATION] // 3)
                 chunks_below_pt = [ch[num_edge_idxs: -num_edge_idxs] for ch in chunks_below_pt]
                 is_below_pt = np.concatenate(chunks_below_pt)
 
@@ -277,7 +277,7 @@ class NHDetector(BaseDetector):
 
         :return: dict matching saccade id with PSO start-idx, end-idx and PSO type (high or low)
         """
-        max_pso_samples = self._calc_num_samples(cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.PSO]["max_duration"])
+        max_pso_samples = self._calc_num_samples(cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.PSO][cnst.MAX_DURATION])
         pso_info = {}  # saccade_id -> (start_idx, end_idx, pso_type)
 
         # extract saccade indices to ready-to-use lists
