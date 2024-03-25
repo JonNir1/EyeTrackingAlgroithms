@@ -49,6 +49,11 @@ class BaseDetector(ABC):
         if self._dilate_nans_by < 0:
             raise ValueError("dilate_nans_by must be non-negative")
 
+    @property
+    @final
+    def name(self) -> str:
+        return self.__class__.__name__
+
     @final
     def detect(self,
                t: np.ndarray,
