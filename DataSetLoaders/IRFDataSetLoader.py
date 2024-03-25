@@ -7,6 +7,7 @@ import requests as req
 from typing import Tuple, Dict
 
 from Config import constants as cnst
+from Config.helpers import parse_gaze_event
 import Utils.visual_angle_utils as vis_utils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
@@ -53,7 +54,7 @@ class IRFDataSetLoader(BaseDataSetLoader):
             gaze_data = pd.DataFrame(np.load(file))
 
             # convert gaze events from int to GazeEventTypeEnum
-            gaze_data['evt'] = gaze_data['evt'].apply(lambda x: BaseDataSetLoader._parse_gaze_event(x, safe=True))
+            gaze_data['evt'] = gaze_data['evt'].apply(lambda x: parse_gaze_event(x, safe=True))
 
             # extract subject id:
             _, file_name, _ = IRFDataSetLoader._extract_filename_and_extension(f)

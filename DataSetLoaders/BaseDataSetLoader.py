@@ -114,30 +114,3 @@ class BaseDataSetLoader(ABC):
         path, extension = os.path.splitext(full_path)
         path, filename = os.path.split(path)
         return path, filename, extension
-
-    @staticmethod
-    @final
-    def _parse_gaze_event(ev: Union[GazeEventTypeEnum, int, str, float], safe: bool = True) -> GazeEventTypeEnum:
-        """
-        Parses a gaze label from the original dataset's type to type GazeEventTypeEnum
-        :param ev: the gaze label to parse
-        :param safe: if True, returns GazeEventTypeEnum.UNDEFINED when the parsing fails
-        :return: the parsed gaze label
-        """
-        try:
-            if type(ev) not in [GazeEventTypeEnum, int, str, float]:
-                raise TypeError(f"Incompatible type: {type(ev)}")
-            if isinstance(ev, GazeEventTypeEnum):
-                return ev
-            if isinstance(ev, int):
-                return GazeEventTypeEnum(ev)
-            if isinstance(ev, str):
-                return GazeEventTypeEnum[ev.upper()]
-            if isinstance(ev, float):
-                if not ev.is_integer():
-                    raise ValueError(f"Invalid value: {ev}")
-                return GazeEventTypeEnum(int(ev))
-        except Exception as err:
-            if safe and (isinstance(err, ValueError) or isinstance(err, TypeError)):
-                return GazeEventTypeEnum.UNDEFINED
-            raise err
