@@ -61,8 +61,10 @@ class HFCDataSetLoader(BaseDataSetLoader):
                                                           and f.endswith('.txt'))]
         annotation_dfs = {}
         for f in coder_files:
-            rater_name, rater_data = cls.__read_annotations(zip_file.open(f))
-            annotation_dfs[rater_name] = rater_data
+            with zip_file.open(f) as open_file:
+                rater_data = pd.read_csv(open_file, sep='\t')
+                _, rater_name, _ = HFCDataSetLoader._extract_filename_and_extension(open_file.name)
+                annotation_dfs[rater_name] = rater_data
 
         # merge annotations with ET data:
         merged_df = cls.__merge_gaze_data_with_annotations(gaze_dfs, annotation_dfs)
@@ -92,12 +94,6 @@ class HFCDataSetLoader(BaseDataSetLoader):
         gaze_data[HFCDataSetLoader.__SUBJECT_TYPE] = subject_type
         gaze_data[cnst.STIMULUS] = "free_viewing" if subject_type == "adult" else "search_task"
         return trial_name, gaze_data
-
-    @staticmethod
-    def __read_annotations(file) -> Tuple[str, pd.DataFrame]:
-        rater_data = pd.read_csv(file, sep='\t')
-        _, rater_name, _ = HFCDataSetLoader._extract_filename_and_extension(file.name)
-        return rater_name, rater_data
 
     @staticmethod
     def __merge_gaze_data_with_annotations(gaze_dfs: Dict[str, pd.DataFrame],
