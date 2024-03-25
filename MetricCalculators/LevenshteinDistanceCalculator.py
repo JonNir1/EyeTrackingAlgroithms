@@ -1,4 +1,3 @@
-import numpy as np
 import Levenshtein
 from typing import Sequence
 
