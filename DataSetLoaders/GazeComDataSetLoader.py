@@ -97,6 +97,11 @@ class GazeComDataSetLoader(BaseDataSetLoader):
         df.drop(columns=['confidence'], inplace=True)
         df.rename(columns=cls.__COLUMNS_MAPPING, inplace=True)
 
+        # map event labels:
+        df[f"{GazeComDataSetLoader.__HANDLABELLER}1"] = df[f"{GazeComDataSetLoader.__HANDLABELLER}1"].map(cls.__EVENT_MAPPING)
+        df[f"{GazeComDataSetLoader.__HANDLABELLER}2"] = df[f"{GazeComDataSetLoader.__HANDLABELLER}2"].map(cls.__EVENT_MAPPING)
+        df[f"{GazeComDataSetLoader.__HANDLABELLER}_FINAL"] = df[f"{GazeComDataSetLoader.__HANDLABELLER}_FINAL"].map(cls.__EVENT_MAPPING)
+
         # add a column for trial number:
         # trials are instances that share the same subject id & stimulus.
         trial_counter = 1
