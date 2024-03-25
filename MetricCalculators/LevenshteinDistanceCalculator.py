@@ -2,6 +2,7 @@ import Levenshtein
 from typing import Sequence
 
 import Config.constants as cnst
+import Config.helpers as hlp
 from GazeEvents.BaseEvent import BaseEvent
 
 _NUM_EVENTS = len(cnst.EVENT_LABELS)
@@ -9,15 +10,9 @@ _NUM_EVENTS = len(cnst.EVENT_LABELS)
 
 def calculate_distance(seq1: Sequence, seq2: Sequence) -> int:
     """ Calculates the Levenshtein distance between two sequences of samples or events. """
-    if all(isinstance(e, cnst.EVENT_LABELS) for e in seq1) and all(isinstance(e, cnst.EVENT_LABELS) for e in seq2):
-        # both sequences are sample based
-        return Levenshtein.distance(seq1, seq2)
-    if all(isinstance(e, BaseEvent) for e in seq1) and all(isinstance(e, BaseEvent) for e in seq2):
-        # both sequences are event based
-        seq1 = [e.event_type for e in seq1]
-        seq2 = [e.event_type for e in seq2]
-        return Levenshtein.distance(seq1, seq2)
-    raise ValueError("Sequences must be of the same type (`GazeEventTypeEnum` or `BaseEvent`)")
+    seq1 = [e.event_type() if isinstance(e, BaseEvent) else hlp.parse_gaze_event(e, safe=False) for e in seq1]
+    seq2 = [e.event_type() if isinstance(e, BaseEvent) else hlp.parse_gaze_event(e, safe=False) for e in seq2]
+    return Levenshtein.distance(seq1, seq2)
 
 
 def calculate_ratio(seq1: Sequence, seq2: Sequence) -> float:
