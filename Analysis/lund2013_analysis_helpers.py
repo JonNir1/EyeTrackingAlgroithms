@@ -87,7 +87,11 @@ def _detect_trial(trial_data: pd.DataFrame, *detectors):
                                                 column_mapping={rater: cnst.EVENT}) for rater in _RATER_NAMES}
     for det in detectors:
         with warnings.catch_warnings(action="ignore"):
-            res = det.detect()
+            res = det.detect(
+                t=trial_data[cnst.T].to_numpy(),
+                x=trial_data[cnst.X].to_numpy(),
+                y=trial_data[cnst.Y].to_numpy()
+            )
         labels[det.name] = res[cnst.GAZE][cnst.EVENT]
         events[det.name] = res[cnst.EVENTS]
     return labels, events
