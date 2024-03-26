@@ -109,7 +109,7 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
                      min_iou: float = - float("inf"),
                      max_onset_latency: float = float("inf"),
                      max_offset_latency: float = float("inf"),
-                     reduction: str = "all") -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                     reduction: str = "all") -> Dict[BaseEvent, Sequence[BaseEvent]]:
     """
     Match each ground-truth event to a predicted event(s) that satisfies the specified criteria.
 
@@ -189,7 +189,7 @@ def _find_matches(gt: BaseEvent,
 
 def _choose_match(gt: BaseEvent,
                   matches: Sequence[BaseEvent],
-                  reduction: str) -> Union[BaseEvent, Sequence[BaseEvent]]:
+                  reduction: str) -> Sequence[BaseEvent]:
     """
     Choose predicted event(s) matching the ground-truth event, based on the reduction function.
     Possible reduction functions:
