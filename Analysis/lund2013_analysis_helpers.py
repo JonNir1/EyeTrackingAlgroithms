@@ -107,7 +107,7 @@ def _detect_trial(trial_data, *detectors):
     return labels, events
 
 
-def _calculate_distance(data: pd.DataFrame, distance_func: Callable, **distance_kwargs) -> pd.DataFrame:
+def _calculate_distance(data: pd.DataFrame, distance_func: Callable) -> pd.DataFrame:
     column_pairs = list(itertools.combinations_with_replacement(data.columns, 2))
     res = {}
     for idx in data.index:
@@ -119,7 +119,7 @@ def _calculate_distance(data: pd.DataFrame, distance_func: Callable, **distance_
             elif pd.isnull(vals1).any() or pd.isnull(vals2).any():
                 raise AssertionError("Missing values in detected sequences.")
             else:
-                res[idx][pair] = distance_func(vals1, vals2, **distance_kwargs)
+                res[idx][pair] = distance_func(vals1, vals2)
     res = pd.DataFrame.from_dict(res, orient="index")
     res.index.names = data.index.names
     return res
