@@ -21,6 +21,11 @@ class BaseEvent(ABC):
 
     @final
     @property
+    def event_type(self) -> cnst.EVENT_LABELS:
+        return self.__class__._EVENT_TYPE
+
+    @final
+    @property
     def start_time(self) -> float:
         # Event's start time in milliseconds
         return float(self._timestamps[0])
@@ -94,11 +99,6 @@ class BaseEvent(ABC):
         intersection = self.overlap_time(other)
         union = self.duration + other.duration - intersection
         return intersection / union
-
-    @classmethod
-    @final
-    def event_type(cls) -> cnst.EVENT_LABELS:
-        return cls._EVENT_TYPE
 
     @classmethod
     @final
