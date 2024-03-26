@@ -145,15 +145,15 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
                                          max_onset_latency=max_onset_latency,
                                          max_offset_latency=max_offset_latency)
         p = _choose_match(gt, possible_matches, reduction)
-        matches[gt] = p
+        if len(p):
+            matches[gt] = p
         if reduction != "all":
             # If reduction is not 'all', cannot allow multiple matches for the same prediction
             matched_predictions.update(p)
 
     # verify output integrity
-    assert len(matches) == len(ground_truth), "Some ground-truth events were not matched"
     if reduction != "all":
-        assert 0 <= max(len(v) for v in matches.values() if isinstance(v, list)) <= 1, "Multiple matches for a GT event"
+        assert max(len(v) for v in matches.values() if isinstance(v, list)) <= 1, "Multiple matches for a GT event"
         assert matched_predictions == set([v[0] for v in matches.values() if len(v)]), "Matched predictions are not unique"
     return matches
 
