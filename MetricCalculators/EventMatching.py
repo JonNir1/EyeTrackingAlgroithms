@@ -132,7 +132,7 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
     :return: dictionary, where keys are ground-truth events and values are their matched predicted event(s)
     :raises NotImplementedError: if the reduction function is not implemented
     """
-    reduction = reduction.lower().replace("_", " ").strip()
+    reduction = reduction.lower().replace("_", " ").replace("-", " ").strip()
     matches = {}
     matched_predictions = set()
     for gt in ground_truth:
@@ -210,7 +210,7 @@ def _choose_match(gt: BaseEvent,
     :return: predicted event(s) matching the ground-truth event
     :raises NotImplementedError: if the reduction function is not implemented
     """
-    reduction = reduction.lower().replace("_", " ").strip()
+    reduction = reduction.lower().replace("_", " ").replace("-", " ").strip()
     if len(matches) == 0:
         return []
     if len(matches) == 1:
