@@ -48,6 +48,7 @@ def calculate_distance(detected: pd.DataFrame, distance: str, **distance_kwargs)
     if distance == "kl" or distance == "kl divergence" or distance == "kullback leibler":
         transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
         return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
+    raise ValueError(f"Unknown distance measure: {distance}")
 
 
 def event_matching(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.DataFrame:
