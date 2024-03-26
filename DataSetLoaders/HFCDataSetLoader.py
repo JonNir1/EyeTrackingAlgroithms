@@ -34,7 +34,6 @@ class HFCDataSetLoader(BaseDataSetLoader):
         "Journal of Vision, 16(8), 10."
     ]
     _NAME: str = "HFC"
-
     __SUBJECT_TYPE = "subject_type"
 
     @classmethod
