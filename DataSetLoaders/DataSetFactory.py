@@ -22,7 +22,7 @@ class DataSetFactory(ABC):
         """
         loader_class = [c for c in BaseDataSetLoader.__subclasses__() if c.dataset_name().lower() == name.lower()]
         if not loader_class:
-            raise NameError(f"Dataset loader for {name} not found")
+            raise ValueError(f"Dataset loader for {name} not found")
         dataset = loader_class[0].load(should_save=False)
         return DataSetFactory.process(dataset, raters, detectors)
 
