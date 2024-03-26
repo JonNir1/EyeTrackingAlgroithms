@@ -8,7 +8,7 @@ import MetricCalculators.TransitionMatrix as tm
 from GazeEvents.EventMatcher import EventMatcher
 
 
-def calculate_distance(detected: pd.DataFrame, distance: str, **distance_kwargs) -> pd.DataFrame:
+def calculate_distance(detected: pd.DataFrame, distance: str) -> pd.DataFrame:
     distance = distance.lower().replace("_", " ").replace("-", " ").strip()
     if distance == "lev" or distance == "levenshtein":
         return _calculate_joint_measure(detected, lev.calculate_distance)
