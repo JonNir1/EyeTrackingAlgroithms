@@ -31,9 +31,9 @@ def detect_events(*detectors) -> (pd.DataFrame, pd.DataFrame):
         samples_dict[(trial_num, subject_id, stimulus, stimulus_name)] = labels
         event_dict[(trial_num, subject_id, stimulus, stimulus_name)] = events
     # create output dataframes
-    samples_df = pd.DataFrame.from_dict(samples_dict, orient="index")
+    samples_df = pd.DataFrame.from_dict(samples_dict, orient="index").sort_index()
     samples_df.index.names = _INDEX_NAMES
-    events_df = pd.DataFrame.from_dict(event_dict, orient="index")
+    events_df = pd.DataFrame.from_dict(event_dict, orient="index").sort_index()
     events_df.index.names = _INDEX_NAMES
     return samples_df, events_df
 
