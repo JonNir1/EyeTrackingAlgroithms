@@ -1,12 +1,8 @@
 import time
 import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
 import plotly.io as pio
-from plotly.subplots import make_subplots
 
 import Config.constants as cnst
-import Config.experiment_config as cnfg
 
 # from DataSetLoaders.HFCDataSetLoader import HFCDataSetLoader as HFC
 # from DataSetLoaders.IRFDataSetLoader import IRFDataSetLoader as IRF
@@ -20,7 +16,7 @@ from GazeDetectors.NHDetector import NHDetector
 from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
 
 import GazeEvents.EventFactory as EF
-import GazeEvents.EventMatching as EM
+import MetricCalculators.EventMatching as EM
 
 pio.renderers.default = "browser"
 
