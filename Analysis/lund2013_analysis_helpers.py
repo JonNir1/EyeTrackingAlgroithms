@@ -71,7 +71,7 @@ def calculate_distance(detected: pd.DataFrame, distance: str, **distance_kwargs)
         return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
 
 
-def _detect_trial(trial_data, *detectors):
+def _detect_trial(trial_data: pd.DataFrame, *detectors):
     viewer_distance = trial_data["viewer_distance_cm"].to_numpy()[0]
     pixel_size = trial_data["pixel_size_cm"].to_numpy()[0]
     with warnings.catch_warnings(action="ignore"):
