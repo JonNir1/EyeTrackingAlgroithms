@@ -5,6 +5,10 @@ from typing import List
 
 import Config.constants as cnst
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
+from DataSetLoaders.GazeComDataSetLoader import GazeComDataSetLoader
+from DataSetLoaders.HFCDataSetLoader import HFCDataSetLoader
+from DataSetLoaders.IRFDataSetLoader import IRFDataSetLoader
+from DataSetLoaders.Lund2013DataSetLoader import Lund2013DataSetLoader
 from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.EventFactory import EventFactory
 
@@ -23,7 +27,8 @@ class DataSetFactory(ABC):
         loader_class = [c for c in BaseDataSetLoader.__subclasses__() if c.dataset_name().lower() == name.lower()]
         if not loader_class:
             raise ValueError(f"Dataset loader for {name} not found")
-        dataset = loader_class[0].load(should_save=False)
+        loader_class = loader_class[0]
+        dataset = loader_class.load(should_save=False)
         return DataSetFactory.process(dataset, raters, detectors)
 
     @staticmethod
