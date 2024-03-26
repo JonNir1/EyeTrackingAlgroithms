@@ -132,18 +132,29 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
     :return: dictionary, where keys are ground-truth events and values are their matched predicted event(s)
     :raises NotImplementedError: if the reduction function is not implemented
     """
+    reduction = reduction.lower().replace("_", " ").strip()
     matches = {}
+    matched_predictions = set()
     for gt in ground_truth:
+        unmatched_predictions = [p for p in predictions if p not in matched_predictions]
         possible_matches = _find_matches(gt=gt,
-                                         predictions=predictions,
+                                         predictions=unmatched_predictions,
                                          allow_cross_matching=allow_cross_matching,
                                          min_overlap=min_overlap,
                                          min_iou=min_iou,
                                          max_onset_latency=max_onset_latency,
                                          max_offset_latency=max_offset_latency)
         p = _choose_match(gt, possible_matches, reduction)
-        if len(p):
-            matches[gt] = p
+        matches[gt] = p
+        if reduction != "all":
+            # If reduction is not 'all', cannot allow multiple matches for the same prediction
+            matched_predictions.update(p)
+
+    # verify output integrity
+    assert len(matches) == len(ground_truth), "Some ground-truth events were not matched"
+    if reduction != "all":
+        assert 0 <= max(len(v) for v in matches.values() if isinstance(v, list)) <= 1, "Multiple matches for a GT event"
+        assert matched_predictions == set([v[0] for v in matches.values() if len(v)]), "Matched predictions are not unique"
     return matches
 
 
