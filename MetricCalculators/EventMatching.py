@@ -31,10 +31,10 @@ def last_overlap_matching(ground_truth: Sequence[BaseEvent],
                             min_overlap=min_overlap, reduction="last")
 
 
-def longest_overlap_matching(ground_truth: Sequence[BaseEvent],
-                             predictions: Sequence[BaseEvent],
-                             min_overlap: float = 0,
-                             allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
+def longest_match_matching(ground_truth: Sequence[BaseEvent],
+                           predictions: Sequence[BaseEvent],
+                           min_overlap: float = 0,
+                           allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the longest predicted event that overlaps with each ground-truth event, above a minimal overlap time.
     """
