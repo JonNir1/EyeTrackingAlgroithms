@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import warnings
 import itertools
-from typing import Callable
+from typing import Callable, List
 
 import Config.constants as cnst
 import DataSetLoaders.Lund2013DataSetLoader
@@ -13,6 +13,7 @@ import MetricCalculators.EventMatching as em
 
 _DATASET = DataSetLoaders.Lund2013DataSetLoader.Lund2013DataSetLoader.load(should_save=False)
 _INDEX_NAMES = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
+_RATER_NAMES = ["MN", "RA"]
 
 
 def detect(*detectors) -> (pd.DataFrame, pd.DataFrame):
@@ -85,16 +86,9 @@ def _detect_trial(trial_data, *detectors):
     viewer_distance = trial_data["viewer_distance_cm"].to_numpy()[0]
     pixel_size = trial_data["pixel_size_cm"].to_numpy()[0]
     with warnings.catch_warnings(action="ignore"):
-        labels = {
-            "MN": trial_data["MN"],
-            "RA": trial_data["RA"],
-        }
-        events = {
-            "MN": EF.make_from_gaze_data(trial_data, vd=viewer_distance, ps=pixel_size,
-                                         column_mapping={"MN": cnst.EVENT}),
-            "RA": EF.make_from_gaze_data(trial_data, vd=viewer_distance, ps=pixel_size,
-                                         column_mapping={"RA": cnst.EVENT})
-        }
+        labels = {rater: trial_data[rater] for rater in _RATER_NAMES}
+        events = {rater: EF.make_from_gaze_data(trial_data, vd=viewer_distance, ps=pixel_size,
+                                                column_mapping={rater: cnst.EVENT}) for rater in _RATER_NAMES}
     for det in detectors:
         with warnings.catch_warnings(action="ignore"):
             res = det.detect(t=trial_data[cnst.T].to_numpy(),
