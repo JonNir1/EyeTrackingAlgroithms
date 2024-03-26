@@ -59,27 +59,16 @@ def event_matching(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.
     return _calculate_distance(detected, lambda seq1, seq2: em.generic_matching(seq1, seq2, **match_kwargs))
 
 
-def levenshtein_distances(detected: pd.DataFrame) -> pd.DataFrame:
-    """ Calculate the levenshtein distance between all pairs of detectors in every trial. """
-    return _calculate_distance(detected, lev.calculate_distance)
-
-
-def transition_distances__frobinius(detected: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculate the transition-matrix of each event detector within each trial and calculate the frobinius distance
-    between all pairs of detectors for every trial.
-    """
-    transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
-    return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"))
-
-
-def transition_distances__kl_divergence(detected: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculate the transition-matrix of each event detector within each trial and calculate the KL-divergence distance
-    between all pairs of detectors for every trial.
-    """
-    transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
-    return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
+def calculate_distance(detected: pd.DataFrame, distance: str, **distance_kwargs) -> pd.DataFrame:
+    distance = distance.lower().replace("_", " ").strip()
+    if distance == "lev" or distance == "levenshtein":
+        return _calculate_distance(detected, lev.calculate_distance)
+    if distance == "fro" or distance == "frobenius":
+        transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
+        return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"))
+    if distance == "kl" or distance == "kl divergence":
+        transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
+        return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
 
 
 def _detect_trial(trial_data, *detectors):
