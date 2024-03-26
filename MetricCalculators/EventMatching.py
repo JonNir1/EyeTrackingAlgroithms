@@ -109,7 +109,7 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
                      min_iou: float = - float("inf"),
                      max_onset_latency: float = float("inf"),
                      max_offset_latency: float = float("inf"),
-                     reduction: str = "all") -> Dict[BaseEvent, Sequence[BaseEvent]]:
+                     reduction: str = "all") -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
     """
     Match each ground-truth event to a predicted event(s) that satisfies the specified criteria.
 
@@ -153,8 +153,9 @@ def generic_matching(ground_truth: Sequence[BaseEvent],
 
     # verify output integrity
     if reduction != "all":
-        assert max(len(v) for v in matches.values() if isinstance(v, list)) <= 1, "Multiple matches for a GT event"
-        assert matched_predictions == set([v[0] for v in matches.values() if len(v)]), "Matched predictions are not unique"
+        assert all(len(v) == 1 for v in matches.values()), "Multiple matches for a GT event"
+        matches = {k: v[0] for k, v in matches.items()}
+        assert len(matches.values()) == len(set(matches.values())), "Matched predictions are not unique"
     return matches
 
 
