@@ -12,7 +12,7 @@ from GazeEvents.BaseEvent import BaseEvent
 def first_overlap_matching(ground_truth: Sequence[BaseEvent],
                            predictions: Sequence[BaseEvent],
                            min_overlap: float = 0,
-                           allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                           allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the first predicted event that overlaps with each ground-truth event, above a minimal overlap time.
     """
@@ -23,7 +23,7 @@ def first_overlap_matching(ground_truth: Sequence[BaseEvent],
 def last_overlap_matching(ground_truth: Sequence[BaseEvent],
                           predictions: Sequence[BaseEvent],
                           min_overlap: float = 0,
-                          allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                          allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the last predicted event that overlaps with each ground-truth event, above a minimal overlap time.
     """
@@ -34,7 +34,7 @@ def last_overlap_matching(ground_truth: Sequence[BaseEvent],
 def longest_overlap_matching(ground_truth: Sequence[BaseEvent],
                              predictions: Sequence[BaseEvent],
                              min_overlap: float = 0,
-                             allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                             allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the longest predicted event that overlaps with each ground-truth event, above a minimal overlap time.
     """
@@ -45,7 +45,7 @@ def longest_overlap_matching(ground_truth: Sequence[BaseEvent],
 def max_overlap_matching(ground_truth: Sequence[BaseEvent],
                          predictions: Sequence[BaseEvent],
                          min_overlap: float = 0,
-                         allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                         allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the predicted event with maximum overlap with each ground-truth event, above a minimal overlap time.
     """
@@ -56,7 +56,7 @@ def max_overlap_matching(ground_truth: Sequence[BaseEvent],
 def iou_matching(ground_truth: Sequence[BaseEvent],
                  predictions: Sequence[BaseEvent],
                  min_iou: float = 0,
-                 allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                 allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the predicted event with maximum intersection-over-union with each ground-truth event, above a minimal value.
     """
@@ -67,7 +67,7 @@ def iou_matching(ground_truth: Sequence[BaseEvent],
 def onset_latency_matching(ground_truth: Sequence[BaseEvent],
                            predictions: Sequence[BaseEvent],
                            max_onset_latency: float = 0,
-                           allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                           allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the predicted event with least onset latency with each ground-truth event, below a maximum latency.
     """
@@ -78,7 +78,7 @@ def onset_latency_matching(ground_truth: Sequence[BaseEvent],
 def offset_latency_matching(ground_truth: Sequence[BaseEvent],
                             predictions: Sequence[BaseEvent],
                             max_offset_latency: float = 0,
-                            allow_cross_matching: bool = True) -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                            allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
     """
     Matches the predicted event with least offset latency with each ground-truth event, below a maximum latency.
     """
@@ -91,7 +91,7 @@ def window_based_matching(ground_truth: Sequence[BaseEvent],
                           max_onset_latency: float = 0,
                           max_offset_latency: float = 0,
                           allow_cross_matching: bool = True,
-                          reduction: str = "iou") -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                          reduction: str = "iou") -> Dict[BaseEvent, BaseEvent]:
     """
     Finds all predicted events with onset- and offset-latencies within a specified window for each ground-truth event,
     and chooses the best gt-prediction match based on the specified reduction function.
