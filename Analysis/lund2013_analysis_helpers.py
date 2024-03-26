@@ -11,13 +11,19 @@ from GazeEvents.EventMatcher import EventMatcher
 def calculate_distance(detected: pd.DataFrame, distance: str) -> pd.DataFrame:
     distance = distance.lower().replace("_", " ").replace("-", " ").strip()
     if distance == "lev" or distance == "levenshtein":
-        return _calculate_joint_measure(detected, lev.calculate_distance)
+        return _calculate_joint_measure(detected, lev.calculate_distance, is_ordered=False)
     if distance == "fro" or distance == "frobenius":
-        transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
-        return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"))
+        transition_probabilities = detected.map(
+            lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
+        return _calculate_joint_measure(transition_probabilities,
+                                        lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"),
+                                        is_ordered=False)
     if distance == "kl" or distance == "kl divergence" or distance == "kullback leibler":
-        transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
-        return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
+        transition_probabilities = detected.map(
+            lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
+        return _calculate_joint_measure(transition_probabilities,
+                                        lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"),
+                                        is_ordered=False)
     raise ValueError(f"Unknown distance measure: {distance}")
 
 
@@ -49,8 +55,11 @@ def _match_events(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.D
     return _calculate_joint_measure(detected, lambda seq1, seq2: EventMatcher.generic_matcher(seq1, seq2, **match_kwargs))
 
 
-def _calculate_joint_measure(data: pd.DataFrame, measure: Callable) -> pd.DataFrame:
-    column_pairs = list(itertools.combinations_with_replacement(data.columns, 2))
+def _calculate_joint_measure(data: pd.DataFrame, measure: Callable, is_ordered: bool = True) -> pd.DataFrame:
+    if is_ordered:
+        column_pairs = list(itertools.product(data.columns, repeat=2))
+    else:
+        column_pairs = list(itertools.combinations_with_replacement(data.columns, 2))
     res = {}
     for idx in data.index:
         res[idx] = {}
