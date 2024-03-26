@@ -39,7 +39,7 @@ def detect_events(*detectors) -> (pd.DataFrame, pd.DataFrame):
 
 
 def event_matching(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.DataFrame:
-    match_by = match_by.lower().replace("_", " ").strip()
+    match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
     if match_by == "first" or match_by == "first overlap":
         return _calculate_joint_measure(detected,
                                         lambda seq1, seq2: em.first_overlap_matching(seq1, seq2, **match_kwargs))
@@ -67,13 +67,13 @@ def event_matching(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.
 
 
 def calculate_distance(detected: pd.DataFrame, distance: str, **distance_kwargs) -> pd.DataFrame:
-    distance = distance.lower().replace("_", " ").strip()
+    distance = distance.lower().replace("_", " ").replace("-", " ").strip()
     if distance == "lev" or distance == "levenshtein":
         return _calculate_joint_measure(detected, lev.calculate_distance)
     if distance == "fro" or distance == "frobenius":
         transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
         return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"))
-    if distance == "kl" or distance == "kl divergence":
+    if distance == "kl" or distance == "kl divergence" or distance == "kullback leibler":
         transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
         return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
 
