@@ -16,7 +16,7 @@ _INDEX_NAMES = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_na
 _RATER_NAMES = ["MN", "RA"]
 
 
-def detect(*detectors) -> (pd.DataFrame, pd.DataFrame):
+def detect_events(*detectors) -> (pd.DataFrame, pd.DataFrame):
     """
     Detects events in the Lund 2013 dataset using the provided detectors and the human-annotations in the dataset.
     Returns two dataframes:
@@ -80,11 +80,7 @@ def _detect_trial(trial_data, *detectors):
                                                 column_mapping={rater: cnst.EVENT}) for rater in _RATER_NAMES}
     for det in detectors:
         with warnings.catch_warnings(action="ignore"):
-            res = det.detect(t=trial_data[cnst.T].to_numpy(),
-                             x=trial_data[cnst.X].to_numpy(),
-                             y=trial_data[cnst.Y].to_numpy(),
-                             vd=viewer_distance,
-                             ps=pixel_size)
+            res = det.detect()
         labels[det.name] = res[cnst.GAZE][cnst.EVENT]
         events[det.name] = res[cnst.EVENTS]
     return labels, events
