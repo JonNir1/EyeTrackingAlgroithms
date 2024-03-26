@@ -9,6 +9,7 @@ import DataSetLoaders.Lund2013DataSetLoader
 from GazeEvents.EventFactory import EventFactory as EF
 import MetricCalculators.LevenshteinDistance as lev
 import MetricCalculators.TransitionMatrix as tm
+import MetricCalculators.EventMatching as em
 
 _DATASET = DataSetLoaders.Lund2013DataSetLoader.Lund2013DataSetLoader.load(should_save=False)
 _INDEX_NAMES = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
@@ -34,6 +35,27 @@ def detect(*detectors) -> (pd.DataFrame, pd.DataFrame):
     events_df = pd.DataFrame.from_dict(event_dict, orient="index")
     events_df.index.names = _INDEX_NAMES
     return samples_df, events_df
+
+
+def event_matching(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.DataFrame:
+    match_by = match_by.lower().replace("_", " ").strip()
+    if match_by == "first" or match_by == "first overlap":
+        return _calculate_distance(detected, lambda seq1, seq2: em.first_overlap_matching(seq1, seq2, **match_kwargs))
+    if match_by == "last" or match_by == "last overlap":
+        return _calculate_distance(detected, lambda seq1, seq2: em.last_overlap_matching(seq1, seq2, **match_kwargs))
+    if match_by == "max" or match_by == "max overlap":
+        return _calculate_distance(detected, lambda seq1, seq2: em.max_overlap_matching(seq1, seq2, **match_kwargs))
+    if match_by == "longest" or match_by == "longest match":
+        return _calculate_distance(detected, lambda seq1, seq2: em.longest_match_matching(seq1, seq2, **match_kwargs))
+    if match_by == "iou" or match_by == "intersection over union":
+        return _calculate_distance(detected, lambda seq1, seq2: em.iou_matching(seq1, seq2, **match_kwargs))
+    if match_by == "onset" or match_by == "onset latency":
+        return _calculate_distance(detected, lambda seq1, seq2: em.onset_latency_matching(seq1, seq2, **match_kwargs))
+    if match_by == "offset" or match_by == "offset latency":
+        return _calculate_distance(detected, lambda seq1, seq2: em.offset_latency_matching(seq1, seq2, **match_kwargs))
+    if match_by == "window" or match_by == "window based":
+        return _calculate_distance(detected, lambda seq1, seq2: em.window_based_matching(seq1, seq2, **match_kwargs))
+    return _calculate_distance(detected, lambda seq1, seq2: em.generic_matching(seq1, seq2, **match_kwargs))
 
 
 def levenshtein_distances(detected: pd.DataFrame) -> pd.DataFrame:
