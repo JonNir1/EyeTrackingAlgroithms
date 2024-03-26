@@ -8,7 +8,7 @@ import Config.experiment_config as cnfg
 
 
 class BaseEvent(ABC):
-    _EVENT_TYPE: cnst.EVENT_LABELS
+    _EVENT_LABEL: cnst.EVENT_LABELS
 
     def __init__(self, timestamps: np.ndarray):
         if timestamps is None or len(timestamps) < cnst.MINIMUM_SAMPLES_IN_EVENT:
@@ -21,8 +21,8 @@ class BaseEvent(ABC):
 
     @final
     @property
-    def event_type(self) -> cnst.EVENT_LABELS:
-        return self.__class__._EVENT_TYPE
+    def event_label(self) -> cnst.EVENT_LABELS:
+        return self.__class__._EVENT_LABEL
 
     @final
     @property
@@ -77,9 +77,9 @@ class BaseEvent(ABC):
             - is_outlier: boolean indicating whether the event is an outlier or not
             - outlier_reasons: a list of strings indicating the reasons why the event is an outlier
         """
-        return pd.Series(data=[self._EVENT_TYPE.name, self.start_time, self.end_time, self.duration, self.is_outlier,
+        return pd.Series(data=[self._EVENT_LABEL.name, self.start_time, self.end_time, self.duration, self.is_outlier,
                                self.get_outlier_reasons()],
-                         index=["event_type", "start_time", "end_time", "duration", "is_outlier", "outlier_reasons"])
+                         index=["event_label", "start_time", "end_time", "duration", "is_outlier", "outlier_reasons"])
 
     @final
     def overlap_time(self, other: "BaseEvent") -> float:
@@ -103,37 +103,37 @@ class BaseEvent(ABC):
     @classmethod
     @final
     def get_min_duration(cls) -> float:
-        return cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION]
+        return cnfg.EVENT_MAPPING[cls._EVENT_LABEL][cnst.MIN_DURATION]
 
     @classmethod
     @final
     def set_min_duration(cls, min_duration: float):
-        event_type = cls._EVENT_TYPE.name.capitalize()
+        event_type = cls._EVENT_LABEL.name.capitalize()
         if min_duration < 0:
             raise ValueError(f"min_duration for {event_type} must be a positive number")
-        max_duration = cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MAX_DURATION]
+        max_duration = cnfg.EVENT_MAPPING[cls._EVENT_LABEL][cnst.MAX_DURATION]
         if min_duration > max_duration:
             raise ValueError(f"min_duration for {event_type} must be less than or equal to max_duration")
-        cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION] = min_duration
+        cnfg.EVENT_MAPPING[cls._EVENT_LABEL][cnst.MIN_DURATION] = min_duration
 
     @classmethod
     @final
     def get_max_duration(cls) -> float:
-        return cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION]
+        return cnfg.EVENT_MAPPING[cls._EVENT_LABEL][cnst.MIN_DURATION]
 
     @classmethod
     @final
     def set_max_duration(cls, max_duration: float):
-        event_type = cls._EVENT_TYPE.name.capitalize()
+        event_type = cls._EVENT_LABEL.name.capitalize()
         if max_duration < 0:
             raise ValueError(f"max_duration for {event_type} must be a positive number")
-        min_duration = cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MIN_DURATION]
+        min_duration = cnfg.EVENT_MAPPING[cls._EVENT_LABEL][cnst.MIN_DURATION]
         if max_duration < min_duration:
             raise ValueError(f"max_duration for {event_type} must be greater than or equal to min_duration")
-        cnfg.EVENT_MAPPING[cls._EVENT_TYPE][cnst.MAX_DURATION] = max_duration
+        cnfg.EVENT_MAPPING[cls._EVENT_LABEL][cnst.MAX_DURATION] = max_duration
 
     def __repr__(self):
-        event_type = self._EVENT_TYPE.name.capitalize()
+        event_type = self._EVENT_LABEL.name.capitalize()
         return f"{event_type} ({self.duration:.1f} ms)"
 
     def __str__(self):
@@ -142,7 +142,7 @@ class BaseEvent(ABC):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
-        if self._EVENT_TYPE != other._EVENT_TYPE:
+        if self._EVENT_LABEL != other._EVENT_LABEL:
             return False
         if self._timestamps.shape != other._timestamps.shape:
             return False
@@ -151,4 +151,4 @@ class BaseEvent(ABC):
         return True
 
     def __hash__(self):
-        return hash((self._EVENT_TYPE, self._timestamps.tobytes()))
+        return hash((self._EVENT_LABEL, self._timestamps.tobytes()))

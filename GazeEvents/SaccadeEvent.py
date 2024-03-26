@@ -9,4 +9,4 @@ from GazeEvents.BaseGazeEvent import BaseGazeEvent
 
 
 class SaccadeEvent(BaseGazeEvent):
-    _EVENT_TYPE = cnst.EVENT_LABELS.SACCADE
+    _EVENT_LABEL = cnst.EVENT_LABELS.SACCADE
