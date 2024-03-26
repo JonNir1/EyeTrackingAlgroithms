@@ -41,34 +41,41 @@ def detect_events(*detectors) -> (pd.DataFrame, pd.DataFrame):
 def event_matching(detected: pd.DataFrame, match_by: str, **match_kwargs) -> pd.DataFrame:
     match_by = match_by.lower().replace("_", " ").strip()
     if match_by == "first" or match_by == "first overlap":
-        return _calculate_distance(detected, lambda seq1, seq2: em.first_overlap_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.first_overlap_matching(seq1, seq2, **match_kwargs))
     if match_by == "last" or match_by == "last overlap":
-        return _calculate_distance(detected, lambda seq1, seq2: em.last_overlap_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.last_overlap_matching(seq1, seq2, **match_kwargs))
     if match_by == "max" or match_by == "max overlap":
-        return _calculate_distance(detected, lambda seq1, seq2: em.max_overlap_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.max_overlap_matching(seq1, seq2, **match_kwargs))
     if match_by == "longest" or match_by == "longest match":
-        return _calculate_distance(detected, lambda seq1, seq2: em.longest_match_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.longest_match_matching(seq1, seq2, **match_kwargs))
     if match_by == "iou" or match_by == "intersection over union":
-        return _calculate_distance(detected, lambda seq1, seq2: em.iou_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected, lambda seq1, seq2: em.iou_matching(seq1, seq2, **match_kwargs))
     if match_by == "onset" or match_by == "onset latency":
-        return _calculate_distance(detected, lambda seq1, seq2: em.onset_latency_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.onset_latency_matching(seq1, seq2, **match_kwargs))
     if match_by == "offset" or match_by == "offset latency":
-        return _calculate_distance(detected, lambda seq1, seq2: em.offset_latency_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.offset_latency_matching(seq1, seq2, **match_kwargs))
     if match_by == "window" or match_by == "window based":
-        return _calculate_distance(detected, lambda seq1, seq2: em.window_based_matching(seq1, seq2, **match_kwargs))
-    return _calculate_distance(detected, lambda seq1, seq2: em.generic_matching(seq1, seq2, **match_kwargs))
+        return _calculate_joint_measure(detected,
+                                        lambda seq1, seq2: em.window_based_matching(seq1, seq2, **match_kwargs))
+    return _calculate_joint_measure(detected, lambda seq1, seq2: em.generic_matching(seq1, seq2, **match_kwargs))
 
 
 def calculate_distance(detected: pd.DataFrame, distance: str, **distance_kwargs) -> pd.DataFrame:
     distance = distance.lower().replace("_", " ").strip()
     if distance == "lev" or distance == "levenshtein":
-        return _calculate_distance(detected, lev.calculate_distance)
+        return _calculate_joint_measure(detected, lev.calculate_distance)
     if distance == "fro" or distance == "frobenius":
         transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
-        return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"))
+        return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"))
     if distance == "kl" or distance == "kl divergence":
         transition_probabilities = detected.map(lambda cell: tm.transition_probabilities(cell) if all(cell.notnull()) else [np.nan])
-        return _calculate_distance(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
+        return _calculate_joint_measure(transition_probabilities, lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"))
 
 
 def _detect_trial(trial_data: pd.DataFrame, *detectors):
@@ -86,7 +93,7 @@ def _detect_trial(trial_data: pd.DataFrame, *detectors):
     return labels, events
 
 
-def _calculate_distance(data: pd.DataFrame, distance_func: Callable) -> pd.DataFrame:
+def _calculate_joint_measure(data: pd.DataFrame, measure: Callable) -> pd.DataFrame:
     column_pairs = list(itertools.combinations_with_replacement(data.columns, 2))
     res = {}
     for idx in data.index:
@@ -98,7 +105,7 @@ def _calculate_distance(data: pd.DataFrame, distance_func: Callable) -> pd.DataF
             elif pd.isnull(vals1).any() or pd.isnull(vals2).any():
                 raise AssertionError("Missing values in detected sequences.")
             else:
-                res[idx][pair] = distance_func(vals1, vals2)
+                res[idx][pair] = measure(vals1, vals2)
     res = pd.DataFrame.from_dict(res, orient="index")
     res.index.names = data.index.names
     return res
