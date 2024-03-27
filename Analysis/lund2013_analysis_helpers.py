@@ -70,10 +70,10 @@ def _calculate_joint_measure(data: pd.DataFrame, measure: Callable, is_ordered: 
         res[idx] = {}
         for pair in column_pairs:
             vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
-            if pd.isnull(vals1).all() or pd.isnull(vals2).all():
+            if pd.isnull(vals1) or len(vals1) == 0 or pd.isnull(vals1).all():
                 res[idx][pair] = np.nan
-            elif pd.isnull(vals1).any() or pd.isnull(vals2).any():
-                raise AssertionError("Missing values in detected sequences.")
+            elif pd.isnull(vals2) or len(vals2) == 0 or pd.isnull(vals2).all():
+                res[idx][pair] = np.nan
             else:
                 res[idx][pair] = measure(vals1, vals2)
     res = pd.DataFrame.from_dict(res, orient="index")
