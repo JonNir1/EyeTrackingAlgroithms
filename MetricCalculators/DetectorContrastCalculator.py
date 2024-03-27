@@ -22,7 +22,6 @@ class DetectorContrastCalculator:
         self._detected_samples = samples_df
         self._detected_events = events_df
 
-
     def contrast_samples(self, contrast_by: str, ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
         samples = self._detected_samples.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
@@ -44,11 +43,27 @@ class DetectorContrastCalculator:
                                           is_symmetric=True)
         raise ValueError(f"Unknown contrast measure for samples:\t{contrast_by}")
 
-    def match_and_contrast_events(self,
-                                  match_by: str,
-                                  contrast_by: str,
-                                  ignore_events: List[cnst.EVENT_LABELS] = None,
-                                  **match_kwargs) -> pd.DataFrame:
+    def event_matching_ratio(self,
+                             match_by: str,
+                             ignore_events: List[cnst.EVENT_LABELS] = None,
+                             **match_kwargs) -> pd.DataFrame:
+        events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
+        matches = self.match_events(match_by, ignore_events, **match_kwargs)
+        event_counts = events.map(lambda cell: len(cell) if len(cell) else np.nan)
+        match_counts = matches.map(lambda cell: len(cell) if pd.notnull(cell) else np.nan)
+        ratios = np.zeros_like(match_counts, dtype=float)
+        for i in range(match_counts.index.size):
+            for j in range(match_counts.columns.size):
+                gt_col, pred_col = match_counts.columns[j]
+                ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
+        ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns)
+        return ratios * 100
+
+    def contrast_matched_events(self,
+                                match_by: str,
+                                contrast_by: str,
+                                ignore_events: List[cnst.EVENT_LABELS] = None,
+                                **match_kwargs) -> pd.DataFrame:
         matches = self.match_events(match_by, ignore_events, **match_kwargs)
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by in {"%", "% matched", "percent", "percent matched"}:
@@ -166,4 +181,3 @@ class DetectorContrastCalculator:
         if self.detectors != other.detectors:
             return False
         return True
-
