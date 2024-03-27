@@ -1,7 +1,7 @@
 import itertools
 import numpy as np
 import pandas as pd
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 import Config.constants as cnst
 from GazeDetectors.BaseDetector import BaseDetector
@@ -85,16 +85,19 @@ class DetectorContrastCalculator:
     def contrast_matched_events(self,
                                 match_by: str,
                                 contrast_by: str,
+                                group_by: Optional[str] = cnst.STIMULUS,
                                 ignore_events: List[cnst.EVENT_LABELS] = None,
                                 **match_kwargs) -> pd.DataFrame:
         """
-        Match events between raters and detectors based on the given matching criteria, and calculate a contrast measure
-        between each matched pair of events. These measures are then grouped by stimulus.
-        Ignore the specified event-labels during the matching process.
+        Match events between raters and detectors based on the given matching criteria, while ignoring the specified
+        event-labels. The contrast measure is then calculated between each matched pair of events, and finally grouped
+        by the given criteria if specified.
+
         :param match_by: The matching criteria to use.
             Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
         :param contrast_by: The contrast measure to calculate.
             Options: "onset latency", "offset latency", "duration"
+        :param group_by: The criteria to group the contrast measure by.
         :param ignore_events: A set of event-labels to ignore during the matching process.
         :param match_kwargs: Additional keyword arguments to pass to the matching function.
         :return: A DataFrame containing the contrast measure between matched events per trial (row) and detector/rater
@@ -118,8 +121,10 @@ class DetectorContrastCalculator:
         else:
             raise NotImplementedError(f"Unknown contrast measure for matched events:\t{contrast_by}")
 
+        if group_by is None:
+            return diffs
         # Group by stimulus and calculate add row "all" (all stimuli)
-        grouped_diffs = diffs.groupby(level=cnst.STIMULUS).sum()
+        grouped_diffs = diffs.groupby(level=group_by).sum()
         grouped_diffs = pd.concat([grouped_diffs.T, grouped_diffs.sum().rename("all")], axis=1).T
         return grouped_diffs
 
