@@ -83,8 +83,8 @@ class DetectorContrastCalculator:
             for j in range(match_counts.columns.size):
                 gt_col, pred_col = match_counts.columns[j]
                 ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
-        ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns)
-        return ratios * 100
+        ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns) * 100
+        return ratios
 
     def contrast_matched_events(self,
                                 match_by: str,
