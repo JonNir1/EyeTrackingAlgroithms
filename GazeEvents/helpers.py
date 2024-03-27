@@ -1,9 +1,9 @@
-import Config.constants as cnst
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
 from typing import Union
 
+import Config.constants as cnst
 
-def parse_gaze_event(ev: Union[GazeEventTypeEnum, cnst.EVENT_LABELS, int, str, float],
+
+def parse_gaze_event(ev: Union[cnst.EVENT_LABELS, int, str, float],
                      safe: bool = True) -> cnst.EVENT_LABELS:
     """
     Parses a gaze label from the original dataset's type to type GazeEventTypeEnum
@@ -12,20 +12,18 @@ def parse_gaze_event(ev: Union[GazeEventTypeEnum, cnst.EVENT_LABELS, int, str, f
     :return: the parsed gaze label
     """
     try:
-        if isinstance(ev, GazeEventTypeEnum):
-            return ev
         if isinstance(ev, cnst.EVENT_LABELS):
             return ev
         if isinstance(ev, int):
-            return GazeEventTypeEnum(ev)
+            return cnst.EVENT_LABELS(ev)
         if isinstance(ev, str):
-            return GazeEventTypeEnum[ev.upper()]
+            return cnst.EVENT_LABELS[ev.upper()]
         if isinstance(ev, float):
             if not ev.is_integer():
                 raise ValueError(f"Invalid value: {ev}")
-            return GazeEventTypeEnum(int(ev))
+            return cnst.EVENT_LABELS(int(ev))
         raise TypeError(f"Incompatible type: {type(ev)}")
     except Exception as err:
         if safe and (isinstance(err, ValueError) or isinstance(err, TypeError)):
-            return GazeEventTypeEnum.UNDEFINED
+            return cnst.EVENT_LABELS.UNDEFINED
         raise err
