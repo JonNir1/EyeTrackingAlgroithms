@@ -1,6 +1,9 @@
-from typing import Union
+from typing import Union, Sequence
+
+import numpy as np
 
 import Config.constants as cnst
+from GazeEvents.BaseEvent import BaseEvent
 
 
 def parse_event_label(label: Union[cnst.EVENT_LABELS, int, str, float],
@@ -27,3 +30,21 @@ def parse_event_label(label: Union[cnst.EVENT_LABELS, int, str, float],
         if safe and (isinstance(err, ValueError) or isinstance(err, TypeError)):
             return cnst.EVENT_LABELS.UNDEFINED
         raise err
+
+
+def drop_events(seq: Sequence, to_drop: Sequence[cnst.EVENT_LABELS] = None) -> Sequence:
+    """ Drops events from the given sequence if they are in the set of event-labels to drop. """
+    if seq is None or np.isnan(seq) or len(seq) == 0:
+        return seq
+    if to_drop is None or len(to_drop) == 0:
+        return seq
+    to_drop = set(to_drop)
+    out = []
+    for e in seq:
+        if isinstance(e, BaseEvent):
+            if e.event_label not in to_drop:
+                out.append(e)
+        else:
+            if parse_event_label(e) not in to_drop:
+                out.append(e)
+    return out
