@@ -61,7 +61,9 @@ class DataSetFactory(ABC):
         viewer_distance = trial_data["viewer_distance_cm"].to_numpy()[0]
         pixel_size = trial_data["pixel_size_cm"].to_numpy()[0]
         with warnings.catch_warnings(action="ignore"):
-            labels = {rater: trial_data[rater] for rater in raters}
+            labels = {
+                rater: trial_data[rater] if pd.notnull(trial_data[rater]).all() else float("nan")
+                for rater in raters}
             events = {
                 rater: EventFactory.make_from_gaze_data(
                     trial_data, vd=viewer_distance, ps=pixel_size, column_mapping={rater: cnst.EVENT}
