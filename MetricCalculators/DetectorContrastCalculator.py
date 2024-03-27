@@ -22,7 +22,9 @@ class DetectorContrastCalculator:
         self._detected_samples = samples_df
         self._detected_events = events_df
 
-    def contrast_samples(self, contrast_by: str, ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+    def contrast_samples(self,
+                         contrast_by: str,
+                         ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
         """
         Calculate the contrast measure between the detected samples of each rater/detector pair.
         Ignore the specified event-labels during the contrast calculation.
