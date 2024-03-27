@@ -86,6 +86,9 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
                                       showlegend=False,
                                       points=kwargs.get("points", "all"),
                                       side=kwargs.get("side", "positive"))
+            elif plot_type == "box":
+                # TODO: Implement box plots
+                raise NotImplementedError("Box plots are not supported yet.")
             else:
                 raise NotImplementedError(f"Cannot draw distribution grid with Plot type {plot_type}")
             fig.add_trace(
