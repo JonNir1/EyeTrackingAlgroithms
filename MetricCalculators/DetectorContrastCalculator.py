@@ -41,22 +41,24 @@ class DetectorContrastCalculator:
         samples = self._detected_samples.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by == "lev" or contrast_by == "levenshtein":
-            return self._contrast_columns(samples, lev.calculate_distance, is_symmetric=True)
-        if contrast_by == "fro" or contrast_by == "frobenius" or contrast_by == "l2":
+            contrast = self._contrast_columns(samples, lev.calculate_distance, is_symmetric=True)
+        elif contrast_by == "fro" or contrast_by == "frobenius" or contrast_by == "l2":
             transition_probabilities = samples.map(
                 lambda cell: tm.transition_probabilities(cell) if pd.notnull(cell).all() else [np.nan]
             )
-            return self._contrast_columns(transition_probabilities,
-                                          lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"),
-                                          is_symmetric=True)
-        if contrast_by == "kl" or contrast_by == "kl divergence" or contrast_by == "kullback leibler":
+            contrast = self._contrast_columns(transition_probabilities,
+                                              lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"),
+                                              is_symmetric=True)
+        elif contrast_by == "kl" or contrast_by == "kl divergence" or contrast_by == "kullback leibler":
             transition_probabilities = samples.map(
                 lambda cell: tm.transition_probabilities(cell) if pd.notnull(cell).all() else [np.nan]
             )
-            return self._contrast_columns(transition_probabilities,
-                                          lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"),
-                                          is_symmetric=True)
-        raise NotImplementedError(f"Unknown contrast measure for samples:\t{contrast_by}")
+            contrast = self._contrast_columns(transition_probabilities,
+                                              lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"),
+                                              is_symmetric=True)
+        else:
+            raise NotImplementedError(f"Unknown contrast measure for samples:\t{contrast_by}")
+        return contrast
 
     def event_matching_ratio(self,
                              match_by: str,
