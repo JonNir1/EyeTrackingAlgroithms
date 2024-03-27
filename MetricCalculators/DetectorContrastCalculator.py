@@ -68,17 +68,17 @@ class DetectorContrastCalculator:
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by in {"onset", "onset latency", "onset jitter"}:
             onset_diffs = matches.map(
-                lambda cell: {k.start_time - v.start_time for k, v in cell.items()} if pd.notnull(cell) else np.nan
+                lambda cell: [k.start_time - v.start_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
             return onset_diffs
         if contrast_by in {"offset", "offset latency", "offset jitter"}:
             offset_diffs = matches.map(
-                lambda cell: {k.end_time - v.end_time for k, v in cell.items()} if pd.notnull(cell) else np.nan
+                lambda cell: [k.end_time - v.end_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
             return offset_diffs
         if contrast_by in {"duration", "length"}:
             duration_diffs = matches.map(
-                lambda cell: {k.duration - v.duration for k, v in cell.items()} if pd.notnull(cell) else np.nan
+                lambda cell: [k.duration - v.duration for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
         raise ValueError(f"Unknown contrast measure for matched events:\t{contrast_by}")
 
