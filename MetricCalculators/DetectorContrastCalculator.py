@@ -24,15 +24,19 @@ class DetectorContrastCalculator:
 
     def contrast_samples(self,
                          contrast_by: str,
+                         group_by: Optional[str] = cnst.STIMULUS,
                          ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
         """
-        Calculate the contrast measure between the detected samples of each rater/detector pair.
+        Calculate the contrast measure between the detected samples of each rater/detector pair, and group the results
+        by the given criteria if specified.
         Ignore the specified event-labels during the contrast calculation.
+
         :param contrast_by: The contrast measure to calculate.
             Options:
                 - "levenshtein": Calculate the Levenshtein distance between the sequence of labels.
                 - "frobenius": Calculate the Frobenius norm of the difference between the labels' transition matrices.
                 - "kl": Calculate the Kullback-Leibler divergence between the labels' transition matrices.
+        :param group_by: The criteria to group the contrast measure by.
         :param ignore_events: A set of event-labels to ignore during the contrast calculation.
         :return: A DataFrame containing the contrast measure between the detected samples per trial (row) and
             detector/rater pair (column).
@@ -58,18 +62,29 @@ class DetectorContrastCalculator:
                                               is_symmetric=True)
         else:
             raise NotImplementedError(f"Unknown contrast measure for samples:\t{contrast_by}")
-        return contrast
+
+        if group_by is None:
+            return contrast
+        # Group by stimulus and calculate add row "all" (all stimuli)
+        grouped_diffs = contrast.groupby(level=group_by).agg(list)
+        all_stim = pd.Series([list(grouped_diffs[col].explode()) for col in grouped_diffs.columns],
+                             index=grouped_diffs.columns, name="all")
+        grouped_diffs = pd.concat([grouped_diffs.T, all_stim], axis=1).T
+        return grouped_diffs
 
     def event_matching_ratio(self,
                              match_by: str,
+                             group_by: Optional[str] = cnst.STIMULUS,
                              ignore_events: List[cnst.EVENT_LABELS] = None,
                              **match_kwargs) -> pd.DataFrame:
         """
-        Match events between raters and detectors based on the given matching criteria, and calculate the ratio of
-        matched events to the total number of ground-truth events per trial (row) and detector/rater (column).
+        Match events between raters and detectors based on the given `match_by` criteria, and calculate the ratio of
+        matched events to the total number of ground-truth events per trial (row) and detector/rater (column). Finally,
+        group the results by the given `group_by` criteria if specified.
         Ignore the specified event-labels during the matching process.
         :param match_by: The matching criteria to use.
             Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
+        :param group_by: The criteria to group the results by.
         :param ignore_events: A set of event-labels to ignore during the matching process.
         :param match_kwargs: Additional keyword arguments to pass to the matching function.
         :return: A DataFrame containing the ratio of matched events
@@ -84,7 +99,16 @@ class DetectorContrastCalculator:
                 gt_col, pred_col = match_counts.columns[j]
                 ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
         ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns) * 100
-        return ratios
+
+        if group_by is None:
+            return ratios
+        # Group by stimulus and calculate add row "all" (all stimuli)
+        grouped_ratios = ratios.groupby(level=group_by).agg(list)
+        all_stim = pd.Series([list(grouped_ratios[col].explode()) for col in grouped_ratios.columns],
+                             index=grouped_ratios.columns, name="all")
+        grouped_ratios = pd.concat([grouped_ratios.T, all_stim], axis=1).T
+        return grouped_ratios
+
 
     def contrast_matched_events(self,
                                 match_by: str,
@@ -128,8 +152,10 @@ class DetectorContrastCalculator:
         if group_by is None:
             return contrast
         # Group by stimulus and calculate add row "all" (all stimuli)
-        grouped_diffs = contrast.groupby(level=group_by).sum()
-        grouped_diffs = pd.concat([grouped_diffs.T, grouped_diffs.sum().rename("all")], axis=1).T
+        grouped_diffs = contrast.groupby(level=group_by).agg(lambda cell: pd.Series(cell).explode())
+        all_stim = pd.Series([list(grouped_diffs[col].explode()) for col in grouped_diffs.columns],
+                             index=grouped_diffs.columns, name="all")
+        grouped_diffs = pd.concat([grouped_diffs.T, all_stim], axis=1).T
         return grouped_diffs
 
     def match_events(self,
