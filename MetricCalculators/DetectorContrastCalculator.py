@@ -23,6 +23,19 @@ class DetectorContrastCalculator:
         self._detected_events = events_df
 
     def contrast_samples(self, contrast_by: str, ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+        """
+        Calculate the contrast measure between the detected samples of each rater/detector pair.
+        Ignore the specified event-labels during the contrast calculation.
+        :param contrast_by: The contrast measure to calculate.
+            Options:
+                - "levenshtein": Calculate the Levenshtein distance between the sequence of labels.
+                - "frobenius": Calculate the Frobenius norm of the difference between the labels' transition matrices.
+                - "kl": Calculate the Kullback-Leibler divergence between the labels' transition matrices.
+        :param ignore_events: A set of event-labels to ignore during the contrast calculation.
+        :return: A DataFrame containing the contrast measure between the detected samples per trial (row) and
+            detector/rater pair (column).
+        :raises NotImplementedError: If the contrast measure is unknown.
+        """
         samples = self._detected_samples.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by == "lev" or contrast_by == "levenshtein":
@@ -41,12 +54,22 @@ class DetectorContrastCalculator:
             return self._contrast_columns(transition_probabilities,
                                           lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"),
                                           is_symmetric=True)
-        raise ValueError(f"Unknown contrast measure for samples:\t{contrast_by}")
+        raise NotImplementedError(f"Unknown contrast measure for samples:\t{contrast_by}")
 
     def event_matching_ratio(self,
                              match_by: str,
                              ignore_events: List[cnst.EVENT_LABELS] = None,
                              **match_kwargs) -> pd.DataFrame:
+        """
+        Match events between raters and detectors based on the given matching criteria, and calculate the ratio of
+        matched events to the total number of ground-truth events per trial (row) and detector/rater (column).
+        Ignore the specified event-labels during the matching process.
+        :param match_by: The matching criteria to use.
+            Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
+        :param ignore_events: A set of event-labels to ignore during the matching process.
+        :param match_kwargs: Additional keyword arguments to pass to the matching function.
+        :return: A DataFrame containing the ratio of matched events
+        """
         events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         matches = self.match_events(match_by, ignore_events, **match_kwargs)
         event_counts = events.map(lambda cell: len(cell) if len(cell) else np.nan)
@@ -64,28 +87,55 @@ class DetectorContrastCalculator:
                                 contrast_by: str,
                                 ignore_events: List[cnst.EVENT_LABELS] = None,
                                 **match_kwargs) -> pd.DataFrame:
+        """
+        Match events between raters and detectors based on the given matching criteria, and calculate a contrast measure
+        between each matched pair of events. These measures are then grouped by stimulus.
+        Ignore the specified event-labels during the matching process.
+        :param match_by: The matching criteria to use.
+            Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
+        :param contrast_by: The contrast measure to calculate.
+            Options: "onset latency", "offset latency", "duration"
+        :param ignore_events: A set of event-labels to ignore during the matching process.
+        :param match_kwargs: Additional keyword arguments to pass to the matching function.
+        :return: A DataFrame containing the contrast measure between matched events per trial (row) and detector/rater
+            pair (column).
+        :raises NotImplementedError: If the contrast measure is unknown.
+        """
         matches = self.match_events(match_by, ignore_events, **match_kwargs)
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by in {"onset", "onset latency", "onset jitter"}:
-            onset_diffs = matches.map(
+            diffs = matches.map(
                 lambda cell: [k.start_time - v.start_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
-            return onset_diffs
-        if contrast_by in {"offset", "offset latency", "offset jitter"}:
-            offset_diffs = matches.map(
+        elif contrast_by in {"offset", "offset latency", "offset jitter"}:
+            diffs = matches.map(
                 lambda cell: [k.end_time - v.end_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
-            return offset_diffs
-        if contrast_by in {"duration", "length"}:
-            duration_diffs = matches.map(
+        elif contrast_by in {"duration", "length"}:
+            diffs = matches.map(
                 lambda cell: [k.duration - v.duration for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
-            return duration_diffs
-        raise ValueError(f"Unknown contrast measure for matched events:\t{contrast_by}")
+        else:
+            raise NotImplementedError(f"Unknown contrast measure for matched events:\t{contrast_by}")
 
-    def match_events(self, match_by: str,
+        # Group by stimulus and calculate add row "all" (all stimuli)
+        grouped_diffs = diffs.groupby(level=cnst.STIMULUS).sum()
+        grouped_diffs = pd.concat([grouped_diffs.T, grouped_diffs.sum().rename("all")], axis=1).T
+        return grouped_diffs
+
+    def match_events(self,
+                     match_by: str,
                      ignore_events: List[cnst.EVENT_LABELS] = None,
                      **match_kwargs) -> pd.DataFrame:
+        """
+        Match events between raters and detectors based on the given matching criteria.
+        Ignores the specified event-labels during the matching process.
+        :param match_by: The matching criteria to use.
+            Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
+        :param ignore_events: A set of event-labels to ignore during the matching process.
+        :param match_kwargs: Additional keyword arguments to pass to the matching function.
+        :return: A DataFrame containing the matched events per trial (row) and detector/rater pair (column).
+        """
         events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
         if match_by == "first" or match_by == "first overlap":
