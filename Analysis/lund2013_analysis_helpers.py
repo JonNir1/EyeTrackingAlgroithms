@@ -1,14 +1,19 @@
 import numpy as np
 import pandas as pd
 import itertools
-from typing import Callable
+from typing import Callable, Set
 
+import Config.constants as cnst
 import MetricCalculators.LevenshteinDistance as lev
 import MetricCalculators.TransitionMatrix as tm
 from GazeEvents.EventMatcher import EventMatcher
 
 
-def calculate_distance(detected: pd.DataFrame, distance: str) -> pd.DataFrame:
+def calculate_distance(detected: pd.DataFrame,
+                       distance: str,
+                       ignore: Set[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+    if ignore is not None and len(ignore) > 0:
+        detected = detected.map(lambda cell: [e for e in cell if e not in ignore])
     distance = distance.lower().replace("_", " ").replace("-", " ").strip()
     if distance == "lev" or distance == "levenshtein":
         return _calculate_joint_measure(detected, lev.calculate_distance, is_ordered=False)
