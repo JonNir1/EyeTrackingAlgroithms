@@ -80,6 +80,7 @@ class DetectorContrastCalculator:
             duration_diffs = matches.map(
                 lambda cell: [k.duration - v.duration for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
+            return duration_diffs
         raise ValueError(f"Unknown contrast measure for matched events:\t{contrast_by}")
 
     def match_events(self, match_by: str,
