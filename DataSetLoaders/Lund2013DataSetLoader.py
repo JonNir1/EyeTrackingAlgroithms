@@ -8,7 +8,7 @@ from scipy.io import loadmat
 from typing import Tuple
 
 from Config import constants as cnst
-from Config.helpers import parse_gaze_event
+from GazeEvents.helpers import parse_gaze_event
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
 

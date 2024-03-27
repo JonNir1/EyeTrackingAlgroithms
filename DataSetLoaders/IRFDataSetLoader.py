@@ -4,10 +4,10 @@ import posixpath as psx
 import numpy as np
 import pandas as pd
 import requests as req
-from typing import Tuple, Dict
+from typing import Tuple
 
 from Config import constants as cnst
-from Config.helpers import parse_gaze_event
+from GazeEvents.helpers import parse_gaze_event
 import Utils.visual_angle_utils as vis_utils
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor

@@ -9,7 +9,7 @@ from scipy.interpolate import interp1d
 from typing import Tuple, Dict
 
 from Config import constants as cnst
-from Config.helpers import parse_gaze_event
+from GazeEvents.helpers import parse_gaze_event
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 
 

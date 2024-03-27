@@ -2,7 +2,7 @@ import Levenshtein
 from typing import Sequence
 
 import Config.constants as cnst
-import Config.helpers as hlp
+import GazeEvents.helpers as hlp
 from GazeEvents.BaseEvent import BaseEvent
 
 _NUM_EVENTS = len(cnst.EVENT_LABELS)
