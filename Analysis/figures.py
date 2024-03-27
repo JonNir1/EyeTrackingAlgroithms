@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -8,7 +9,7 @@ import Config.experiment_config as cnfg
 _HEATMAP_COLORMAP = "HOT"
 
 
-def similarity_heatmap(data, title, similarity_measure) -> go.Figure:
+def similarity_heatmap(data: pd.DataFrame, title: str, similarity_measure: str) -> go.Figure:
     fig = px.imshow(data.T,
                     title=title,
                     color_continuous_scale=_HEATMAP_COLORMAP,
