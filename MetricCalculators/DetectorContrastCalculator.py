@@ -66,17 +66,6 @@ class DetectorContrastCalculator:
                                 **match_kwargs) -> pd.DataFrame:
         matches = self.match_events(match_by, ignore_events, **match_kwargs)
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
-        if contrast_by in {"%", "% matched", "percent", "percent matched"}:
-            events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
-            event_counts = events.map(lambda cell: len(cell) if len(cell) else np.nan)
-            match_counts = matches.map(lambda cell: len(cell) if pd.notnull(cell) else np.nan)
-            ratios = np.zeros_like(match_counts, dtype=float)
-            for i in range(match_counts.index.size):
-                for j in range(match_counts.columns.size):
-                    gt_col, pred_col = match_counts.columns[j]
-                    ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
-            ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns)
-            return ratios * 100
         if contrast_by in {"onset", "onset latency", "onset jitter"}:
             onset_diffs = matches.map(
                 lambda cell: {k.start_time - v.start_time for k, v in cell.items()} if pd.notnull(cell) else np.nan
@@ -87,6 +76,10 @@ class DetectorContrastCalculator:
                 lambda cell: {k.end_time - v.end_time for k, v in cell.items()} if pd.notnull(cell) else np.nan
             )
             return offset_diffs
+        if contrast_by in {"duration", "length"}:
+            duration_diffs = matches.map(
+                lambda cell: {k.duration - v.duration for k, v in cell.items()} if pd.notnull(cell) else np.nan
+            )
         raise ValueError(f"Unknown contrast measure for matched events:\t{contrast_by}")
 
     def match_events(self, match_by: str,
