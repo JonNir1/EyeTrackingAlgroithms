@@ -1,6 +1,6 @@
 from typing import Union, Sequence
 
-import numpy as np
+import pandas as pd
 
 import Config.constants as cnst
 from GazeEvents.BaseEvent import BaseEvent
@@ -34,7 +34,7 @@ def parse_event_label(label: Union[cnst.EVENT_LABELS, int, str, float],
 
 def drop_events(seq: Sequence, to_drop: Sequence[cnst.EVENT_LABELS] = None) -> Sequence:
     """ Drops events from the given sequence if they are in the set of event-labels to drop. """
-    if seq is None or np.isnan(seq) or len(seq) == 0:
+    if len(seq) == 0 or pd.isnull(seq).all():
         return seq
     if to_drop is None or len(to_drop) == 0:
         return seq

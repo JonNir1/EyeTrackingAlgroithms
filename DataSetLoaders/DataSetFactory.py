@@ -1,7 +1,8 @@
 import warnings
-import pandas as pd
 from abc import ABC
 from typing import List
+
+import pandas as pd
 
 import Config.constants as cnst
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
@@ -63,12 +64,12 @@ class DataSetFactory(ABC):
         with warnings.catch_warnings(action="ignore"):
             labels = {
                 rater: trial_data[rater] if rater in trial_data.columns and pd.notnull(trial_data[rater]).all()
-                else float("nan") for rater in raters
+                else [float("nan")] for rater in raters
             }
             events = {
                 rater: EventFactory.make_from_gaze_data(
                     trial_data, vd=viewer_distance, ps=pixel_size, column_mapping={rater: cnst.EVENT})
-                if rater in trial_data.columns else [] for rater in raters
+                if rater in trial_data.columns else [float("nan")] for rater in raters
             }
         for det in detectors:
             with warnings.catch_warnings(action="ignore"):
