@@ -109,24 +109,24 @@ class DetectorContrastCalculator:
         matches = self.match_events(match_by, ignore_events, **match_kwargs)
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by in {"onset", "onset latency", "onset jitter"}:
-            diffs = matches.map(
+            contrast = matches.map(
                 lambda cell: [k.start_time - v.start_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
         elif contrast_by in {"offset", "offset latency", "offset jitter"}:
-            diffs = matches.map(
+            contrast = matches.map(
                 lambda cell: [k.end_time - v.end_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
         elif contrast_by in {"duration", "length"}:
-            diffs = matches.map(
+            contrast = matches.map(
                 lambda cell: [k.duration - v.duration for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
         else:
             raise NotImplementedError(f"Unknown contrast measure for matched events:\t{contrast_by}")
 
         if group_by is None:
-            return diffs
+            return contrast
         # Group by stimulus and calculate add row "all" (all stimuli)
-        grouped_diffs = diffs.groupby(level=group_by).sum()
+        grouped_diffs = contrast.groupby(level=group_by).sum()
         grouped_diffs = pd.concat([grouped_diffs.T, grouped_diffs.sum().rename("all")], axis=1).T
         return grouped_diffs
 
