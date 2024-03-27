@@ -9,7 +9,7 @@ from scipy.interpolate import interp1d
 from typing import Tuple, Dict
 
 from Config import constants as cnst
-from GazeEvents.helpers import parse_gaze_event
+from GazeEvents.helpers import parse_event_label
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 
 
@@ -114,7 +114,7 @@ class HFCDataSetLoader(BaseDataSetLoader):
                                                                     f(coder_annotations["FixEnd"]))])
                     evnts[list(fixation_samples)] = 1
                 data[coder_name] = evnts
-                data[coder_name] = data[coder_name].apply(lambda x: parse_gaze_event(x, safe=True))
+                data[coder_name] = data[coder_name].apply(lambda x: parse_event_label(x, safe=True))
                 dataframes.append(data)
 
         merged_df = pd.concat(dataframes, ignore_index=True, axis=0)

@@ -8,7 +8,7 @@ from scipy.io import loadmat
 from typing import Tuple
 
 from Config import constants as cnst
-from GazeEvents.helpers import parse_gaze_event
+from GazeEvents.helpers import parse_event_label
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
 from Config.ScreenMonitor import ScreenMonitor
 
@@ -111,7 +111,7 @@ class Lund2013DataSetLoader(BaseDataSetLoader):
         samples_data = eyetracking_data_dict['pos']
         right_x, right_y = samples_data[:, 3:5].T  # only recording right eye
         timestamps = Lund2013DataSetLoader.__calculate_timestamps(samples_data[:, 0], sampling_rate)
-        labels = pd.Series(samples_data[:, 5]).apply(lambda x: parse_gaze_event(x, safe=True))
+        labels = pd.Series(samples_data[:, 5]).apply(lambda x: parse_event_label(x, safe=True))
 
         # create dataframe:
         df = pd.DataFrame(data={cnst.T: timestamps,
