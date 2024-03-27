@@ -16,8 +16,7 @@ def similarity_heatmap(data: pd.DataFrame, title: str, similarity_measure: str) 
                     color_continuous_scale=_HEATMAP_COLORMAP,
                     labels=dict(x=cnst.TRIAL.capitalize(), y="Detectors", color=similarity_measure),
                     x=data.index.get_level_values(cnst.TRIAL),
-                    aspect="auto"
-                    )
+                    aspect="auto")
     fig.update_layout(
         xaxis=dict(side="top"),
         yaxis=dict(tickmode="array",
