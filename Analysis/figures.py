@@ -31,7 +31,13 @@ def similarity_heatmap(data: pd.DataFrame, title: str, similarity_measure: str) 
     return fig
 
 
-def add_scarfplot(fig: go.Figure, t: np.ndarray, events: np.ndarray, ymin: float, ymax: float, **colorbar_kwargs) -> go.Figure:
+def add_scarfplot(fig: go.Figure,
+                  t: np.ndarray,
+                  events: np.ndarray,
+                  ymin: float,
+                  ymax: float,
+                  **colorbar_kwargs) -> go.Figure:
+    """ Adds a scarfplot to the figure. """
     assert len(t) == len(events)
     _borders, centers, colormap = _discrete_colormap({e for e in cnst.EVENT_LABELS},
                                                      {k: v[cnst.COLOR] for k, v in cnfg.EVENT_MAPPING.items()})
