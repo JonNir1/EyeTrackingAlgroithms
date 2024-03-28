@@ -82,7 +82,7 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
                                          showlegend=False,
                                          nbinsx=kwargs.get("max_bins", 20))
             elif plot_type == "violin":
-                new_trace = go.Violin(y=data,
+                new_trace = go.Violin(y=cell,
                                       showlegend=False,
                                       points=kwargs.get("points", "all"),
                                       side=kwargs.get("side", "positive"))
