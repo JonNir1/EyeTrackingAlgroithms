@@ -124,7 +124,7 @@ class DetectorContrastCalculator:
         :param match_by: The matching criteria to use.
             Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
         :param contrast_by: The contrast measure to calculate.
-            Options: "onset latency", "offset latency", "duration"
+            Options: "onset latency", "offset latency", "duration", "amplitude"
         :param group_by: The criteria to group the contrast measure by.
         :param ignore_events: A set of event-labels to ignore during the matching process.
         :param match_kwargs: Additional keyword arguments to pass to the matching function.
@@ -132,6 +132,7 @@ class DetectorContrastCalculator:
             pair (column).
         :raises NotImplementedError: If the contrast measure is unknown.
         """
+        # TODO: replace "contrast_by" with generic way to contrast event features
         matches = self.match_events(match_by, ignore_events, **match_kwargs)
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by in {"onset", "onset latency", "onset jitter"}:
@@ -145,6 +146,10 @@ class DetectorContrastCalculator:
         elif contrast_by in {"duration", "length"}:
             contrast = matches.map(
                 lambda cell: [k.duration - v.duration for k, v in cell.items()] if pd.notnull(cell) else np.nan
+            )
+        elif contrast_by in {"amplitude", "distance"}:
+            contrast = matches.map(
+                lambda cell: [k.amplitude - v.amplitude for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
         else:
             raise NotImplementedError(f"Unknown contrast measure for matched events:\t{contrast_by}")
