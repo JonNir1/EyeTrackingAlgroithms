@@ -16,15 +16,15 @@ class Subject:
         self._channels_map = self.__read_channels_map(idx)
         self._trial_starts, self._trial_ends = self.__read_trial_data(idx)
         self._saccade_onsets, self._erp_onsets, self._frp_saccade_onsets, self._frp_fixation_onsets = self.__read_eyetracking_data(idx)
-        self._eyemovement_removed_data, self._blinks_removed = self.__read_eeg_data(idx)
+        self._eeg_removed_eyemovements, self._eeg_removed_blinks = self.__read_eeg_data(idx)
 
     def calculate_radial_eog(self) -> np.ndarray:
-        mean_eog = np.nanmean(np.vstack([self._blinks_removed[self._channels_map['LHEOG']],
-                                         self._blinks_removed[self._channels_map['RHEOG']],
-                                         self._blinks_removed[self._channels_map['RVEOGS']],
-                                         self._blinks_removed[self._channels_map['RVEOGI']]]),
+        mean_eog = np.nanmean(np.vstack([self._eeg_removed_blinks[self._channels_map['LHEOG']],
+                                         self._eeg_removed_blinks[self._channels_map['RHEOG']],
+                                         self._eeg_removed_blinks[self._channels_map['RVEOGS']],
+                                         self._eeg_removed_blinks[self._channels_map['RVEOGI']]]),
                               axis=0)
-        ref_channel = self._blinks_removed[self._channels_map[Subject._REFERENCE_CHANNEL]]
+        ref_channel = self._eeg_removed_blinks[self._channels_map[Subject._REFERENCE_CHANNEL]]
         return mean_eog - ref_channel
 
     @staticmethod
@@ -64,11 +64,11 @@ class Subject:
     @staticmethod
     def __read_eeg_data(idx: int) -> (np.ndarray, np.ndarray):
         fname_interp = path.join(Subject._BASE_PATH, "data", f"S{idx}_data_interp.mat")
-        eyemovement_removed_data = read_mat(fname_interp)['data']
-        eyemovement_removed_data = np.swapaxes(eyemovement_removed_data, 0, 1)
+        eeg_removed_eyemovements = read_mat(fname_interp)['data']
+        eeg_removed_eyemovements = np.swapaxes(eeg_removed_eyemovements, 0, 1)
 
         fname_blinks = path.join(Subject._BASE_PATH, "data", f"S{idx}_data_ica_onlyBlinks.mat")
-        blinks_removed_data = read_mat(fname_blinks)['dat']
-        blinks_removed_data = np.swapaxes(blinks_removed_data, 0, 1)
-        return eyemovement_removed_data, blinks_removed_data
+        eeg_removed_blinks = read_mat(fname_blinks)['dat']
+        eeg_removed_blinks = np.swapaxes(eeg_removed_blinks, 0, 1)
+        return eeg_removed_eyemovements, eeg_removed_blinks
 
