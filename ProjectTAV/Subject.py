@@ -7,7 +7,8 @@ from pymatreader import read_mat
 
 
 class Subject:
-    _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
+    # _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
+    _BASE_PATH = r'E:\Tav'
     _REFERENCE_CHANNEL = "Pz"
     _PLOTTING_CHANNEL = "O2"
 
