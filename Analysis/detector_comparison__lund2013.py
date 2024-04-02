@@ -1,17 +1,10 @@
-import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 import plotly.io as pio
 
 import Config.constants as cnst
-import Config.experiment_config as cnfg
 
-from MetricCalculators.DetectorContrastCalculator import DetectorContrastCalculator
+from Analysis.DetectorContrastCalculator import DetectorContrastCalculator
 from GazeDetectors.EngbertDetector import EngbertDetector
 from GazeDetectors.NHDetector import NHDetector
-from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
 
 import Analysis.figures as figs
 
