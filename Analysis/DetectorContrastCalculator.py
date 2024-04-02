@@ -90,7 +90,7 @@ class DetectorContrastCalculator:
         :return: A DataFrame containing the ratio of matched events
         """
         events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
-        matches = self.match_events(match_by, ignore_events, **match_kwargs)
+        matches = self.match_events(match_by, ignore_events, is_symmetric=True, **match_kwargs)
         event_counts = events.map(lambda cell: len(cell) if len(cell) else np.nan)
         match_counts = matches.map(lambda cell: len(cell) if pd.notnull(cell) else np.nan)
         ratios = np.zeros_like(match_counts, dtype=float)
@@ -133,7 +133,7 @@ class DetectorContrastCalculator:
         :raises NotImplementedError: If the contrast measure is unknown.
         """
         # TODO: replace "contrast_by" with generic way to contrast event features
-        matches = self.match_events(match_by, ignore_events, **match_kwargs)
+        matches = self.match_events(match_by, ignore_events, is_symmetric=True, **match_kwargs)
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by in {"onset", "onset latency", "onset jitter"}:
             contrast = matches.map(
@@ -166,6 +166,7 @@ class DetectorContrastCalculator:
     def match_events(self,
                      match_by: str,
                      ignore_events: List[cnst.EVENT_LABELS] = None,
+                     is_symmetric: bool = True,
                      **match_kwargs) -> pd.DataFrame:
         """
         Match events between raters and detectors based on the given matching criteria.
@@ -173,6 +174,8 @@ class DetectorContrastCalculator:
         :param match_by: The matching criteria to use.
             Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
         :param ignore_events: A set of event-labels to ignore during the matching process.
+        :param is_symmetric: If true, only calculate the measure once for each (unordered-)pair of columns,
+            e.g, (A, B) and (B, A) will be the same. If false, calculate the measure for all ordered-pairs of columns.
         :param match_kwargs: Additional keyword arguments to pass to the matching function.
         :return: A DataFrame containing the matched events per trial (row) and detector/rater pair (column).
         """
@@ -181,38 +184,38 @@ class DetectorContrastCalculator:
         if match_by == "first" or match_by == "first overlap":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.first_overlap(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "last" or match_by == "last overlap":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.last_overlap(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "max" or match_by == "max overlap":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.max_overlap(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "longest" or match_by == "longest match":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.longest_match(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "iou" or match_by == "intersection over union":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "onset" or match_by == "onset latency":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.onset_latency(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "offset" or match_by == "offset latency":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.offset_latency(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         if match_by == "window" or match_by == "window based":
             return self._contrast_columns(events,
                                           lambda seq1, seq2: EventMatcher.window_based(seq1, seq2, **match_kwargs),
-                                          is_symmetric=False)
+                                          is_symmetric=is_symmetric)
         return self._contrast_columns(events,
                                       lambda seq1, seq2: EventMatcher.generic_matcher(seq1, seq2, **match_kwargs),
-                                      is_symmetric=False)
+                                      is_symmetric=is_symmetric)
 
     @staticmethod
     def _contrast_columns(data: pd.DataFrame, measure: Callable, is_symmetric: bool = True) -> pd.DataFrame:
