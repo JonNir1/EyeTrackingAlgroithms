@@ -8,8 +8,8 @@ from GazeDetectors.BaseDetector import BaseDetector
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeEvents.EventMatcher import EventMatcher
 import GazeEvents.helpers as hlp
-import MetricCalculators.levenshtein_distance as lev
-import MetricCalculators.transition_matrix as tm
+import Metrics.levenshtein_distance as lev
+import Metrics.transition_matrix as tm
 
 
 class DetectorContrastCalculator:
