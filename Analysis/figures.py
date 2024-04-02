@@ -84,6 +84,7 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
             elif plot_type == "violin":
                 new_trace = go.Violin(y=cell,
                                       showlegend=False,
+                                      name="",
                                       points=kwargs.get("points", "all"),
                                       side=kwargs.get("side", "positive"))
             elif plot_type == "box":
@@ -100,7 +101,7 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
                 mapper = kwargs.get("column_title_mapper", lambda x: x)
                 fig.update_xaxes(title_text=mapper(col_name),
                                  side="top",
-                                 title_font=dict(size=8),
+                                 title_font=dict(size=10),
                                  row=row_num + 1,
                                  col=col_num + 1)
             if col_num == 0:
