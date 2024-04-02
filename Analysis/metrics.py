@@ -11,6 +11,9 @@ import GazeEvents.helpers as hlp
 _NUM_EVENTS = len(cnst.EVENT_LABELS)
 
 
+# TODO: calculate confusion matrix, precision, recall, F1-score, etc.
+
+
 def levenshtein_distance(seq1: Sequence, seq2: Sequence) -> int:
     """ Calculates the Levenshtein distance between two sequences of samples or events. """
     seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
