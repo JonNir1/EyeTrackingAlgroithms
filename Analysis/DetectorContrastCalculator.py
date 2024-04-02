@@ -33,6 +33,7 @@ class DetectorContrastCalculator:
         :param contrast_by: The contrast measure to calculate.
             Options:
                 - "levenshtein": Calculate the Levenshtein distance between the sequence of labels.
+                - "kappa": Calculate the Cohen's Kappa coefficient between the sequence of labels.
                 - "frobenius": Calculate the Frobenius norm of the difference between the labels' transition matrices.
                 - "kl": Calculate the Kullback-Leibler divergence between the labels' transition matrices.
         :param group_by: The criteria to group the contrast measure by.
@@ -45,6 +46,8 @@ class DetectorContrastCalculator:
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by == "lev" or contrast_by == "levenshtein":
             contrast = self._contrast_columns(samples, metrics.levenshtein_distance)
+        elif contrast_by == "kappa" or contrast_by == "cohen kappa":
+            contrast = self._contrast_columns(samples, metrics.cohen_kappa)
         elif contrast_by == "fro" or contrast_by == "frobenius" or contrast_by == "l2":
             contrast = self._contrast_columns(samples,
                                               lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro"))

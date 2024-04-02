@@ -1,6 +1,7 @@
 from typing import Sequence
 
 import numpy as np
+import sklearn
 import Levenshtein
 
 import Config.constants as cnst
@@ -21,6 +22,13 @@ def levenshtein_ratio(seq1: Sequence, seq2: Sequence) -> float:
     """ Calculates the Levenshtein ratio between two sequences of samples or events. """
     distance = levenshtein_distance(seq1, seq2)
     return 1 - distance / sum([len(seq1), len(seq2)])
+
+
+def cohen_kappa(seq1: Sequence, seq2: Sequence) -> float:
+    """ Calculates the Cohen's Kappa coefficient between two sequences of samples or events. """
+    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
+    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
+    return sklearn.metrics.cohen_kappa_score(seq1, seq2)
 
 
 def transition_matrix_distance(seq1: Sequence, seq2: Sequence, norm: str) -> float:
