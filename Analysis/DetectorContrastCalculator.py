@@ -8,8 +8,7 @@ from GazeDetectors.BaseDetector import BaseDetector
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeEvents.EventMatcher import EventMatcher
 import GazeEvents.helpers as hlp
-import Metrics.levenshtein_distance as lev
-import Metrics.transition_matrix as tm
+import Analysis.metrics as metrics
 
 
 class DetectorContrastCalculator:
@@ -45,21 +44,13 @@ class DetectorContrastCalculator:
         samples = self._detected_samples.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         contrast_by = contrast_by.lower().replace("_", " ").replace("-", " ").strip()
         if contrast_by == "lev" or contrast_by == "levenshtein":
-            contrast = self._contrast_columns(samples, lev.calculate_distance, is_symmetric=True)
+            contrast = self._contrast_columns(samples, metrics.levenshtein_distance)
         elif contrast_by == "fro" or contrast_by == "frobenius" or contrast_by == "l2":
-            transition_probabilities = samples.map(
-                lambda cell: tm.transition_matrix(cell) if pd.notnull(cell).all() else [np.nan]
-            )
-            contrast = self._contrast_columns(transition_probabilities,
-                                              lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"),
-                                              is_symmetric=True)
+            contrast = self._contrast_columns(samples,
+                                              lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro"))
         elif contrast_by == "kl" or contrast_by == "kl divergence" or contrast_by == "kullback leibler":
-            transition_probabilities = samples.map(
-                lambda cell: tm.transition_matrix(cell) if pd.notnull(cell).all() else [np.nan]
-            )
-            contrast = self._contrast_columns(transition_probabilities,
-                                              lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"),
-                                              is_symmetric=True)
+            contrast = self._contrast_columns(samples,
+                                              lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
         else:
             raise NotImplementedError(f"Unknown contrast measure for samples:\t{contrast_by}")
 

@@ -1,14 +1,47 @@
-import numpy as np
 from typing import Sequence
+
+import numpy as np
+import Levenshtein
 
 import Config.constants as cnst
 import GazeEvents.helpers as hlp
-from GazeEvents.BaseEvent import BaseEvent
+
 
 _NUM_EVENTS = len(cnst.EVENT_LABELS)
 
 
-def transition_matrix(seq: Sequence) -> np.ndarray:
+def levenshtein_distance(seq1: Sequence, seq2: Sequence) -> int:
+    """ Calculates the Levenshtein distance between two sequences of samples or events. """
+    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
+    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
+    return Levenshtein.distance(seq1, seq2)
+
+
+def levenshtein_ratio(seq1: Sequence, seq2: Sequence) -> float:
+    """ Calculates the Levenshtein ratio between two sequences of samples or events. """
+    distance = levenshtein_distance(seq1, seq2)
+    return 1 - distance / sum([len(seq1), len(seq2)])
+
+
+def transition_matrix_distance(seq1: Sequence, seq2: Sequence, norm: str) -> float:
+    """ Calculate the distance between the transition matrices of two sequences. """
+    tm1 = _transition_matrix(seq1)
+    tm2 = _transition_matrix(seq2)
+    norm = norm.lower()
+    if norm == "fro" or norm == "frobenius" or norm == "euclidean" or norm == "l2":
+        return np.linalg.norm(tm1 - tm2, ord="fro")
+    if norm == "l1" or norm == "manhattan":
+        return np.linalg.norm(tm1 - tm2, ord=1)
+    if norm == "linf" or norm == "infinity" or norm == "max" or norm == np.inf:
+        return np.linalg.norm(tm1 - tm2, ord=np.inf)
+    if norm == "kl" or norm == "kullback-leibler":
+        stationary1 = _calculate_stationary_distribution(tm1)
+        stationary2 = _calculate_stationary_distribution(tm2)
+        return np.sum(stationary1 * np.log(stationary1 / stationary2))
+    raise ValueError(f"Invalid norm: {norm}")
+
+
+def _transition_matrix(seq: Sequence) -> np.ndarray:
     """
     Calculate the transition probabilities between events in the given sequence.
     Returns a matrix where each row represents the current event and each column represents the next event, so cells
@@ -18,22 +51,6 @@ def transition_matrix(seq: Sequence) -> np.ndarray:
     row_sum = counts.sum(axis=1, keepdims=True)
     probs = np.divide(counts, row_sum, out=np.zeros_like(counts, dtype=float), where=row_sum != 0)
     return probs
-
-
-def matrix_distance(m1: np.ndarray, m2: np.ndarray, norm: str = "fro") -> float:
-    """ Calculate the distance between two matrices. """
-    norm = norm.lower()
-    if norm == "fro" or norm == "frobenius" or norm == "euclidean" or norm == "l2":
-        return np.linalg.norm(m1 - m2, ord="fro")
-    if norm == "l1" or norm == "manhattan":
-        return np.linalg.norm(m1 - m2, ord=1)
-    if norm == "linf" or norm == "infinity" or norm == "max" or norm == np.inf:
-        return np.linalg.norm(m1 - m2, ord=np.inf)
-    if norm == "kl" or norm == "kullback-leibler":
-        stationary1 = _calculate_stationary_distribution(m1)
-        stationary2 = _calculate_stationary_distribution(m2)
-        return np.sum(stationary1 * np.log(stationary1 / stationary2))
-    raise ValueError(f"Invalid norm: {norm}")
 
 
 def _transition_counts(seq: Sequence) -> np.ndarray:
