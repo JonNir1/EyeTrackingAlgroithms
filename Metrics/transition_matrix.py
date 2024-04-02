@@ -57,19 +57,7 @@ def matrix_distance(m1: np.ndarray, m2: np.ndarray, norm: str = "fro") -> float:
     if norm == "linf" or norm == "infinity" or norm == "max" or norm == np.inf:
         return np.linalg.norm(m1 - m2, ord=np.inf)
     if norm == "kl" or norm == "kullback-leibler":
-        stationary1 = __extract_stationary(m1)
-        stationary2 = __extract_stationary(m2)
+        stationary1 = calculate_stationary_distribution(m1)
+        stationary2 = calculate_stationary_distribution(m2)
         return np.sum(stationary1 * np.log(stationary1 / stationary2))
     raise ValueError(f"Invalid norm: {norm}")
-
-
-def __extract_stationary(m: np.ndarray) -> np.ndarray:
-    if m.ndim == 2 and m.shape[0] == m.shape[1]:
-        stationary = calculate_stationary_distribution(m, allow_zero=False)
-    elif m.ndim == 2 and 1 in m.shape:
-        stationary = m.flatten()
-    elif m.ndim == 1:
-        stationary = m
-    else:
-        raise ValueError(f"Invalid matrix shape {m.shape}")
-    return stationary
