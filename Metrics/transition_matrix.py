@@ -8,7 +8,7 @@ from GazeEvents.BaseEvent import BaseEvent
 _NUM_EVENTS = len(cnst.EVENT_LABELS)
 
 
-def transition_probabilities(seq: Sequence) -> np.ndarray:
+def transition_matrix(seq: Sequence) -> np.ndarray:
     """
     Calculate the transition probabilities between events in the given sequence.
     Returns a matrix where each row represents the current event and each column represents the next event, so cells

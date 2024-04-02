@@ -48,14 +48,14 @@ class DetectorContrastCalculator:
             contrast = self._contrast_columns(samples, lev.calculate_distance, is_symmetric=True)
         elif contrast_by == "fro" or contrast_by == "frobenius" or contrast_by == "l2":
             transition_probabilities = samples.map(
-                lambda cell: tm.transition_probabilities(cell) if pd.notnull(cell).all() else [np.nan]
+                lambda cell: tm.transition_matrix(cell) if pd.notnull(cell).all() else [np.nan]
             )
             contrast = self._contrast_columns(transition_probabilities,
                                               lambda m1, m2: tm.matrix_distance(m1, m2, norm="fro"),
                                               is_symmetric=True)
         elif contrast_by == "kl" or contrast_by == "kl divergence" or contrast_by == "kullback leibler":
             transition_probabilities = samples.map(
-                lambda cell: tm.transition_probabilities(cell) if pd.notnull(cell).all() else [np.nan]
+                lambda cell: tm.transition_matrix(cell) if pd.notnull(cell).all() else [np.nan]
             )
             contrast = self._contrast_columns(transition_probabilities,
                                               lambda m1, m2: tm.matrix_distance(m1, m2, norm="kl"),
