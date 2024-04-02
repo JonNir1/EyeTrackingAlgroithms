@@ -1,8 +1,8 @@
 from typing import Sequence
 
 import numpy as np
-import sklearn
 import Levenshtein
+from sklearn.metrics import cohen_kappa_score
 
 import Config.constants as cnst
 import GazeEvents.helpers as hlp
@@ -31,7 +31,7 @@ def cohen_kappa(seq1: Sequence, seq2: Sequence) -> float:
     """ Calculates the Cohen's Kappa coefficient between two sequences of samples or events. """
     seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
     seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
-    return sklearn.metrics.cohen_kappa_score(seq1, seq2)
+    return cohen_kappa_score(seq1, seq2)
 
 
 def transition_matrix_distance(seq1: Sequence, seq2: Sequence, norm: str) -> float:
