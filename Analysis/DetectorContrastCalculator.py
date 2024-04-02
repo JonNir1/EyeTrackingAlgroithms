@@ -225,9 +225,10 @@ class DetectorContrastCalculator:
         :return: A data frame with the contrast measure between all pairs of columns.
         """
         if is_symmetric:
-            column_pairs = list(itertools.combinations_with_replacement(data.columns, 2))
+            column_pairs = list(itertools.combinations(data.columns, 2))
         else:
             column_pairs = list(itertools.product(data.columns, repeat=2))
+            column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
         res = {}
         for idx in data.index:
             res[idx] = {}
