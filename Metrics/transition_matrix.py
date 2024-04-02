@@ -38,7 +38,7 @@ def matrix_distance(m1: np.ndarray, m2: np.ndarray, norm: str = "fro") -> float:
 
 def _transition_counts(seq: Sequence) -> np.ndarray:
     """ Count the number of transitions between events in the given sequence. """
-    seq = [e.event_label if isinstance(e, BaseEvent) else hlp.parse_event_label(e, safe=False) for e in seq]
+    seq = [hlp.parse_event_label(e, safe=False) for e in seq]
     counts = np.zeros((_NUM_EVENTS, _NUM_EVENTS), dtype=int)
     for i in range(len(seq) - 1):
         from_event = seq[i]
