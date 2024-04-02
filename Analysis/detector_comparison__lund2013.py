@@ -16,6 +16,7 @@ DETECTORS = [EngbertDetector(),
              NHDetector(),
              # REMoDNaVDetector(),
              ]
+COMPARISON_COLUMNS = [tuple(RATERS)] + [(r, d.name) for r in RATERS for d in DETECTORS]
 
 contrast_calc = DetectorContrastCalculator(DATASET_NAME, RATERS, DETECTORS)
 
@@ -36,19 +37,19 @@ samples_frobenius_grouped = contrast_calc.contrast_samples(contrast_by="frobeniu
 samples_kl_grouped = contrast_calc.contrast_samples(contrast_by="kl", group_by=cnst.STIMULUS)
 
 lev_dist = figs.distributions_grid(
-    samples_levenshtein_grouped[[c for c in samples_levenshtein_grouped.columns if c[0] != c[1]]],
+    samples_levenshtein_grouped[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Levenshtein Distance Distribution",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
 )
 frob_norm = figs.distributions_grid(
-    samples_frobenius_grouped[[c for c in samples_frobenius_grouped.columns if c[0] != c[1]]],
+    samples_frobenius_grouped[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Frobenius Norm Distribution",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
 )
 kl_div = figs.distributions_grid(
-    samples_kl_grouped[[c for c in samples_kl_grouped.columns if c[0] != c[1]]],
+    samples_kl_grouped[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Kullback-Leibler Divergence Distribution",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -70,7 +71,7 @@ match_ratio_heatmap.show()
 
 match_ratios_grouped = contrast_calc.event_matching_ratio(group_by=cnst.STIMULUS, **MATCHING_PARAMS)
 match_ratio_distributions = figs.distributions_grid(
-    match_ratios_grouped[[c for c in match_ratios_grouped.columns if c[0] != c[1]]],
+    match_ratios_grouped[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Events Ratio",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -83,7 +84,7 @@ all_types_onset_jitter = contrast_calc.contrast_matched_events(
     **MATCHING_PARAMS
 )
 onset_jitter_distributions = figs.distributions_grid(
-    all_types_onset_jitter[[c for c in all_types_onset_jitter.columns if c[0] != c[1]]],
+    all_types_onset_jitter[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Events Onset Jitter",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -96,7 +97,7 @@ all_types_duration_diffs = contrast_calc.contrast_matched_events(
     **MATCHING_PARAMS
 )
 duration_diff_distributions = figs.distributions_grid(
-    all_types_duration_diffs[[c for c in all_types_duration_diffs.columns if c[0] != c[1]]],
+    all_types_duration_diffs[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Events Duration Difference",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -115,7 +116,7 @@ fixation_onset_jitter = contrast_calc.contrast_matched_events(
     **MATCHING_PARAMS
 )
 fixation_onset_jitter_distributions = figs.distributions_grid(
-    fixation_onset_jitter[[c for c in fixation_onset_jitter.columns if c[0] != c[1]]],
+    fixation_onset_jitter[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Fixations Onset Jitter",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -131,7 +132,7 @@ fixation_duration_diffs = contrast_calc.contrast_matched_events(
 )
 
 fixation_duration_diff_distributions = figs.distributions_grid(
-    fixation_duration_diffs[[c for c in fixation_duration_diffs.columns if c[0] != c[1]]],
+    fixation_duration_diffs[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Fixations Duration Difference",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -151,7 +152,7 @@ saccades_onset_jitter = contrast_calc.contrast_matched_events(
     **MATCHING_PARAMS
 )
 saccade_onset_jitter_distributions = figs.distributions_grid(
-    saccades_onset_jitter[[c for c in saccades_onset_jitter.columns if c[0] != c[1]]],
+    saccades_onset_jitter[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Saccades Onset Jitter",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}", )
@@ -165,7 +166,7 @@ saccade_duration_diffs = contrast_calc.contrast_matched_events(
     **MATCHING_PARAMS
 )
 saccade_duration_diff_distributions = figs.distributions_grid(
-    saccade_duration_diffs[[c for c in saccade_duration_diffs.columns if c[0] != c[1]]],
+    saccade_duration_diffs[COMPARISON_COLUMNS],
     plot_type="violin",
     title="Matched-Saccades Duration Difference",
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
