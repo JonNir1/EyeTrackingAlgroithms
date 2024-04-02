@@ -47,7 +47,7 @@ def _transition_counts(seq: Sequence) -> np.ndarray:
     return counts
 
 
-def _calculate_stationary_distribution(probs: np.ndarray, allow_zero: bool = True) -> np.ndarray:
+def _calculate_stationary_distribution(probs: np.ndarray, allow_zero: bool = False) -> np.ndarray:
     """
     Calculate the stationary distribution of the given transition matrix.
     The stationary distribution is the left-eigenvector (π) of the transition matrix (P), so πP = π.
