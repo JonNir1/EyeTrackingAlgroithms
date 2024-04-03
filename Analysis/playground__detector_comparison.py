@@ -8,7 +8,7 @@ import GazeEvents.helpers as hlp
 from GazeDetectors.EngbertDetector import EngbertDetector
 from GazeDetectors.NHDetector import NHDetector
 
-from Analysis.DetectorContrastCalculator import DetectorContrastCalculator
+from Analysis.DetectorComparisonCalculator import DetectorComparisonCalculator
 import Analysis.metrics as metrics
 import Analysis.figures as figs
 
@@ -22,23 +22,23 @@ DETECTORS = [EngbertDetector(),
              ]
 COMPARISON_COLUMNS = [(r, d.name) for r in RATERS for d in DETECTORS]
 
-contrast_calc = DetectorContrastCalculator(DATASET_NAME, RATERS, DETECTORS)
+contrast_calc = DetectorComparisonCalculator(DATASET_NAME, RATERS, DETECTORS)
 
 ############################
 ## Sample-Level Contrasts ##
 ############################
 
-samples_levenshtein = contrast_calc.contrast_samples(contrast_by="lev", group_by=None)
-samples_frobenius = contrast_calc.contrast_samples(contrast_by="frobenius", group_by=None)
-samples_kl = contrast_calc.contrast_samples(contrast_by="kl", group_by=None)
+samples_levenshtein = contrast_calc.compare_samples(compare_by="lev", group_by=None)
+samples_frobenius = contrast_calc.compare_samples(compare_by="frobenius", group_by=None)
+samples_kl = contrast_calc.compare_samples(compare_by="kl", group_by=None)
 
 lev_heatmap = figs.similarity_heatmap(samples_levenshtein, "Levenshtein Distance", "Levenshtein Distance")
 frob_heatmap = figs.similarity_heatmap(samples_frobenius, "Frobenius Norm", r"$L_2$")
 kl_heatmap = figs.similarity_heatmap(samples_kl, "Kullback-Leibler Divergence", r"$D_{KL}$")
 
-samples_levenshtein_grouped = contrast_calc.contrast_samples(contrast_by="lev", group_by=cnst.STIMULUS)
-samples_frobenius_grouped = contrast_calc.contrast_samples(contrast_by="frobenius", group_by=cnst.STIMULUS)
-samples_kl_grouped = contrast_calc.contrast_samples(contrast_by="kl", group_by=cnst.STIMULUS)
+samples_levenshtein_grouped = contrast_calc.compare_samples(compare_by="lev", group_by=cnst.STIMULUS)
+samples_frobenius_grouped = contrast_calc.compare_samples(compare_by="frobenius", group_by=cnst.STIMULUS)
+samples_kl_grouped = contrast_calc.compare_samples(compare_by="kl", group_by=cnst.STIMULUS)
 
 lev_dist = figs.distributions_grid(
     samples_levenshtein_grouped[COMPARISON_COLUMNS],
@@ -82,11 +82,8 @@ match_ratio_distributions = figs.distributions_grid(
 )
 match_ratio_distributions.show()
 
-all_types_onset_jitter = contrast_calc.contrast_matched_events(
-    contrast_by="onset",
-    group_by=cnst.STIMULUS,
-    **MATCHING_PARAMS
-)
+all_types_onset_jitter = contrast_calc.compare_matched_events(compare_by="onset", group_by=cnst.STIMULUS,
+                                                              **MATCHING_PARAMS)
 onset_jitter_distributions = figs.distributions_grid(
     all_types_onset_jitter[COMPARISON_COLUMNS],
     plot_type="violin",
@@ -95,11 +92,8 @@ onset_jitter_distributions = figs.distributions_grid(
 )
 onset_jitter_distributions.show()
 
-all_types_duration_diffs = contrast_calc.contrast_matched_events(
-    contrast_by="duration",
-    group_by=cnst.STIMULUS,
-    **MATCHING_PARAMS
-)
+all_types_duration_diffs = contrast_calc.compare_matched_events(compare_by="duration", group_by=cnst.STIMULUS,
+                                                                **MATCHING_PARAMS)
 duration_diff_distributions = figs.distributions_grid(
     all_types_duration_diffs[COMPARISON_COLUMNS],
     plot_type="violin",
@@ -112,13 +106,10 @@ duration_diff_distributions.show()
 ## Matched-Fixations Contrasts ##
 #################################
 
-fixation_onset_jitter = contrast_calc.contrast_matched_events(
-    contrast_by="onset",
-    group_by=cnst.STIMULUS,
-    ignore_events=[v for v in cnst.EVENT_LABELS
-                   if v != cnst.EVENT_LABELS.FIXATION],
-    **MATCHING_PARAMS
-)
+fixation_onset_jitter = contrast_calc.compare_matched_events(compare_by="onset", group_by=cnst.STIMULUS,
+                                                             ignore_events=[v for v in cnst.EVENT_LABELS
+                                                                            if v != cnst.EVENT_LABELS.FIXATION],
+                                                             **MATCHING_PARAMS)
 fixation_onset_jitter_distributions = figs.distributions_grid(
     fixation_onset_jitter[COMPARISON_COLUMNS],
     plot_type="violin",
@@ -127,13 +118,10 @@ fixation_onset_jitter_distributions = figs.distributions_grid(
 )
 fixation_onset_jitter_distributions.show()
 
-fixation_duration_diffs = contrast_calc.contrast_matched_events(
-    contrast_by="duration",
-    group_by=cnst.STIMULUS,
-    ignore_events=[v for v in cnst.EVENT_LABELS
-                   if v != cnst.EVENT_LABELS.FIXATION],
-    **MATCHING_PARAMS
-)
+fixation_duration_diffs = contrast_calc.compare_matched_events(compare_by="duration", group_by=cnst.STIMULUS,
+                                                               ignore_events=[v for v in cnst.EVENT_LABELS
+                                                                              if v != cnst.EVENT_LABELS.FIXATION],
+                                                               **MATCHING_PARAMS)
 
 fixation_duration_diff_distributions = figs.distributions_grid(
     fixation_duration_diffs[COMPARISON_COLUMNS],
@@ -148,13 +136,10 @@ fixation_duration_diff_distributions.show()
 ## Matched-Saccades Contrasts ##
 ################################
 
-saccades_onset_jitter = contrast_calc.contrast_matched_events(
-    contrast_by="onset",
-    group_by=cnst.STIMULUS,
-    ignore_events=[v for v in cnst.EVENT_LABELS
-                   if v != cnst.EVENT_LABELS.SACCADE],
-    **MATCHING_PARAMS
-)
+saccades_onset_jitter = contrast_calc.compare_matched_events(compare_by="onset", group_by=cnst.STIMULUS,
+                                                             ignore_events=[v for v in cnst.EVENT_LABELS
+                                                                            if v != cnst.EVENT_LABELS.SACCADE],
+                                                             **MATCHING_PARAMS)
 saccade_onset_jitter_distributions = figs.distributions_grid(
     saccades_onset_jitter[COMPARISON_COLUMNS],
     plot_type="violin",
@@ -162,13 +147,10 @@ saccade_onset_jitter_distributions = figs.distributions_grid(
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}", )
 saccade_onset_jitter_distributions.show()
 
-saccade_duration_diffs = contrast_calc.contrast_matched_events(
-    contrast_by="duration",
-    group_by=cnst.STIMULUS,
-    ignore_events=[v for v in cnst.EVENT_LABELS
-                   if v != cnst.EVENT_LABELS.SACCADE],
-    **MATCHING_PARAMS
-)
+saccade_duration_diffs = contrast_calc.compare_matched_events(compare_by="duration", group_by=cnst.STIMULUS,
+                                                              ignore_events=[v for v in cnst.EVENT_LABELS
+                                                                             if v != cnst.EVENT_LABELS.SACCADE],
+                                                              **MATCHING_PARAMS)
 saccade_duration_diff_distributions = figs.distributions_grid(
     saccade_duration_diffs[COMPARISON_COLUMNS],
     plot_type="violin",
