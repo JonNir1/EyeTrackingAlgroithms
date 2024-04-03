@@ -14,13 +14,13 @@ import Analysis.figures as figs
 
 pio.renderers.default = "browser"
 
-DATASET_NAME = "Lund2013"
-RATERS = ["MN", "RA"]
+DATASET_NAME = "IRF"
+RATERS = ["RZ"]
 DETECTORS = [EngbertDetector(),
              NHDetector(),
              # REMoDNaVDetector(),
              ]
-COMPARISON_COLUMNS = [tuple(RATERS)] + [(r, d.name) for r in RATERS for d in DETECTORS]
+COMPARISON_COLUMNS = [(r, d.name) for r in RATERS for d in DETECTORS]
 
 contrast_calc = DetectorContrastCalculator(DATASET_NAME, RATERS, DETECTORS)
 
