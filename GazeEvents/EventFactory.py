@@ -17,6 +17,8 @@ from GazeEvents.SmoothPursuitEvent import SmoothPursuitEvent
 
 class EventFactory(ABC):
 
+    # TODO: add `make from event table` that parses event-summary table and creates events
+
     @staticmethod
     def make(label: cnst.EVENT_LABELS, t: np.ndarray, **event_data) -> Optional[BaseEvent]:
         """
