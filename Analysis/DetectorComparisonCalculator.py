@@ -55,15 +55,7 @@ class DetectorComparisonCalculator:
                                              lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
         else:
             raise NotImplementedError(f"Unknown contrast measure for samples:\t{compare_by}")
-
-        if group_by is None:
-            return contrast
-        # Group by stimulus and calculate add row "all" (all stimuli)
-        grouped_diffs = contrast.groupby(level=group_by).agg(list)
-        all_stim = pd.Series([list(grouped_diffs[col].explode()) for col in grouped_diffs.columns],
-                             index=grouped_diffs.columns, name="all")
-        grouped_diffs = pd.concat([grouped_diffs.T, all_stim], axis=1).T
-        return grouped_diffs
+        return self.__group_and_aggregate(contrast, group_by)
 
     def event_matching_ratio(self,
                              match_by: str,
@@ -92,15 +84,7 @@ class DetectorComparisonCalculator:
                 gt_col, pred_col = match_counts.columns[j]
                 ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
         ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns) * 100
-
-        if group_by is None:
-            return ratios
-        # Group by stimulus and calculate add row "all" (all stimuli)
-        grouped_ratios = ratios.groupby(level=group_by).agg(list)
-        all_stim = pd.Series([list(grouped_ratios[col].explode()) for col in grouped_ratios.columns],
-                             index=grouped_ratios.columns, name="all")
-        grouped_ratios = pd.concat([grouped_ratios.T, all_stim], axis=1).T
-        return grouped_ratios
+        return self.__group_and_aggregate(ratios, group_by)
 
     def compare_matched_events(self,
                                match_by: str,
@@ -145,15 +129,7 @@ class DetectorComparisonCalculator:
             )
         else:
             raise NotImplementedError(f"Unknown contrast measure for matched events:\t{compare_by}")
-
-        if group_by is None:
-            return contrast
-        # Group by stimulus and calculate add row "all" (all stimuli)
-        grouped_diffs = contrast.groupby(level=group_by).agg(lambda cell: pd.Series(cell).explode())
-        all_stim = pd.Series([list(grouped_diffs[col].explode()) for col in grouped_diffs.columns],
-                             index=grouped_diffs.columns, name="all")
-        grouped_diffs = pd.concat([grouped_diffs.T, all_stim], axis=1).T
-        return grouped_diffs
+        return self.__group_and_aggregate(contrast, group_by)
 
     def match_events(self,
                      match_by: str,
@@ -208,6 +184,18 @@ class DetectorComparisonCalculator:
                                      lambda seq1, seq2: EventMatcher.generic_matcher(seq1, seq2, **match_kwargs),
                                      is_symmetric=is_symmetric)
 
+    @property
+    def dataset_name(self):
+        return self._dataset_name
+
+    @property
+    def raters(self):
+        return self._raters
+
+    @property
+    def detectors(self):
+        return self._detectors
+
     @staticmethod
     def _compare_columns(data: pd.DataFrame, measure: Callable, is_symmetric: bool = True) -> pd.DataFrame:
         """
@@ -238,17 +226,17 @@ class DetectorComparisonCalculator:
         res.index.names = data.index.names
         return res
 
-    @property
-    def dataset_name(self):
-        return self._dataset_name
-
-    @property
-    def raters(self):
-        return self._raters
-
-    @property
-    def detectors(self):
-        return self._detectors
+    @staticmethod
+    def __group_and_aggregate(data: pd.DataFrame, group_by: Optional[str] = None) -> pd.DataFrame:
+        """ Group the data by the given criteria and aggregate the values in each group. """
+        # create a Series of all measure values in each column
+        group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
+        if group_by is None:
+            return pd.DataFrame(group_all).T
+        # create a list of values per group & column, and add a row for "all" group
+        grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
+        grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
+        return grouped_vals
 
     def __eq__(self, other):
         if not isinstance(other, DetectorComparisonCalculator):
