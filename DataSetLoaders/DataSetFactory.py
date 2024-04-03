@@ -47,9 +47,9 @@ class DataSetFactory(ABC):
         for trial_num in dataset[cnst.TRIAL].unique():
             trial_data = dataset[dataset[cnst.TRIAL] == trial_num]
             labels, events = DataSetFactory._process_trial(trial_data, raters, detectors)
-            _, subject_id, stimulus, stimulus_name = trial_data[indexers].iloc[0]
-            samples_dict[(trial_num, subject_id, stimulus, stimulus_name)] = labels
-            event_dict[(trial_num, subject_id, stimulus, stimulus_name)] = events
+            idx = trial_data[indexers].iloc[0].to_list()
+            samples_dict[tuple(idx)] = labels
+            event_dict[tuple(idx)] = events
         # create output dataframes
         samples_df = pd.DataFrame.from_dict(samples_dict, orient="index").sort_index()
         samples_df.index.names = indexers
