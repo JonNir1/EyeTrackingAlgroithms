@@ -107,7 +107,8 @@ class DetectorComparisonCalculator:
         :param match_by: The matching criteria to use.
             Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
         :param compare_by: The compared-measure to calculate.
-            Options: "onset latency", "offset latency", "duration", "amplitude"
+            Options: "onset latency", "offset latency", "duration", "amplitude", "azimuth", "peak velocity",
+                "mean velocity", "mean pupil size"
         :param group_by: The criteria to group the contrast measure by.
         :param ignore_events: A set of event-labels to ignore during the matching process.
         :param match_kwargs: Additional keyword arguments to pass to the matching function.
@@ -115,7 +116,7 @@ class DetectorComparisonCalculator:
             pair (column).
         :raises NotImplementedError: If the contrast measure is unknown.
         """
-        # TODO: replace "contrast_by" with generic way to contrast event features
+        # TODO: replace "compare_by" with generic way to contrast event features
         matches = self.match_events(match_by, ignore_events, is_symmetric=True, **match_kwargs)
         compare_by = compare_by.lower().replace("_", " ").replace("-", " ").strip()
         if compare_by in {"onset", "onset latency", "onset jitter"}:
@@ -133,6 +134,22 @@ class DetectorComparisonCalculator:
         elif compare_by in {"amplitude", "distance"}:
             contrast = matches.map(
                 lambda cell: [k.amplitude - v.amplitude for k, v in cell.items()] if pd.notnull(cell) else np.nan
+            )
+        elif compare_by in {"azimuth", "direction"}:
+            contrast = matches.map(
+                lambda cell: [k.azimuth - v.azimuth for k, v in cell.items()] if pd.notnull(cell) else np.nan
+            )
+        elif compare_by in {"peak velocity", "max velocity"}:
+            contrast = matches.map(
+                lambda cell: [k.peak_velocity - v.peak_velocity for k, v in cell.items()] if pd.notnull(cell) else np.nan
+            )
+        elif compare_by in {"mean velocity", "avg velocity"}:
+            contrast = matches.map(
+                lambda cell: [k.mean_velocity - v.mean_velocity for k, v in cell.items()] if pd.notnull(cell) else np.nan
+            )
+        elif compare_by in {"mean pupil size", "pupil size"}:
+            contrast = matches.map(
+                lambda cell: [k.mean_pupil_size - v.mean_pupil_size for k, v in cell.items()] if pd.notnull(cell) else np.nan
             )
         else:
             raise NotImplementedError(f"Unknown contrast measure for matched events:\t{compare_by}")
