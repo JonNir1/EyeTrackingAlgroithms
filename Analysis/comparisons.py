@@ -79,7 +79,7 @@ def event_features(events: pd.DataFrame,
         contrast = events.map(lambda cell: [e.mean_pupil_size for e in cell] if len(cell) else np.nan)
     else:
         raise NotImplementedError(f"Unknown contrast measure for matched events:\t{feature}")
-    return _group_and_aggregate(contrast, group_by)
+    return group_and_aggregate(contrast, group_by)
 
 
 def compare_samples(samples: pd.DataFrame,
@@ -117,7 +117,7 @@ def compare_samples(samples: pd.DataFrame,
                                     lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
     else:
         raise NotImplementedError(f"Unknown contrast measure for samples:\t{metric}")
-    return _group_and_aggregate(contrast, group_by)
+    return group_and_aggregate(contrast, group_by)
 
 
 def event_matching_ratio(events: pd.DataFrame,
@@ -149,7 +149,7 @@ def event_matching_ratio(events: pd.DataFrame,
             gt_col, pred_col = match_counts.columns[j]
             ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
     ratios = pd.DataFrame(ratios, index=match_counts.index, columns=match_counts.columns) * 100
-    return _group_and_aggregate(ratios, group_by)
+    return group_and_aggregate(ratios, group_by)
 
 
 def matched_events_feature_difference(events: pd.DataFrame,
@@ -215,7 +215,19 @@ def matched_events_feature_difference(events: pd.DataFrame,
         )
     else:
         raise NotImplementedError(f"Unknown contrast measure for matched events:\t{feature}")
-    return _group_and_aggregate(contrast, group_by)
+    return group_and_aggregate(contrast, group_by)
+
+
+def group_and_aggregate(data: pd.DataFrame, group_by: Optional[str] = None) -> pd.DataFrame:
+    """ Group the data by the given criteria and aggregate the values in each group. """
+    # create a Series of all measure values in each column
+    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
+    if group_by is None:
+        return pd.DataFrame(group_all).T
+    # create a list of values per group & column, and add a row for "all" group
+    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
+    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
+    return grouped_vals
 
 
 def _compare_columns(data: pd.DataFrame, measure: Callable, is_symmetric: bool = True) -> pd.DataFrame:
@@ -303,15 +315,3 @@ def _match_events(events: pd.DataFrame,
     return _compare_columns(events,
                             lambda seq1, seq2: EventMatcher.generic_matcher(seq1, seq2, **match_kwargs),
                             is_symmetric=is_symmetric)
-
-
-def _group_and_aggregate(data: pd.DataFrame, group_by: Optional[str] = None) -> pd.DataFrame:
-    """ Group the data by the given criteria and aggregate the values in each group. """
-    # create a Series of all measure values in each column
-    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
-    if group_by is None:
-        return pd.DataFrame(group_all).T
-    # create a list of values per group & column, and add a row for "all" group
-    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
-    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
-    return grouped_vals
