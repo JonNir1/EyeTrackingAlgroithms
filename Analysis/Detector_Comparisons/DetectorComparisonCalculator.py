@@ -1,7 +1,8 @@
 import itertools
+from typing import List, Callable, Optional
+
 import numpy as np
 import pandas as pd
-from typing import List, Callable, Optional
 
 import Config.constants as cnst
 from GazeDetectors.BaseDetector import BaseDetector
