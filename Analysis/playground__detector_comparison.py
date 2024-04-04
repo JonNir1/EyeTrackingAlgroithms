@@ -109,9 +109,10 @@ duration_diff_distributions.show()
 ## Matched-Fixations Contrasts ##
 #################################
 
-fixation_onset_jitter = comp_calc.compare_matched_events(compare_by="onset", group_by=cnst.STIMULUS,
+fixation_onset_jitter = comp_calc.compare_matched_events(compare_by="onset",
+                                                         group_by=cnst.STIMULUS,
                                                          ignore_events=[v for v in cnst.EVENT_LABELS
-                                                                            if v != cnst.EVENT_LABELS.FIXATION],
+                                                                        if v != cnst.EVENT_LABELS.FIXATION],
                                                          **EVENT_MATCHING_PARAMS)
 fixation_onset_jitter_distributions = figs.distributions_grid(
     fixation_onset_jitter[COMPARISON_COLUMNS],
@@ -121,9 +122,10 @@ fixation_onset_jitter_distributions = figs.distributions_grid(
 )
 fixation_onset_jitter_distributions.show()
 
-fixation_duration_diffs = comp_calc.compare_matched_events(compare_by="duration", group_by=cnst.STIMULUS,
+fixation_duration_diffs = comp_calc.compare_matched_events(compare_by="duration",
+                                                           group_by=cnst.STIMULUS,
                                                            ignore_events=[v for v in cnst.EVENT_LABELS
-                                                                              if v != cnst.EVENT_LABELS.FIXATION],
+                                                                          if v != cnst.EVENT_LABELS.FIXATION],
                                                            **EVENT_MATCHING_PARAMS)
 
 fixation_duration_diff_distributions = figs.distributions_grid(
@@ -139,9 +141,10 @@ fixation_duration_diff_distributions.show()
 ## Matched-Saccades Contrasts ##
 ################################
 
-saccades_onset_jitter = comp_calc.compare_matched_events(compare_by="onset", group_by=cnst.STIMULUS,
+saccades_onset_jitter = comp_calc.compare_matched_events(compare_by="onset",
+                                                         group_by=cnst.STIMULUS,
                                                          ignore_events=[v for v in cnst.EVENT_LABELS
-                                                                            if v != cnst.EVENT_LABELS.SACCADE],
+                                                                        if v != cnst.EVENT_LABELS.SACCADE],
                                                          **EVENT_MATCHING_PARAMS)
 saccade_onset_jitter_distributions = figs.distributions_grid(
     saccades_onset_jitter[COMPARISON_COLUMNS],
@@ -150,9 +153,10 @@ saccade_onset_jitter_distributions = figs.distributions_grid(
     column_title_mapper=lambda col: f"{col[0]}→{col[1]}", )
 saccade_onset_jitter_distributions.show()
 
-saccade_duration_diffs = comp_calc.compare_matched_events(compare_by="duration", group_by=cnst.STIMULUS,
+saccade_duration_diffs = comp_calc.compare_matched_events(compare_by="duration",
+                                                          group_by=cnst.STIMULUS,
                                                           ignore_events=[v for v in cnst.EVENT_LABELS
-                                                                             if v != cnst.EVENT_LABELS.SACCADE],
+                                                                         if v != cnst.EVENT_LABELS.SACCADE],
                                                           **EVENT_MATCHING_PARAMS)
 saccade_duration_diff_distributions = figs.distributions_grid(
     saccade_duration_diffs[COMPARISON_COLUMNS],
