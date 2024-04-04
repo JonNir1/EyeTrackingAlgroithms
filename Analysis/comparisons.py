@@ -6,7 +6,7 @@ import pandas as pd
 
 import Config.constants as cnst
 import GazeEvents.helpers as hlp
-import Analysis.Detector_Comparisons.metrics as metrics
+import Analysis.metrics as metrics
 
 from GazeEvents.BaseEvent import BaseEvent
 from GazeEvents.EventMatcher import EventMatcher
