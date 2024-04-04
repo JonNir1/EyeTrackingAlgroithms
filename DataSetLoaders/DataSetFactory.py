@@ -18,7 +18,7 @@ class DataSetFactory(ABC):
     _INDEXERS = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
 
     @staticmethod
-    def load_and_process(name: str, raters: List[str], detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame):
+    def load_and_process(name: str, raters: List[str], detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Loads the dataset and detects events in it based on human-annotations and detection algorithms.
         Returns two dataframes:
@@ -41,7 +41,7 @@ class DataSetFactory(ABC):
     @staticmethod
     def process(dataset: pd.DataFrame,
                 raters: List[str],
-                detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame):
+                detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Detects events in the dataset based on human-annotations in the dataset and the provided detectors.
         Returns two dataframes:
@@ -49,19 +49,23 @@ class DataSetFactory(ABC):
              - The sequence of event objects for each trial and rater/detector.
         """
         indexers = [col for col in DataSetFactory._INDEXERS if col in dataset.columns]
-        samples_dict, event_dict = {}, {}
+        samples_dict, event_dict, detector_results_dict = {}, {}, {}
         for trial_num in dataset[cnst.TRIAL].unique():
             trial_data = dataset[dataset[cnst.TRIAL] == trial_num]
-            labels, events = DataSetFactory._process_trial(trial_data, raters, detectors)
-            idx = trial_data[indexers].iloc[0].to_list()
-            samples_dict[tuple(idx)] = labels
-            event_dict[tuple(idx)] = events
+            labels, events, detector_results = DataSetFactory._process_trial(trial_data, raters, detectors)
+            idx = tuple(trial_data[indexers].iloc[0].to_list())
+            samples_dict[idx] = labels
+            event_dict[idx] = events
+            detector_results_dict[idx] = detector_results
+
         # create output dataframes
         samples_df = pd.DataFrame.from_dict(samples_dict, orient="index").sort_index()
         samples_df.index.names = indexers
         events_df = pd.DataFrame.from_dict(event_dict, orient="index").sort_index()
         events_df.index.names = indexers
-        return samples_df, events_df
+        detector_results_df = pd.DataFrame.from_dict(detector_results_dict, orient="index").sort_index()
+        detector_results_df.index.names = indexers
+        return samples_df, events_df, detector_results_df
 
     @staticmethod
     def _process_trial(trial_data: pd.DataFrame, raters: List[str], detectors: List[BaseDetector]):
@@ -77,6 +81,7 @@ class DataSetFactory(ABC):
                     trial_data, vd=viewer_distance, ps=pixel_size, column_mapping={rater: cnst.EVENT})
                 if rater in trial_data.columns else [float("nan")] for rater in raters
             }
+        detector_results = {}
         for det in detectors:
             with warnings.catch_warnings(action="ignore"):
                 res = det.detect(
@@ -84,6 +89,7 @@ class DataSetFactory(ABC):
                     x=trial_data[cnst.X].to_numpy(),
                     y=trial_data[cnst.Y].to_numpy()
                 )
+            detector_results[det.name] = res
             labels[det.name] = res[cnst.GAZE][cnst.EVENT]
             events[det.name] = res[cnst.EVENTS]
-        return labels, events
+        return labels, events, detector_results
