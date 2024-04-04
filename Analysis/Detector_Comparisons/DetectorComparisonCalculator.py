@@ -1,11 +1,12 @@
 import itertools
-from typing import List, Callable, Optional
+from typing import List, Callable, Optional, Union
 
 import numpy as np
 import pandas as pd
 
 import Config.constants as cnst
 from GazeDetectors.BaseDetector import BaseDetector
+from GazeEvents.BaseEvent import BaseEvent
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeEvents.EventMatcher import EventMatcher
 import GazeEvents.helpers as hlp
@@ -57,6 +58,37 @@ class DetectorComparisonCalculator:
         else:
             raise NotImplementedError(f"Unknown contrast measure for samples:\t{compare_by}")
         return self.__group_and_aggregate(contrast, group_by)
+
+    def compare_event_label_counts(self,
+                                   group_by: Optional[str] = cnst.STIMULUS,
+                                   ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+        """
+        Count the number of event-labelss detected by each rater/detector, and groups the results by the given
+        criteria. Ignore the specified event-labels if provided.
+
+        :param group_by: The criteria to group the counts by.
+        :param ignore_events: A set of event-labels to ignore during the counts.
+        :return: A DataFrame containing the count of events detected by each rater/detector (cols), grouped by the given
+            criteria (rows).
+        """
+        def count_event_labels(data: List[Union[BaseEvent, cnst.EVENT_LABELS]]) -> pd.Series:
+            labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
+            counts = labels.value_counts()
+            if counts.empty:
+                return pd.Series({l: 0 for l in cnst.EVENT_LABELS})
+            if len(counts) == len(cnst.EVENT_LABELS):
+                return counts
+            missing_labels = pd.Series({l: 0 for l in cnst.EVENT_LABELS if l not in counts.index})
+            return pd.concat([counts, missing_labels]).sort_index()
+
+        events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
+        event_counts = events.map(count_event_labels)
+        group_all = pd.Series(event_counts.sum(axis=0), index=event_counts.columns, name="all")
+        if group_by is None:
+            return pd.DataFrame(group_all).T
+        grouped_vals = event_counts.groupby(level=group_by).agg(list).map(sum)
+        grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T
+        return grouped_vals
 
     def compare_event_features(self,
                                compare_by: str,

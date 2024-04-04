@@ -29,6 +29,35 @@ def similarity_heatmap(data: pd.DataFrame, title: str, similarity_measure: str) 
     return fig
 
 
+def count_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
+    """
+    Creates a grid of bar plots, showing the count of each value in each cell of the DataFrame.
+    :param data: DataFrame with the data to plot. Each cell should contain a Series with the counts of each value.
+    :param kwargs: Additional arguments to pass to the plot:
+        - title: Title of the plot.
+        - column_title_mapper: Function to map column names to titles.
+        - row_title_mapper: Function to map row names to titles.
+    """
+    fig = make_subplots(rows=data.index.size,
+                        cols=data.columns.size,
+                        row_titles=[kwargs.get("row_title_mapper", lambda x: x)(r) for r in data.index],
+                        column_titles=[kwargs.get("column_title_mapper", lambda x: x)(c) for c in data.columns])
+    for row_num, row_name in enumerate(data.index):
+        for col_num, col_name in enumerate(data.columns):
+            cell = data.loc[row_name, col_name]
+            new_trace = go.Bar(x=cell.index, y=cell.values, name=col_name)
+            fig.add_trace(
+                row=row_num + 1,
+                col=col_num + 1,
+                trace=new_trace,
+            )
+    fig.update_layout(
+        title_text=kwargs.get("title", "Counts"),
+        showlegend=False
+    )
+    return fig
+
+
 def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figure:
     """
     Creates a grid of histograms or violin plots, showing the distribution of values in each cell of the DataFrame.
@@ -43,7 +72,10 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
         - side: Side of the violin plot to show (see go.Violin).
     """
     plot_type = plot_type.lower().strip()
-    fig = make_subplots(rows=data.index.size, cols=data.columns.size)
+    fig = make_subplots(rows=data.index.size,
+                        cols=data.columns.size,
+                        row_titles=[kwargs.get("row_title_mapper", lambda x: x)(r) for r in data.index],
+                        column_titles=[kwargs.get("column_title_mapper", lambda x: x)(c) for c in data.columns])
     for row_num, row_name in enumerate(data.index):
         for col_num, col_name in enumerate(data.columns):
             cell = data.loc[row_name, col_name]
@@ -67,18 +99,6 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
                 col=col_num + 1,
                 trace=new_trace,
             )
-            if row_num == 0:
-                mapper = kwargs.get("column_title_mapper", lambda x: x)
-                fig.update_xaxes(title_text=mapper(col_name),
-                                 side="top",
-                                 title_font=dict(size=10),
-                                 row=row_num + 1,
-                                 col=col_num + 1)
-            if col_num == 0:
-                mapper = kwargs.get("row_title_mapper", lambda x: x)
-                fig.update_yaxes(title_text=mapper(row_name),
-                                 row=row_num + 1,
-                                 col=col_num + 1)
     fig.update_layout(
         title_text=kwargs.get("title", "Distributions"),
         showlegend=False
