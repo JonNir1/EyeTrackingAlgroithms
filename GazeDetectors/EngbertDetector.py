@@ -39,6 +39,12 @@ class EngbertDetector(BaseDetector):
         self._lambda = kwargs.get('lambdaa', self.__DEFAULT_LAMBDAA)
         self._window_size = kwargs.get('window_size', self.__DEFAULT_WINDOW_SIZE)
 
+    @property
+    def name(self) -> str:
+        super_name = super().name
+        features = {"λ": self._lambda, "ws": self._window_size}
+        return f"{super_name}{str(features).replace(' ', '')}"
+
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnst.EVENT_LABELS).copy()
 

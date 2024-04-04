@@ -50,7 +50,6 @@ class BaseDetector(ABC):
             raise ValueError("dilate_nans_by must be non-negative")
 
     @property
-    @final
     def name(self) -> str:
         return self.__class__.__name__
 
@@ -195,3 +194,9 @@ class BaseDetector(ABC):
         if not np.isfinite(sr):
             raise RuntimeError("Error calculating sampling rate")
         return sr
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
