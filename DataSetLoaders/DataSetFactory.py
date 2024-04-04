@@ -25,12 +25,18 @@ class DataSetFactory(ABC):
             - The sequence of event-labels per sample for each trial and rater/detector.
             - The sequence of event objects for each trial and rater/detector.
         """
+        dataset = DataSetFactory.load(name)
+        return DataSetFactory.process(dataset, raters, detectors)
+
+    @staticmethod
+    def load(name: str) -> pd.DataFrame:
+        """ Loads the dataset. """
         loader_class = [c for c in BaseDataSetLoader.__subclasses__() if c.dataset_name().lower() == name.lower()]
         if not loader_class:
             raise ValueError(f"Dataset loader for {name} not found")
         loader_class = loader_class[0]
         dataset = loader_class.load(should_save=False)
-        return DataSetFactory.process(dataset, raters, detectors)
+        return dataset
 
     @staticmethod
     def process(dataset: pd.DataFrame,
