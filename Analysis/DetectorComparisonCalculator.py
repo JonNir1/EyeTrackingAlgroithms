@@ -37,9 +37,9 @@ class DetectorComparisonCalculator:
                 - "kl": Calculate the Kullback-Leibler divergence between the labels' transition matrices.
         :param group_by: The criteria to group the contrast measure by.
         :param ignore_events: A set of event-labels to ignore during the contrast calculation.
-        :return: A DataFrame containing the contrast measure between the detected samples per trial (row) and
-            detector/rater pair (column).
-        :raises NotImplementedError: If the contrast measure is unknown.
+        :return: A DataFrame containing the compared measure of all detected samples (cols), grouped by the given
+            criteria (rows).
+        :raises NotImplementedError: If the comparison measure is unknown.
         """
         samples = self._detected_samples.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         compare_by = compare_by.lower().replace("_", " ").replace("-", " ").strip()
@@ -140,9 +140,9 @@ class DetectorComparisonCalculator:
         :param group_by: The criteria to group the contrast measure by.
         :param ignore_events: A set of event-labels to ignore during the matching process.
         :param match_kwargs: Additional keyword arguments to pass to the matching function.
-        :return: A DataFrame containing the contrast measure between matched events per trial (row) and detector/rater
+        :return: A DataFrame containing the comparison measure between matched events per trial (row) and detector/rater
             pair (column).
-        :raises NotImplementedError: If the contrast measure is unknown.
+        :raises NotImplementedError: If the comparison measure is unknown.
         """
         # TODO: replace "compare_by" with generic way to contrast event features
         matches = self.match_events(match_by, ignore_events, is_symmetric=True, **match_kwargs)
