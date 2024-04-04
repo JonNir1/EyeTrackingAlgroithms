@@ -77,17 +77,17 @@ class DetectorComparisonCalculator:
         events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
         compare_by = compare_by.lower().replace("_", " ").replace("-", " ").strip()
         if compare_by in {"duration", "length"}:
-            contrast = events.map(lambda cell: [e.duration for e in cell] if pd.notnull(cell) else np.nan)
+            contrast = events.map(lambda cell: [e.duration for e in cell] if len(cell) else np.nan)
         elif compare_by in {"amplitude", "distance"}:
-            contrast = events.map(lambda cell: [e.amplitude for e in cell] if pd.notnull(cell) else np.nan)
+            contrast = events.map(lambda cell: [e.amplitude for e in cell] if len(cell) else np.nan)
         elif compare_by in {"azimuth", "direction"}:
-            contrast = events.map(lambda cell: [e.azimuth for e in cell.items()] if pd.notnull(cell) else np.nan)
+            contrast = events.map(lambda cell: [e.azimuth for e in cell] if len(cell) else np.nan)
         elif compare_by in {"peak velocity", "max velocity"}:
-            contrast = events.map(lambda cell: [e.peak_velocity for e in cell.items()] if pd.notnull(cell) else np.nan)
+            contrast = events.map(lambda cell: [e.peak_velocity for e in cell] if len(cell) else np.nan)
         elif compare_by in {"mean velocity", "avg velocity"}:
-            contrast = events.map(lambda cell: [e.mean_velocity for e in cell.items()] if pd.notnull(cell) else np.nan)
+            contrast = events.map(lambda cell: [e.mean_velocity for e in cell] if len(cell) else np.nan)
         elif compare_by in {"mean pupil size", "pupil size"}:
-            contrast = events.map(lambda cell: [e.mean_pupil_size for e in cell.items()] if pd.notnull(cell) else np.nan)
+            contrast = events.map(lambda cell: [e.mean_pupil_size for e in cell] if len(cell) else np.nan)
         else:
             raise NotImplementedError(f"Unknown contrast measure for matched events:\t{compare_by}")
         return self.__group_and_aggregate(contrast, group_by)
