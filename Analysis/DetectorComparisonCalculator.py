@@ -57,6 +57,13 @@ class DetectorComparisonCalculator:
             raise NotImplementedError(f"Unknown contrast measure for samples:\t{compare_by}")
         return self.__group_and_aggregate(contrast, group_by)
 
+    def compare_events(self,
+                       compare_by: str,
+                       group_by: Optional[str] = cnst.STIMULUS,
+                       ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+        events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
+        return None
+
     def event_matching_ratio(self,
                              match_by: str,
                              group_by: Optional[str] = cnst.STIMULUS,
