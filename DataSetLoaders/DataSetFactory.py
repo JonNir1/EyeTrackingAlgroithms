@@ -1,4 +1,5 @@
 import warnings
+import copy
 from abc import ABC
 from typing import List
 
@@ -56,7 +57,7 @@ class DataSetFactory(ABC):
             idx = tuple(trial_data[indexers].iloc[0].to_list())
             samples_dict[idx] = labels
             event_dict[idx] = events
-            detector_results_dict[idx] = detector_results
+            detector_results_dict[idx] = copy.deepcopy(detector_results)
 
         # create output dataframes
         samples_df = pd.DataFrame.from_dict(samples_dict, orient="index").sort_index()
