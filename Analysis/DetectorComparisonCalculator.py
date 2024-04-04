@@ -57,12 +57,40 @@ class DetectorComparisonCalculator:
             raise NotImplementedError(f"Unknown contrast measure for samples:\t{compare_by}")
         return self.__group_and_aggregate(contrast, group_by)
 
-    def compare_events(self,
-                       compare_by: str,
-                       group_by: Optional[str] = cnst.STIMULUS,
-                       ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+    def compare_event_features(self,
+                               compare_by: str,
+                               group_by: Optional[str] = cnst.STIMULUS,
+                               ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+        """
+        Computes the provided comparison measure (i.e. event feature) for every detected event (by human/algorithm
+        detector) and groups the results by the given criteria if specified.
+        Ignore the specified event-labels if provided.
+
+        :param compare_by: The event feature to compare.
+            Options: "duration", "amplitude", "azimuth", "peak velocity", "mean velocity", "mean pupil size"
+        :param group_by: The criteria to group the contrast measure by.
+        :param ignore_events: A set of event-labels to ignore during the contrast calculation.
+        :return: A DataFrame containing the event features of all detected events (cols), grouped by the given criteria (rows).
+        :raises NotImplementedError: If the comparison measure is unknown.
+        """
+        # TODO: replace "compare_by" with generic way to contrast event features
         events = self._detected_events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
-        return None
+        compare_by = compare_by.lower().replace("_", " ").replace("-", " ").strip()
+        if compare_by in {"duration", "length"}:
+            contrast = events.map(lambda cell: [e.duration for e in cell] if pd.notnull(cell) else np.nan)
+        elif compare_by in {"amplitude", "distance"}:
+            contrast = events.map(lambda cell: [e.amplitude for e in cell] if pd.notnull(cell) else np.nan)
+        elif compare_by in {"azimuth", "direction"}:
+            contrast = events.map(lambda cell: [e.azimuth for e in cell.items()] if pd.notnull(cell) else np.nan)
+        elif compare_by in {"peak velocity", "max velocity"}:
+            contrast = events.map(lambda cell: [e.peak_velocity for e in cell.items()] if pd.notnull(cell) else np.nan)
+        elif compare_by in {"mean velocity", "avg velocity"}:
+            contrast = events.map(lambda cell: [e.mean_velocity for e in cell.items()] if pd.notnull(cell) else np.nan)
+        elif compare_by in {"mean pupil size", "pupil size"}:
+            contrast = events.map(lambda cell: [e.mean_pupil_size for e in cell.items()] if pd.notnull(cell) else np.nan)
+        else:
+            raise NotImplementedError(f"Unknown contrast measure for matched events:\t{compare_by}")
+        return self.__group_and_aggregate(contrast, group_by)
 
     def event_matching_ratio(self,
                              match_by: str,
