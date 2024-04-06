@@ -89,6 +89,9 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
                                       name="",
                                       points=kwargs.get("points", "all"),
                                       side=kwargs.get("side", "positive"))
+                if kwargs.get("limit_pdf", False):
+                    min_val, max_val = np.min(cell), np.max(cell)
+                    new_trace.update(span=[min_val, max_val], spanmode="manual")
             elif plot_type == "box":
                 # TODO: Implement box plots
                 raise NotImplementedError("Box plots are not supported yet.")
