@@ -1,4 +1,4 @@
-import posixpath as path
+import os
 from typing import Dict
 
 import numpy as np
@@ -26,7 +26,6 @@ class Subject:
 
         # read channel map
         self._channels_map = self.__read_channels_map(idx)
-        assert len(self._channels_map) == self._num_channels
 
         # read trial start & end times
         trial_starts, trial_ends = self.__read_trial_data(idx)
@@ -60,21 +59,21 @@ class Subject:
 
     @staticmethod
     def __read_eeg_no_eyemovements(idx: int) -> np.ndarray:
-        fname = path.join(Subject._BASE_PATH, "data", f"S{idx}_data_no_eyemovements.mat")
+        fname = os.path.join(Subject._BASE_PATH, "data", f"S{idx}_data_interp.mat")
         eeg_no_eyemovements = read_mat(fname)['data']
         eeg_no_eyemovements = np.swapaxes(eeg_no_eyemovements, 0, 1)
         return eeg_no_eyemovements
 
     @staticmethod
     def __read_eeg_no_blinks(idx: int) -> np.ndarray:
-        fname = path.join(Subject._BASE_PATH, "data", f"S{idx}_data_no_blinks.mat")
-        eeg_no_blinks = read_mat(fname)['data']
+        fname = os.path.join(Subject._BASE_PATH, "data", f"S{idx}_data_ica_onlyBlinks.mat")
+        eeg_no_blinks = read_mat(fname)['dat']
         eeg_no_blinks = np.swapaxes(eeg_no_blinks, 0, 1)
         return eeg_no_blinks
 
     @staticmethod
     def __read_channels_map(idx: int) -> Dict[str, int]:
-        fname = path.join(Subject._BASE_PATH, "data", f"{idx}_channels.csv")
+        fname = os.path.join(Subject._BASE_PATH, "data", f"{idx}_channels.csv")
         df = pd.read_csv(fname, header=0, index_col=0)
         channels_series = df[df.columns[-1]]
         channels_dict = channels_series.to_dict()
@@ -83,7 +82,7 @@ class Subject:
     @staticmethod
     def __read_trial_data(idx: int) -> (np.ndarray, np.ndarray):
         START_CODE, END_CODE = 11, 12
-        fname = path.join(Subject._BASE_PATH, "data", f"{idx}_info.csv")
+        fname = os.path.join(Subject._BASE_PATH, "data", f"{idx}_info.csv")
         df = pd.read_csv(fname, header=0)
         trial_start_times = df[df["Codes"] == START_CODE]['latency'].to_numpy()
         trial_end_times = df[df["Codes"] == END_CODE]['latency'].to_numpy()
@@ -92,7 +91,7 @@ class Subject:
     @staticmethod
     def __read_eyetracking_events(idx: int) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
         ET_CODE = 1
-        fname = path.join(Subject._BASE_PATH, "data", f"{idx}_info.csv")
+        fname = os.path.join(Subject._BASE_PATH, "data", f"{idx}_info.csv")
         df = pd.read_csv(fname, header=0)
         saccade_onset_times = df[df["Codes"] == ET_CODE]['SacOnset'].to_numpy().astype('int64')
         erp_onset_times = df[(df["NewCodes"] // 10000 % 10 == 2) & (df["NewCodes"] // 1000 % 10 == 0)][
