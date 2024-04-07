@@ -13,7 +13,7 @@ from GazeEvents.EventMatcher import EventMatcher
 
 
 def label_counts(events: pd.DataFrame,
-                 group_by: Optional[str] = cnst.STIMULUS,
+                 group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS,
                  ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
     """
     Counts the number of event-labels detected by each rater/detector, and groups the results by the given criteria
@@ -48,7 +48,7 @@ def label_counts(events: pd.DataFrame,
 
 def event_features(events: pd.DataFrame,
                    feature: str,
-                   group_by: Optional[str] = cnst.STIMULUS,
+                   group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS,
                    ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
     """
     Extracts the required feature from events detected by each rater/detector, and groups the results by the given
@@ -84,7 +84,7 @@ def event_features(events: pd.DataFrame,
 
 def compare_samples(samples: pd.DataFrame,
                     metric: str,
-                    group_by: Optional[str] = cnst.STIMULUS,
+                    group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS,
                     ignore_events: List[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
     """
     Calculate the comparison measure between the detected samples of each rater/detector pair, and group the results
@@ -122,7 +122,7 @@ def compare_samples(samples: pd.DataFrame,
 
 def event_matching_ratio(events: pd.DataFrame,
                          match_by: str,
-                         group_by: Optional[str] = cnst.STIMULUS,
+                         group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS,
                          ignore_events: List[cnst.EVENT_LABELS] = None,
                          **match_kwargs) -> pd.DataFrame:
     """
@@ -155,7 +155,7 @@ def event_matching_ratio(events: pd.DataFrame,
 def matched_events_feature_difference(events: pd.DataFrame,
                                       match_by: str,
                                       feature: str,
-                                      group_by: Optional[str] = cnst.STIMULUS,
+                                      group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS,
                                       ignore_events: List[cnst.EVENT_LABELS] = None,
                                       **match_kwargs) -> pd.DataFrame:
     """
