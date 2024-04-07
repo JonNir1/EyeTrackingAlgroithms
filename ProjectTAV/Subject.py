@@ -34,7 +34,8 @@ class Subject:
         self._is_trial = (ts >= trial_starts[:, None]) & (ts < trial_ends[:, None]).any(axis=0)
 
         # read eyetracking data
-        self._saccade_onsets, self._erp_onsets, self._frp_saccade_onsets, self._frp_fixation_onsets = self.__read_eyetracking_data(idx)
+        events = self.__read_eyetracking_events(idx)
+        self._saccade_onsets, self._erp_onsets, self._frp_saccade_onsets, self._frp_fixation_onsets = events
 
     @property
     def num_samples(self) -> int:
@@ -89,7 +90,7 @@ class Subject:
         return trial_start_times, trial_end_times
 
     @staticmethod
-    def __read_eyetracking_data(idx: int) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+    def __read_eyetracking_events(idx: int) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
         ET_CODE = 1
         fname = path.join(Subject._BASE_PATH, "data", f"{idx}_info.csv")
         df = pd.read_csv(fname, header=0)
