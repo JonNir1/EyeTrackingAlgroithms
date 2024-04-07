@@ -25,12 +25,15 @@ DATASET_NAME = "Lund2013"
 RATERS = ["MN", "RA"]
 DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(0.5, 6.1, 0.5)]
 
+rename_columns = lambda col: col[col.index(LAMBDA):col.index(",")].replace("'", "") if LAMBDA in col else col
+COMPARISON_COLUMNS = [(RATERS[1], rename_columns(d.name)) for d in DETECTORS]
+EVENT_MATCHING_PARAMS = {"match_by": "onset", "max_onset_latency": 15, "allow_cross_matching": False}
+
 start = time.time()
 
 lund_dataset = DataSetFactory.load(DATASET_NAME)
 lund_samples, lund_events, lund_detector_res = DataSetFactory.process(lund_dataset, RATERS, DETECTORS)
 
-rename_columns = lambda col: col[col.index(LAMBDA):col.index(",")].replace("'", "") if LAMBDA in col else col
 lund_samples.rename(columns=rename_columns, inplace=True)
 lund_events.rename(columns=rename_columns, inplace=True)
 lund_detector_res.rename(columns=rename_columns, inplace=True)
@@ -42,9 +45,6 @@ del start, end
 ###################################
 # Compare to Ground Truth
 ###################################
-
-COMPARISON_COLUMNS = [(RATERS[1], rename_columns(d.name)) for d in DETECTORS]
-EVENT_MATCHING_PARAMS = {"match_by": "onset", "max_onset_latency": 15, "allow_cross_matching": False}
 
 cohen_kappa = cmps.compare_samples(lund_samples, metric='kappa', group_by=cnst.STIMULUS)
 cohen_kappa_fig = figs.distributions_grid(cohen_kappa[COMPARISON_COLUMNS],
