@@ -7,8 +7,6 @@ from scipy.signal import find_peaks
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.io import savemat
-os.chdir(r"E:\Tav")
-sys.path.insert(0, r"E:\Tav")
 from scipy import stats, signal
 mne.set_log_level(verbose="CRITICAL")
 import scipy
@@ -50,29 +48,33 @@ def filterSRP(x, fs=1024):
 ####################################################################
 
 class Participant:
+
+    # _BASE_PATH = r'E:\Tav'
+    _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
+
     def __init__(self, participant):
         self.participant = participant
 
         self.only_blinks_data = \
-        read_mat(os.path.join(r"E:\Tav", "data", f"S{self.participant}_data_ica_onlyBlinks.mat"))['dat']
+        read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_ica_onlyBlinks.mat"))['dat']
         self.r = np.arange(self.only_blinks_data.shape[0])
 
         self.only_blinks_data = np.swapaxes(self.only_blinks_data, 0, 1)
 
-        self.interp_data = read_mat(os.path.join(r"E:\Tav", "data", f"S{self.participant}_data_interp.mat"))['data']
+        self.interp_data = read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_interp.mat"))['data']
         self.interp_data = np.swapaxes(self.interp_data, 0, 1)
-        self.channels = pd.read_csv(os.path.join(r"E:\Tav", "data", f"{self.participant}_channels.csv"))
+        self.channels = pd.read_csv(os.path.join(Participant._BASE_PATH, "data", f"{self.participant}_channels.csv"))
 
-        self.info_data = pd.read_csv(os.path.join(r"E:\Tav", "data", f"{self.participant}_info.csv"))
+        self.info_data = pd.read_csv(os.path.join(Participant._BASE_PATH, "data", f"{self.participant}_info.csv"))
 
         self.start_idx = self.info_data[self.info_data["Codes"] == 11]['latency'].to_numpy()
         self.end_idx = self.info_data[self.info_data["Codes"] == 12]['latency'].to_numpy()
         self.trials_length = np.cumsum(self.end_idx - self.start_idx)
 
-        self.epochs_erp_sacc_fname = os.path.join('epochs', f'{self.participant}-erp-sacc-epo.fif')
-        self.epochs_frp_et_sacc_fname = os.path.join('epochs', f'{self.participant}-frp-et-sacc-epo.fif')
-        self.epochs_frp_et_fix_fname = os.path.join('epochs', f'{self.participant}-frp-et-fix-epo.fif')
-        self.epochs_frp_eog_sacc_fname = os.path.join('epochs', f'{self.participant}-frp-eog-sacc-epo.fif')
+        self.epochs_erp_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-erp-sacc-epo.fif')
+        self.epochs_frp_et_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-frp-et-sacc-epo.fif')
+        self.epochs_frp_et_fix_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-frp-et-fix-epo.fif')
+        self.epochs_frp_eog_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-frp-eog-sacc-epo.fif')
 
         self.channel_for_plots = "O2"
 
@@ -85,6 +87,20 @@ class Participant:
         self.calc_events()
 
         self.get_epochs()
+
+    def plot_saccade_detection(self):
+        mask = ((self.r >= self.start_idx[:, None]) & (self.r < self.end_idx[:, None])).any(0)
+        raw_object_data = np.vstack([self.reog_channel[mask], self.SRPed_data[mask], self.eye_tracker_sacc_vec[mask]])
+        raw_object_ch = ['REOG', 'REOG_filtered', 'ET_SACC']
+        raw_object_ch_types = ['eeg'] * 2 + ['stim']
+        raw_object_info = mne.create_info(raw_object_ch, sfreq=1024, ch_types=raw_object_ch_types)
+        raw_object = mne.io.RawArray(data=raw_object_data,
+                                     info=raw_object_info)
+        events = mne.find_events(raw_object, stim_channel='ET_SACC')
+        scalings = dict(eeg=5e2, stim=1e10)
+        fig = raw_object.plot(n_channels=2, events=events, scalings=scalings, event_color={1: 'r'}, show=False)
+        fig.suptitle(f"Figure 1", y=1.01)
+        plt.show()
 
     def ch_idx(self, channel):
         return self.channels.index[self.channels['T'] == channel].item()
@@ -194,19 +210,3 @@ class Participant:
             self.frp_eog_epochs = mne.read_epochs(fname=self.epochs_frp_eog_sacc_fname)
         else:
             self.calc_epochs()
-
-    def plot_saccade_detection(self):
-        mask = ((self.r >= self.start_idx[:, None]) & (self.r < self.end_idx[:, None])).any(0)
-        raw_object_data = np.vstack([self.reog_channel[mask], self.SRPed_data[mask], self.eye_tracker_sacc_vec[mask]])
-        raw_object_ch = ['REOG', 'REOG_filtered', 'ET_SACC']
-        raw_object_ch_types = ['eeg'] * 2 + ['stim']
-        raw_object_info = mne.create_info(raw_object_ch, sfreq=1024, ch_types=raw_object_ch_types)
-        raw_object = mne.io.RawArray(data=raw_object_data,
-                                     info=raw_object_info)
-        events = mne.find_events(raw_object, stim_channel='ET_SACC')
-        scalings = dict(eeg=5e2, stim=1e10)
-        fig = raw_object.plot(n_channels=2, events=events, scalings=scalings, event_color={1: 'r'}, show=False)
-        fig.suptitle(f"Figure 1", y=1.01)
-        plt.show()
-
-####################################################################

@@ -20,23 +20,12 @@ pio.renderers.default = "browser"
 s101 = Subject(101)
 p101 = Participant(101)
 
+s101.plot_eyetracker_saccade_detection()
+p101.plot_saccade_detection()
+
 timestamp_idxs = np.arange(s101.num_samples)
-reog = s101.calculate_radial_eog()
-srp_reog = tavh.apply_filter(reog, 'srp_tav')
-reog_saccades = s101.find_reog_saccades(filter_name='srp_tav', snr=3.5)
+reog = s101.get_eeg_channel('reog')
+srp_reog = tavh.apply_filter(s101.get_eeg_channel('reog'), 'srp')
+is_reog_saccade = s101.calculate_reog_saccade_onset_channel(filter_name='srp', snr=3.5, enforce_trial=True)
 
-
-# %%add_to Participant
-# def plot_saccade_detection(self):
-#     mask = ((self.r >= self.start_idx[:, None]) & (self.r < self.end_idx[:, None])).any(0)
-#     raw_object_data = np.vstack([self.reog_channel[mask], self.SRPed_data[mask], self.eye_tracker_sacc_vec[mask]])
-#     raw_object_ch = ['REOG', 'REOG_filtered', 'ET_SACC']
-#     raw_object_ch_types = ['eeg'] * 2 + ['stim']
-#     raw_object_info = mne.create_info(raw_object_ch, sfreq=1024, ch_types=raw_object_ch_types)
-#     raw_object = mne.io.RawArray(data=raw_object_data,
-#                                  info=raw_object_info)
-#     events = mne.find_events(raw_object, stim_channel='ET_SACC')
-#     scalings = dict(eeg=5e2, stim=1e10)
-#     fig = raw_object.plot(n_channels=2, events=events, scalings=scalings, event_color={1: 'r'}, show=False)
-#     fig.suptitle(f"Figure 1",  y=1.01)
-#     plt.show()
+print((is_reog_saccade == p101.above_threshold).all())
