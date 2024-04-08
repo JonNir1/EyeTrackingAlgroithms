@@ -57,7 +57,7 @@ class Subject:
         return self._eeg_no_blinks[self._channels_map[channel_name]]
 
 
-    def create_boolean_event_channel(self, event_idxs: np.ndarray, enforce_trial: bool = True) -> np.ndarray:
+    def create_boolean_event_channel(self, event_idxs: np.ndarray, enforce_trials: bool = True) -> np.ndarray:
         """
         Creates a boolean array with length equal to the number of samples, where True values indicate the presence
         of an event at the corresponding index. If `enforce_trial` is True, only events that occur during a trial are
@@ -65,47 +65,54 @@ class Subject:
         """
         is_event = np.zeros(self.num_samples, dtype=bool)
         is_event[event_idxs] = True
-        if enforce_trial:
+        if enforce_trials:
             is_event &= self._is_trial
         return is_event
 
     def calculate_reog_saccade_onset_channel(self,
                                              filter_name: str = 'srp',
                                              snr: float = 3.5,
-                                             enforce_trial: bool = True) -> np.ndarray:
+                                             enforce_trials: bool = True) -> np.ndarray:
+        """
+        Detects saccade onsets in the radial EOG channel using the specified filter and signal-to-noise ratio.
+        If `enforce_trials` is True, only saccades that occur during a trial are marked as True.
+        Returns a boolean array with length equal to the number of samples, where True values indicate saccade-onsets,
+        detected from the radial EOG channel.
+        """
         assert snr > 0, "Signal-to-noise ratio must be positive"
         filtered = tavh.apply_filter(self._reog_channel, filter_name)
         min_peak_height = filtered.mean() + snr * filtered.std()
         peak_idxs, _ = sp.signal.find_peaks(filtered, height=min_peak_height)
-        return self.create_boolean_event_channel(peak_idxs, enforce_trial)
+        return self.create_boolean_event_channel(peak_idxs, enforce_trials)
 
-    def get_eyetracking_event_channels(self) -> Dict[str, np.ndarray]:
+    def get_eyetracking_event_channels(self, enforce_trials: bool = True) -> Dict[str, np.ndarray]:
         return {
-            "ET_SACCADE_ONSET": self.create_boolean_event_channel(self._saccade_onset_idxs),
-            "ERP_SACCADE_ONSET": self.create_boolean_event_channel(self._erp_onset_idxs),
-            "FRP_SACCADE_ONSET": self.create_boolean_event_channel(self._frp_saccade_onset_idxs),
-            "FRP_FIXATION_ONSET": self.create_boolean_event_channel(self._frp_fixation_onset_idxs)
+            "ET_SACCADE_ONSET": self.create_boolean_event_channel(self._saccade_onset_idxs, enforce_trials),
+            "ERP_SACCADE_ONSET": self.create_boolean_event_channel(self._erp_onset_idxs, enforce_trials),
+            "FRP_SACCADE_ONSET": self.create_boolean_event_channel(self._frp_saccade_onset_idxs, enforce_trials),
+            "FRP_FIXATION_ONSET": self.create_boolean_event_channel(self._frp_fixation_onset_idxs, enforce_trials)
         }
 
-    def plot_eyetracker_saccade_detection(self, filter_name: str = 'srp'):
+    def plot_eyetracker_saccade_detection(self):
         # extract channels
+        # TODO: add reog with butter/wavelet filters as well
         reog = self._reog_channel
-        reog_filtered = tavh.apply_filter(reog, filter_name)
-        is_et_saccade_channel = self.create_boolean_event_channel(self._saccade_onset_idxs, enforce_trial=False)
+        reog_srp_filtered = tavh.apply_filter(reog, "srp")
+        is_et_saccade_channel = self.create_boolean_event_channel(self._saccade_onset_idxs, enforce_trials=False)
 
         # create mne object
         raw_object_data = np.vstack([self._reog_channel[self._is_trial],
-                                     reog_filtered[self._is_trial],
+                                     reog_srp_filtered[self._is_trial],
                                      is_et_saccade_channel[self._is_trial]])
-        raw_object_info = mne.create_info(ch_names=['REOG', 'REOG_filtered', 'ET_SACC'],
-                                          ch_types=['eeg', 'eeg', 'stim'],
+        raw_object_info = mne.create_info(ch_names=['REOG', 'REOG_srp_filtered', 'ET_SACC'],
+                                          ch_types=['eeg'] * 2 + ['stim'],
                                           sfreq=tavh.SAMPLING_FREQUENCY)
         raw_object = mne.io.RawArray(data=raw_object_data,
                                      info=raw_object_info)
         events = mne.find_events(raw_object, stim_channel='ET_SACC')
         scalings = dict(eeg=5e2, stim=1e10)
         fig = raw_object.plot(n_channels=2, events=events, scalings=scalings, event_color={1: 'r'}, show=False)
-        fig.suptitle(f"ET Saccade Detection", y=1.01)
+        fig.suptitle(f"ET Saccade Detection", y=0.99)
         fig.show()
 
     def _calculate_radial_eog(self) -> np.ndarray:
