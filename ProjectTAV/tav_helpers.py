@@ -19,15 +19,18 @@ SRP_FILTER = np.array([
 
 def create_filter(name: str) -> (np.ndarray, np.ndarray):
     name = name.lower()
+    if name == 'srp':
+        return SRP_FILTER, np.ones_like(SRP_FILTER)
     if name == 'butter':
+        # TODO
         b, a = signal.butter(6, Wn=np.array([30, 100]), fs=SAMPLING_FREQUENCY, btype='bandpass')
-        return b, a
+        # return b, a
+        raise NotImplementedError
     if name == 'wavelet':
+        # TODO
         wavelet = pywt.ContinuousWavelet("gaus1", dtype=float)
         phi, psi, _x = wavelet.wavefun(level=3)
         return phi, psi
-    if name == 'srp':
-        return SRP_FILTER, np.ones_like(SRP_FILTER)
     raise ValueError(f"Filter {name} not recognized")
 
 
