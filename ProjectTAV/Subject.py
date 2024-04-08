@@ -4,14 +4,16 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import scipy as sp
+import mne
 from pymatreader import read_mat
 
 import ProjectTAV.tav_helpers as tavh
 
 
 class Subject:
-    # _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
-    _BASE_PATH = r'E:\Tav'
+    _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
+    # _BASE_PATH = r'E:\Tav'
+
     _REFERENCE_CHANNEL = "Pz"
     _PLOTTING_CHANNEL = "O2"
 
@@ -19,8 +21,8 @@ class Subject:
         self.idx = idx
 
         # read eeg data
-        self._eeg_no_eyemovements = self.__read_eeg_no_eyemovements(idx)
-        self._eeg_no_blinks = self.__read_eeg_no_blinks(idx)
+        self._eeg_no_eyemovements = self.__read_eeg_no_eyemovements(idx)  # all eye movements removed using ICA
+        self._eeg_no_blinks = self.__read_eeg_no_blinks(idx)  # only blinks removed using ICA
         self._num_channels, self._num_samples = self._eeg_no_eyemovements.shape
         assert self._eeg_no_blinks.shape == self._eeg_no_eyemovements.shape
 
@@ -29,32 +31,90 @@ class Subject:
 
         # read trial start & end times
         trial_starts, trial_ends = self.__read_trial_data(idx)
-        ts = np.arange(self._num_samples)
-        self._is_trial = (ts >= trial_starts[:, None]) & (ts < trial_ends[:, None]).any(axis=0)
+        ts = self.timestamps
+        self._is_trial = ((ts >= trial_starts[:, None]) & (ts < trial_ends[:, None])).any(axis=0)
 
         # read eyetracking data
-        events = self.__read_eyetracking_events(idx)
-        self._saccade_onsets, self._erp_onsets, self._frp_saccade_onsets, self._frp_fixation_onsets = events
+        self._saccade_onset_idxs, self._erp_onset_idxs, self._frp_saccade_onset_idxs, self._frp_fixation_onset_idxs = self.__read_eyetracking_events(idx)
+
+        # calculate radial EOG
+        self._reog_channel = self._calculate_radial_eog()
 
     @property
     def num_samples(self) -> int:
         return self._num_samples
 
-    def find_reog_saccades(self, filter_name: str = 'srp', snr: float = 3.5) -> np.ndarray:
+    @property
+    def timestamps(self) -> np.ndarray:
+        return np.arange(self._num_samples)
+
+    def get_eeg_channel(self, channel_name: str, full_ica: bool = False) -> np.ndarray:
+        channel_name = channel_name.upper().strip()
+        if channel_name == "REOG":
+            return self._reog_channel
+        if full_ica:
+            return self._eeg_no_eyemovements[self._channels_map[channel_name]]
+        return self._eeg_no_blinks[self._channels_map[channel_name]]
+
+
+    def create_boolean_event_channel(self, event_idxs: np.ndarray, enforce_trial: bool = True) -> np.ndarray:
+        """
+        Creates a boolean array with length equal to the number of samples, where True values indicate the presence
+        of an event at the corresponding index. If `enforce_trial` is True, only events that occur during a trial are
+        marked as True.
+        """
+        is_event = np.zeros(self.num_samples, dtype=bool)
+        is_event[event_idxs] = True
+        if enforce_trial:
+            is_event &= self._is_trial
+        return is_event
+
+    def calculate_reog_saccade_onset_channel(self,
+                                             filter_name: str = 'srp',
+                                             snr: float = 3.5,
+                                             enforce_trial: bool = True) -> np.ndarray:
         assert snr > 0, "Signal-to-noise ratio must be positive"
-        reog = self.calculate_radial_eog()
-        filtered = tavh.apply_filter(reog, filter_name)
+        filtered = tavh.apply_filter(self._reog_channel, filter_name)
         min_peak_height = filtered.mean() + snr * filtered.std()
         peak_idxs, _ = sp.signal.find_peaks(filtered, height=min_peak_height)
-        return peak_idxs
+        return self.create_boolean_event_channel(peak_idxs, enforce_trial)
 
-    def calculate_radial_eog(self) -> np.ndarray:
+    def get_eyetracking_event_channels(self) -> Dict[str, np.ndarray]:
+        return {
+            "ET_SACCADE_ONSET": self.create_boolean_event_channel(self._saccade_onset_idxs),
+            "ERP_SACCADE_ONSET": self.create_boolean_event_channel(self._erp_onset_idxs),
+            "FRP_SACCADE_ONSET": self.create_boolean_event_channel(self._frp_saccade_onset_idxs),
+            "FRP_FIXATION_ONSET": self.create_boolean_event_channel(self._frp_fixation_onset_idxs)
+        }
+
+    def plot_eyetracker_saccade_detection(self, filter_name: str = 'srp'):
+        # extract channels
+        reog = self._reog_channel
+        reog_filtered = tavh.apply_filter(reog, filter_name)
+        is_et_saccade_channel = self.create_boolean_event_channel(self._saccade_onset_idxs, enforce_trial=False)
+
+        # create mne object
+        raw_object_data = np.vstack([self._reog_channel[self._is_trial],
+                                     reog_filtered[self._is_trial],
+                                     is_et_saccade_channel[self._is_trial]])
+        raw_object_info = mne.create_info(ch_names=['REOG', 'REOG_filtered', 'ET_SACC'],
+                                          ch_types=['eeg', 'eeg', 'stim'],
+                                          sfreq=tavh.SAMPLING_FREQUENCY)
+        raw_object = mne.io.RawArray(data=raw_object_data,
+                                     info=raw_object_info)
+        events = mne.find_events(raw_object, stim_channel='ET_SACC')
+        scalings = dict(eeg=5e2, stim=1e10)
+        fig = raw_object.plot(n_channels=2, events=events, scalings=scalings, event_color={1: 'r'}, show=False)
+        fig.suptitle(f"ET Saccade Detection", y=1.01)
+        fig.show()
+
+    def _calculate_radial_eog(self) -> np.ndarray:
         mean_eog = np.nanmean(np.vstack([self._eeg_no_blinks[self._channels_map['LHEOG']],
                                          self._eeg_no_blinks[self._channels_map['RHEOG']],
                                          self._eeg_no_blinks[self._channels_map['RVEOGS']],
                                          self._eeg_no_blinks[self._channels_map['RVEOGI']]]),
                               axis=0)
-        ref_channel = self._eeg_no_blinks[self._channels_map[Subject._REFERENCE_CHANNEL]]
+        ref_channel = self._eeg_no_blinks[self._channels_map[Subject._REFERENCE_CHANNEL.upper()]]
         return mean_eog - ref_channel
 
     @staticmethod
@@ -77,7 +137,7 @@ class Subject:
         df = pd.read_csv(fname, header=0, index_col=0)
         channels_series = df[df.columns[-1]]
         channels_dict = channels_series.to_dict()
-        return {v: k for k, v in channels_dict.items()}
+        return {v.upper(): k for k, v in channels_dict.items()}
 
     @staticmethod
     def __read_trial_data(idx: int) -> (np.ndarray, np.ndarray):
