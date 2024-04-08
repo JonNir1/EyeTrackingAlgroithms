@@ -48,8 +48,6 @@ def apply_filter(data: np.ndarray, filter_name: str) -> np.ndarray:
         srp_filter, _ = create_filter(filter_name)
         n, SPOnset = len(srp_filter), 28
         reog_convolved = np.convolve(data, srp_filter[::-1])
-        reog_convolved = reog_convolved[n - SPOnset: 2 - SPOnset]
-        reog_convolved = reog_convolved[:-1]  # todo: remove last element while indexing in the above line
-        # TODO: check if above line is necessary after filter-fix
+        reog_convolved = reog_convolved[n - SPOnset: 1 - SPOnset]
         return reog_convolved
     raise ValueError(f"Filter {filter_name} not recognized")
