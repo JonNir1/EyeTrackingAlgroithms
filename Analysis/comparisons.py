@@ -93,7 +93,7 @@ def compare_samples(samples: pd.DataFrame,
     :param samples: A DataFrame containing the detected samples of each rater/detector.
     :param metric: The measure to calculate.
         Options:
-            - "levenshtein": Calculate the Levenshtein distance between the sequence of labels.
+            - "levenshtein": Calculate the (normalised) Levenshtein distance between the sequence of labels.
             - "kappa": Calculate the Cohen's Kappa coefficient between the sequence of labels.
             - "frobenius": Calculate the Frobenius norm of the difference between the labels' transition matrices.
             - "kl": Calculate the Kullback-Leibler divergence between the labels' transition matrices.

@@ -14,17 +14,21 @@ _NUM_EVENTS = len(cnst.EVENT_LABELS)
 # TODO: calculate confusion matrix, precision, recall, F1-score, etc.
 
 
-def levenshtein_distance(seq1: Sequence, seq2: Sequence) -> int:
+def levenshtein_distance(seq1: Sequence, seq2: Sequence, do_normalization: bool = True) -> float:
     """ Calculates the Levenshtein distance between two sequences of samples or events. """
     seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
     seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
-    return Levenshtein.distance(seq1, seq2)
+    d = Levenshtein.distance(seq1, seq2)
+    if do_normalization:
+        return d / max(len(seq1), len(seq2))
+    return d
 
 
 def levenshtein_ratio(seq1: Sequence, seq2: Sequence) -> float:
     """ Calculates the Levenshtein ratio between two sequences of samples or events. """
-    distance = levenshtein_distance(seq1, seq2)
-    return 1 - distance / sum([len(seq1), len(seq2)])
+    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
+    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
+    return Levenshtein.ratio(seq1, seq2)
 
 
 def cohen_kappa(seq1: Sequence, seq2: Sequence) -> float:
