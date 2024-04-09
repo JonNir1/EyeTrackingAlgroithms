@@ -126,8 +126,9 @@ label_counts_all_stim = label_counts.groupby(level=ITERATION).agg("sum")
 label_counts_all_stim.index = pd.MultiIndex.from_tuples([("all", idx) for idx in label_counts_all_stim.index],
                                                         names=[cnst.STIMULUS, ITERATION])
 label_counts = pd.concat([label_counts, label_counts_all_stim])[0].unstack(level=ITERATION)
-label_counts_fig = figs.count_grid(label_counts,
-                                   title="Event Counts per Iteration")
+label_counts_fig = figs.distributions_grid(label_counts,
+                                           title="Event Counts per Iteration",
+                                           show_counts=True)
 label_counts_fig.show()
 
 # Compare saccade amplitudes between iterations
