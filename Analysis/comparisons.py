@@ -109,6 +109,8 @@ def compare_samples(samples: pd.DataFrame,
         contrast = _compare_columns(samples, metrics.levenshtein_distance)
     elif metric == "kappa" or metric == "cohen kappa":
         contrast = _compare_columns(samples, metrics.cohen_kappa)
+    elif metric == "mcc" or metric == "matthews correlation":
+        contrast = _compare_columns(samples, metrics.matthews_correlation)
     elif metric == "fro" or metric == "frobenius" or metric == "l2":
         contrast = _compare_columns(samples,
                                     lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro"))

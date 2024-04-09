@@ -2,7 +2,7 @@ from typing import Sequence
 
 import numpy as np
 import Levenshtein
-from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import cohen_kappa_score, matthews_corrcoef
 
 import Config.constants as cnst
 import GazeEvents.helpers as hlp
@@ -36,6 +36,13 @@ def cohen_kappa(seq1: Sequence, seq2: Sequence) -> float:
     seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
     seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
     return cohen_kappa_score(seq1, seq2)
+
+
+def matthews_correlation(seq1: Sequence, seq2: Sequence) -> float:
+    """ Calculates the Matthews correlation coefficient between two sequences of samples or events. """
+    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
+    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
+    return matthews_corrcoef(seq1, seq2)
 
 
 def transition_matrix_distance(seq1: Sequence, seq2: Sequence, norm: str) -> float:
