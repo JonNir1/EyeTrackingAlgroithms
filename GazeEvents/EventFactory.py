@@ -50,7 +50,7 @@ class EventFactory(ABC):
         if label == cnst.EVENT_LABELS.SMOOTH_PURSUIT:
             return SmoothPursuitEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
         if label == cnst.EVENT_LABELS.BLINK:
-            return BlinkEvent(timestamps=t)
+            return BlinkEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
         raise ValueError(f"Invalid event type: {label}")
 
     @staticmethod

@@ -3,10 +3,10 @@ import pandas as pd
 from typing import Tuple
 
 import Config.constants as cnst
-from GazeEvents.BaseGazeEvent import BaseGazeEvent
+from GazeEvents.BaseEvent import BaseEvent
 
 
-class FixationEvent(BaseGazeEvent):
+class FixationEvent(BaseEvent):
     _EVENT_LABEL = cnst.EVENT_LABELS.FIXATION
 
     @property

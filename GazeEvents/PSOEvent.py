@@ -1,10 +1,10 @@
 import numpy as np
 
 import Config.constants as cnst
-from GazeEvents.BaseGazeEvent import BaseGazeEvent
+from GazeEvents.BaseEvent import BaseEvent
 
 
-class PSOEvent(BaseGazeEvent):
+class PSOEvent(BaseEvent):
     _EVENT_LABEL = cnst.EVENT_LABELS.PSO
 
     def is_high(self, threshold: float) -> bool:
