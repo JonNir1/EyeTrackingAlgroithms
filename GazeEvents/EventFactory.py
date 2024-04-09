@@ -34,40 +34,23 @@ class EventFactory(ABC):
         if label == cnst.EVENT_LABELS.UNDEFINED:
             return None
         if len(t) < cnst.MINIMUM_SAMPLES_IN_EVENT:
-            # todo: log warning
+            # TODO: log warning
             return None
-        if label == cnst.EVENT_LABELS.BLINK:
-            return BlinkEvent(timestamps=t)
         vd = event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE)
         ps = event_data.get("pixel_size", cnfg.SCREEN_MONITOR.pixel_size)
-        if label == cnst.EVENT_LABELS.SACCADE:
-            return SaccadeEvent(timestamps=t,
-                                x=event_data.get("x", np.array([])),
-                                y=event_data.get("y", np.array([])),
-                                pupil=event_data.get("pupil", np.array([])),
-                                viewer_distance=vd,
-                                pixel_size=ps)
-        if label == cnst.EVENT_LABELS.PSO:
-            return PSOEvent(timestamps=t,
-                            x=event_data.get("x", np.array([])),
-                            y=event_data.get("y", np.array([])),
-                            pupil=event_data.get("pupil", np.array([])),
-                            viewer_distance=vd,
-                            pixel_size=ps)
+        x = event_data.get("x", np.full_like(t, fill_value=np.nan))
+        y = event_data.get("y", np.full_like(t, fill_value=np.nan))
+        pupil = event_data.get("pupil", np.full_like(t, fill_value=np.nan))
         if label == cnst.EVENT_LABELS.FIXATION:
-            return FixationEvent(timestamps=t,
-                                 x=event_data.get("x", np.array([])),
-                                 y=event_data.get("y", np.array([])),
-                                 pupil=event_data.get("pupil", np.array([])),
-                                 viewer_distance=vd,
-                                 pixel_size=ps)
+            return FixationEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
+        if label == cnst.EVENT_LABELS.SACCADE:
+            return SaccadeEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
+        if label == cnst.EVENT_LABELS.PSO:
+            return PSOEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
         if label == cnst.EVENT_LABELS.SMOOTH_PURSUIT:
-            return SmoothPursuitEvent(timestamps=t,
-                                      x=event_data.get("x", np.array([])),
-                                      y=event_data.get("y", np.array([])),
-                                      pupil=event_data.get("pupil", np.array([])),
-                                      viewer_distance=vd,
-                                      pixel_size=ps)
+            return SmoothPursuitEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
+        if label == cnst.EVENT_LABELS.BLINK:
+            return BlinkEvent(timestamps=t)
         raise ValueError(f"Invalid event type: {label}")
 
     @staticmethod
