@@ -149,6 +149,12 @@ class BaseEvent(ABC):
 
     @final
     @property
+    def azimuth(self) -> float:
+        """ returns the azimuth of the saccade in degrees """
+        return pixel_utils.calculate_azimuth(p1=self.start_point, p2=self.end_point, use_radians=False)
+
+    @final
+    @property
     def peak_velocity(self) -> float:
         """ Returns the maximum velocity of the event in pixels per second """
         return float(np.nanmax(self._velocities))
@@ -227,6 +233,7 @@ class BaseEvent(ABC):
             - end_point: event's end point (2D pixel coordinates)
             - distance: event's distance (in pixels)
             - amplitude: event's visual angle (in degrees)
+            - azimuth: event's azimuth (in degrees)
             - peak_velocity: the maximum velocity of the event in pixels per second
             - mean_velocity: the mean velocity of the event in pixels per second
             - mean_pupil_size: mean pupil size during the fixation (in mm)
@@ -236,13 +243,13 @@ class BaseEvent(ABC):
         """
         return pd.Series(data=[
             self._EVENT_LABEL.name, self.start_time, self.end_time, self.duration, self.start_point, self.end_point,
-            self.distance, self.amplitude, self.peak_velocity, self.mean_velocity, self.mean_pupil_size,
+            self.distance, self.amplitude, self.azimuth, self.peak_velocity, self.mean_velocity, self.mean_pupil_size,
             self.std_pupil_size, self.is_outlier, self.get_outlier_reasons()
         ],
             index=[
                 "event_label", "start_time", "end_time", "duration", "start_point", "end_point", "distance",
-                "amplitude", "peak_velocity", "mean_velocity", "mean_pupil_size", "std_pupil_size", "is_outlier",
-                "outlier_reasons"
+                "amplitude", "azimuth", "peak_velocity", "mean_velocity", "mean_pupil_size", "std_pupil_size",
+                "is_outlier", "outlier_reasons"
             ])
 
     @classmethod
