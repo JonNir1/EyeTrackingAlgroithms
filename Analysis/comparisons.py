@@ -229,7 +229,7 @@ def group_and_aggregate(data: pd.DataFrame, group_by: Optional[Union[str, List[s
     if group_by is None:
         return data
     grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
-    if len(grouped_vals.index.names) == 1:
+    if len(grouped_vals.index) == 1:
         return grouped_vals
     # there is more than one group, so add a row for "all" groups
     group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
