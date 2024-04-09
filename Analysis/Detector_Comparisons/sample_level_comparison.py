@@ -1,7 +1,9 @@
 import time
 import warnings
 import itertools
+from typing import List
 
+import pandas as pd
 import plotly.io as pio
 
 import Config.constants as cnst
@@ -19,21 +21,18 @@ SAMPLE_METRICS = {
     "Cohen's Kappa": "kappa",
     "Mathew's Correlation": "mcc",
     "Transition Matrix l2-norm": "frobenius",
-    "Transition Matrix KL-Divergence": "kl"}
+    "Transition Matrix KL-Divergence": "kl"
+}
 
 
-def calculate_all_metrics(dataset_name: str, show_distributions=False, verbose=False):
-    global_start = time.time()
+def preprocess_dataset(dataset_name: str, verbose=False) -> (pd.DataFrame, List[str]):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         if verbose:
-            print(f"Processing dataset `{dataset_name}`...")
+            print(f"Preprocessing dataset `{dataset_name}`...")
         start = time.time()
         samples_df, _, _ = DataSetFactory.load_and_process(dataset_name)
         samples_df.rename(columns=lambda col: col[:col.index("ector")] if "ector" in col else col, inplace=True)
-        end = time.time()
-        if verbose:
-            print(f"\tPreprocessing:\t{end - start:.2f}s")
 
         # extract column-pairs to compare
         rater_names = [col.upper() for col in samples_df.columns if len(col) == 2]
@@ -41,7 +40,19 @@ def calculate_all_metrics(dataset_name: str, show_distributions=False, verbose=F
         rater_rater_pairs = list(itertools.combinations(sorted(rater_names), 2))
         rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
         comparison_columns = rater_rater_pairs + rater_detector_pairs
+        end = time.time()
+        if verbose:
+            print(f"\tPreprocessing:\t{end - start:.2f}s")
+    return samples_df, comparison_columns
 
+
+def calculate_sample_metrics(samples_df: pd.DataFrame,
+                             comparison_columns: List[str],
+                             show_distributions=False,
+                             verbose=False):
+    global_start = time.time()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
         results = {}
         for metric_name, metric_short in SAMPLE_METRICS.items():
             start = time.time()
@@ -51,7 +62,7 @@ def calculate_all_metrics(dataset_name: str, show_distributions=False, verbose=F
                 distribution_fig = figs.distributions_grid(
                     computed_metric[comparison_columns],
                     plot_type="violin",
-                    title=f"{dataset_name.upper()} Dataset:\t\tSample-Level `{metric_name.capitalize()}` Distribution",
+                    title=f"Sample-Level `{metric_name.title()}` Distribution",
                     column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
                 )
                 distribution_fig.show()
@@ -63,8 +74,13 @@ def calculate_all_metrics(dataset_name: str, show_distributions=False, verbose=F
             print(f"Total time:\t{global_end - global_start:.2f}s\n")
     return results
 
-###############################
 
+# %%
+# Lund2013 Dataset
+lund_samples, lund_comparison_columns = preprocess_dataset("Lund2013", verbose=True)
+lund_sample_metrics = calculate_sample_metrics(lund_samples, lund_comparison_columns, show_distributions=True, verbose=True)
 
-lund_results = calculate_all_metrics("Lund2013", show_distributions=True, verbose=True)
-irf_results = calculate_all_metrics("IRF", show_distributions=True, verbose=True)
+# %%
+# IRF Dataset
+irf_samples, irf_comparison_columns = preprocess_dataset("IRF", verbose=True)
+irf_sample_metrics = calculate_sample_metrics(irf_samples, irf_comparison_columns, show_distributions=True, verbose=True)
