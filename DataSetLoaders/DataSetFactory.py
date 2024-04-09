@@ -19,7 +19,9 @@ class DataSetFactory(ABC):
     _INDEXERS = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
 
     @staticmethod
-    def load_and_process(name: str, raters: List[str], detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    def load_and_process(name: str,
+                         raters: List[str] = None,
+                         detectors: List[BaseDetector] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Loads the dataset and detects events in it based on human-annotations and detection algorithms.
         Returns two dataframes:
@@ -27,6 +29,8 @@ class DataSetFactory(ABC):
             - The sequence of event objects for each trial and rater/detector.
         """
         dataset = DataSetFactory.load(name)
+        raters = raters if raters else DataSetFactory.__get_default_raters(name)
+        detectors = detectors if detectors else DataSetFactory.__get_default_detectors()
         return DataSetFactory.process(dataset, raters, detectors)
 
     @staticmethod
@@ -94,3 +98,26 @@ class DataSetFactory(ABC):
             labels[det.name] = res[cnst.GAZE][cnst.EVENT]
             events[det.name] = res[cnst.EVENTS]
         return labels, events, detector_results
+
+    @staticmethod
+    def __get_default_raters(dataset_name: str) -> List[str]:
+        if dataset_name == "IRF":
+            return ["RZ"]
+        if dataset_name == "Lund2013":
+            return ["MN", "RA"]
+        raise ValueError(f"Unknown dataset name: {dataset_name}")
+
+    @staticmethod
+    def __get_default_detectors() -> List[BaseDetector]:
+        from GazeDetectors.IVTDetector import IVTDetector
+        from GazeDetectors.IDTDetector import IDTDetector
+        from GazeDetectors.EngbertDetector import EngbertDetector
+        from GazeDetectors.NHDetector import NHDetector
+        from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
+        return [
+            # IVTDetector(),
+            # IDTDetector(),
+            EngbertDetector(),
+            NHDetector(),
+            REMoDNaVDetector()
+        ]
