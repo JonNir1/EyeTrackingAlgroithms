@@ -14,41 +14,41 @@ _NUM_EVENTS = len(cnst.EVENT_LABELS)
 # TODO: calculate confusion matrix, precision, recall, F1-score, etc.
 
 
-def levenshtein_distance(seq1: Sequence, seq2: Sequence, do_normalization: bool = True) -> float:
+def levenshtein_distance(gt: Sequence, pred: Sequence, do_normalization: bool = True) -> float:
     """ Calculates the Levenshtein distance between two sequences of samples or events. """
-    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
-    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
-    d = Levenshtein.distance(seq1, seq2)
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    d = Levenshtein.distance(gt, pred)
     if do_normalization:
-        return d / max(len(seq1), len(seq2))
+        return d / max(len(gt), len(pred))
     return d
 
 
-def levenshtein_ratio(seq1: Sequence, seq2: Sequence) -> float:
+def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the Levenshtein ratio between two sequences of samples or events. """
-    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
-    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
-    return Levenshtein.ratio(seq1, seq2)
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return Levenshtein.ratio(gt, pred)
 
 
-def cohen_kappa(seq1: Sequence, seq2: Sequence) -> float:
+def cohen_kappa(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the Cohen's Kappa coefficient between two sequences of samples or events. """
-    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
-    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
-    return cohen_kappa_score(seq1, seq2)
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return cohen_kappa_score(gt, pred)
 
 
-def matthews_correlation(seq1: Sequence, seq2: Sequence) -> float:
+def matthews_correlation(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the Matthews correlation coefficient between two sequences of samples or events. """
-    seq1 = [hlp.parse_event_label(e, safe=False) for e in seq1]
-    seq2 = [hlp.parse_event_label(e, safe=False) for e in seq2]
-    return matthews_corrcoef(seq1, seq2)
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return matthews_corrcoef(gt, pred)
 
 
-def transition_matrix_distance(seq1: Sequence, seq2: Sequence, norm: str) -> float:
+def transition_matrix_distance(gt: Sequence, pred: Sequence, norm: str) -> float:
     """ Calculate the distance between the transition matrices of two sequences. """
-    tm1 = _transition_matrix(seq1)
-    tm2 = _transition_matrix(seq2)
+    tm1 = _transition_matrix(gt)
+    tm2 = _transition_matrix(pred)
     norm = norm.lower()
     if norm == "fro" or norm == "frobenius" or norm == "euclidean" or norm == "l2":
         return np.linalg.norm(tm1 - tm2, ord="fro")
