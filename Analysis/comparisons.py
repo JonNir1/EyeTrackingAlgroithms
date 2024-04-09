@@ -9,6 +9,7 @@ import GazeEvents.helpers as hlp
 import Analysis.metrics as metrics
 
 from GazeEvents.BaseEvent import BaseEvent
+from GazeEvents.BaseGazeEvent import BaseGazeEvent
 from GazeEvents.EventMatcher import EventMatcher
 
 
@@ -68,15 +69,20 @@ def event_features(events: pd.DataFrame,
     if feature in {"duration", "length"}:
         contrast = events.map(lambda cell: [e.duration for e in cell] if len(cell) else np.nan)
     elif feature in {"amplitude", "distance"}:
-        contrast = events.map(lambda cell: [e.amplitude for e in cell] if len(cell) else np.nan)
+        contrast = events.map(
+            lambda cell: [e.amplitude for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
     elif feature in {"azimuth", "direction"}:
-        contrast = events.map(lambda cell: [e.azimuth for e in cell] if len(cell) else np.nan)
+        contrast = events.map(
+            lambda cell: [e.azimuth for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
     elif feature in {"peak velocity", "max velocity"}:
-        contrast = events.map(lambda cell: [e.peak_velocity for e in cell] if len(cell) else np.nan)
+        contrast = events.map(
+            lambda cell: [e.peak_velocity for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
     elif feature in {"mean velocity", "avg velocity"}:
-        contrast = events.map(lambda cell: [e.mean_velocity for e in cell] if len(cell) else np.nan)
+        contrast = events.map(
+            lambda cell: [e.mean_velocity for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
     elif feature in {"mean pupil size", "pupil size"}:
-        contrast = events.map(lambda cell: [e.mean_pupil_size for e in cell] if len(cell) else np.nan)
+        contrast = events.map(
+            lambda cell: [e.mean_pupil_size for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
     else:
         raise NotImplementedError(f"Unknown contrast measure for matched events:\t{feature}")
     return group_and_aggregate(contrast, group_by)
