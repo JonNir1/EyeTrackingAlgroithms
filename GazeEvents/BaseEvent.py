@@ -88,6 +88,15 @@ class BaseEvent(ABC):
         return intersection / union
 
     @final
+    def get(self, feature: str, safe=False) -> float:
+        feature = feature.lower().replace(" ", "_").replace("-", "_")
+        if not hasattr(self, feature):
+            if safe:
+                return np.nan
+            raise ValueError(f"Feature '{feature}' is not available for {self.__class__.__name__}")
+        return getattr(self, feature)
+
+    @final
     @property
     def event_label(self) -> cnst.EVENT_LABELS:
         return self.__class__._EVENT_LABEL

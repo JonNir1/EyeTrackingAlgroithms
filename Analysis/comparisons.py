@@ -9,8 +9,7 @@ import GazeEvents.helpers as hlp
 import Analysis.metrics as metrics
 
 from GazeEvents.BaseEvent import BaseEvent
-from GazeEvents.BaseGazeEvent import BaseGazeEvent
-from GazeEvents.EventMatcher import EventMatcher
+from Analysis.EventMatcher import EventMatcher
 
 
 def label_counts(events: pd.DataFrame,
@@ -26,7 +25,6 @@ def label_counts(events: pd.DataFrame,
     :return: A DataFrame containing the count of events detected by each rater/detector (cols), grouped by the given
         criteria (rows).
     """
-
     def count_event_labels(data: List[Union[BaseEvent, cnst.EVENT_LABELS]]) -> pd.Series:
         labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
         counts = labels.value_counts()
@@ -70,19 +68,19 @@ def event_features(events: pd.DataFrame,
         contrast = events.map(lambda cell: [e.duration for e in cell] if len(cell) else np.nan)
     elif feature in {"amplitude", "distance"}:
         contrast = events.map(
-            lambda cell: [e.amplitude for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
+            lambda cell: [e.amplitude for e in cell] if len(cell) else np.nan)
     elif feature in {"azimuth", "direction"}:
         contrast = events.map(
-            lambda cell: [e.azimuth for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
+            lambda cell: [e.azimuth for e in cell] if len(cell) else np.nan)
     elif feature in {"peak velocity", "max velocity"}:
         contrast = events.map(
-            lambda cell: [e.peak_velocity for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
+            lambda cell: [e.peak_velocity for e in cell] if len(cell) else np.nan)
     elif feature in {"mean velocity", "avg velocity"}:
         contrast = events.map(
-            lambda cell: [e.mean_velocity for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
+            lambda cell: [e.mean_velocity for e in cell] if len(cell) else np.nan)
     elif feature in {"mean pupil size", "pupil size"}:
         contrast = events.map(
-            lambda cell: [e.mean_pupil_size for e in cell if isinstance(e, BaseGazeEvent)] if len(cell) else np.nan)
+            lambda cell: [e.mean_pupil_size for e in cell] if len(cell) else np.nan)
     else:
         raise NotImplementedError(f"Unknown contrast measure for matched events:\t{feature}")
     return group_and_aggregate(contrast, group_by)
@@ -164,33 +162,23 @@ def event_matching_ratio(events: pd.DataFrame,
     return group_and_aggregate(ratios, group_by)
 
 
-def matched_events_feature_difference(events: pd.DataFrame,
-                                      match_by: str,
+def matched_events_feature_difference(matches: pd.DataFrame,
                                       feature: str,
-                                      group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS,
-                                      ignore_events: List[cnst.EVENT_LABELS] = None,
-                                      **match_kwargs) -> pd.DataFrame:
+                                      group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS) -> pd.DataFrame:
     """
-    Matches events between raters and detectors based on the given matching criteria, while ignoring the specified
-    event-labels. Then calculates the difference in feature values between each matched pair of events, and finally
-    groups the results by the given criteria if specified.
-    Ignores the specified event-labels during the matching process.
+    Calculates the difference in feature values between each matched pair of events, and  groups the results by the
+    given criteria if specified.
 
-    :param events: A DataFrame containing the detected events of each rater/detector.
-    :param match_by: The matching criteria to use.
-        Options: "first", "last", "max overlap", "longest match", "iou", "onset latency", "offset latency", "window"
+    :param matches: A DataFrame containing the matched events of each rater/detector.
     :param feature: The compared-measure to calculate.
-        Options: "onset latency", "offset latency", "duration", "amplitude", "azimuth", "peak velocity",
-            "mean velocity", "mean pupil size"
+        Options: "onset latency", "offset latency", "l2 timing jitter", "duration", "amplitude", "azimuth",
+            "peak velocity", "mean velocity", "mean pupil size"
     :param group_by: The criteria to group the contrast measure by.
-    :param ignore_events: A set of event-labels to ignore during the matching process.
-    :param match_kwargs: Additional keyword arguments to pass to the matching function.
     :return: A DataFrame containing the comparison measure between matched events per trial (row) and detector/rater
         pair (column).
     :raises NotImplementedError: If the comparison measure is unknown.
     """
-    # TODO: replace "compare_by" with generic way to contrast event features
-    matches = match_events(events, match_by, ignore_events, is_symmetric=True, **match_kwargs)
+    # TODO: replace "feature" with generic way to contrast event features
     feature = feature.lower().replace("_", " ").replace("-", " ").strip()
     if feature in {"onset", "onset latency", "onset jitter"}:
         contrast = matches.map(
@@ -199,6 +187,10 @@ def matched_events_feature_difference(events: pd.DataFrame,
     elif feature in {"offset", "offset latency", "offset jitter"}:
         contrast = matches.map(
             lambda cell: [k.end_time - v.end_time for k, v in cell.items()] if pd.notnull(cell) else np.nan
+        )
+    elif feature in {"l2", "l2 timing", "l2 timing offset", "timing offset", "l2 timing jitter", "timing jitter"}:
+        contrast = matches.map(
+            lambda cell: [k.l2_timing_offset(v) for k, v in cell.items()] if pd.notnull(cell) else np.nan
         )
     elif feature in {"duration", "length"}:
         contrast = matches.map(
@@ -228,50 +220,6 @@ def matched_events_feature_difference(events: pd.DataFrame,
     else:
         raise NotImplementedError(f"Unknown contrast measure for matched events:\t{feature}")
     return group_and_aggregate(contrast, group_by)
-
-
-def group_and_aggregate(data: pd.DataFrame, group_by: Optional[Union[str, List[str]]]) -> pd.DataFrame:
-    """ Group the data by the given criteria and aggregate the values in each group. """
-    if group_by is None:
-        return data
-    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
-    if len(grouped_vals.index) == 1:
-        return grouped_vals
-    # there is more than one group, so add a row for "all" groups
-    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
-    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
-    return grouped_vals
-
-
-def _compare_columns(data: pd.DataFrame, measure: Callable, is_symmetric: bool = True) -> pd.DataFrame:
-    """
-    Calculate the compared-measure between all pairs of columns in the given data frame.
-
-    :param data: The data frame to calculate the contrast measure on.
-    :param measure: The function to calculate the contrast measure.
-    :param is_symmetric: If true, only calculate the measure once for each (unordered-)pair of columns,
-        e.g, (A, B) and (B, A) will be the same. If false, calculate the measure for all ordered-pairs of columns.
-    :return: A data frame with the contrast measure between all pairs of columns.
-    """
-    if is_symmetric:
-        column_pairs = list(itertools.combinations(data.columns, 2))
-    else:
-        column_pairs = list(itertools.product(data.columns, repeat=2))
-        column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
-    res = {}
-    for idx in data.index:
-        res[idx] = {}
-        for pair in column_pairs:
-            vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
-            if len(vals1) == 0 or pd.isnull(vals1).all():
-                res[idx][pair] = None
-            elif len(vals2) == 0 or pd.isnull(vals2).all():
-                res[idx][pair] = None
-            else:
-                res[idx][pair] = measure(vals1, vals2)
-    res = pd.DataFrame.from_dict(res, orient="index")
-    res.index.names = data.index.names
-    return res
 
 
 def match_events(events: pd.DataFrame,
@@ -326,5 +274,49 @@ def match_events(events: pd.DataFrame,
                                 lambda seq1, seq2: EventMatcher.window_based(seq1, seq2, **match_kwargs),
                                 is_symmetric=is_symmetric)
     return _compare_columns(events,
-                            lambda seq1, seq2: EventMatcher.generic_matcher(seq1, seq2, **match_kwargs),
+                            lambda seq1, seq2: EventMatcher.generic_matching(seq1, seq2, **match_kwargs),
                             is_symmetric=is_symmetric)
+
+
+def group_and_aggregate(data: pd.DataFrame, group_by: Optional[Union[str, List[str]]]) -> pd.DataFrame:
+    """ Group the data by the given criteria and aggregate the values in each group. """
+    if group_by is None:
+        return data
+    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
+    if len(grouped_vals.index) == 1:
+        return grouped_vals
+    # there is more than one group, so add a row for "all" groups
+    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
+    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
+    return grouped_vals
+
+
+def _compare_columns(data: pd.DataFrame, measure: Callable, is_symmetric: bool = True) -> pd.DataFrame:
+    """
+    Calculate the compared-measure between all pairs of columns in the given data frame.
+
+    :param data: The data frame to calculate the contrast measure on.
+    :param measure: The function to calculate the contrast measure.
+    :param is_symmetric: If true, only calculate the measure once for each (unordered-)pair of columns,
+        e.g, (A, B) and (B, A) will be the same. If false, calculate the measure for all ordered-pairs of columns.
+    :return: A data frame with the contrast measure between all pairs of columns.
+    """
+    if is_symmetric:
+        column_pairs = list(itertools.combinations(data.columns, 2))
+    else:
+        column_pairs = list(itertools.product(data.columns, repeat=2))
+        column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
+    res = {}
+    for idx in data.index:
+        res[idx] = {}
+        for pair in column_pairs:
+            vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
+            if len(vals1) == 0 or pd.isnull(vals1).all():
+                res[idx][pair] = None
+            elif len(vals2) == 0 or pd.isnull(vals2).all():
+                res[idx][pair] = None
+            else:
+                res[idx][pair] = measure(vals1, vals2)
+    res = pd.DataFrame.from_dict(res, orient="index")
+    res.index.names = data.index.names
+    return res

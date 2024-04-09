@@ -16,7 +16,7 @@ from GazeDetectors.NHDetector import NHDetector
 from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
 
 import GazeEvents.EventFactory as EF
-import GazeEvents.EventMatcher as EM
+import Analysis.EventMatcher as EM
 
 pio.renderers.default = "browser"
 
