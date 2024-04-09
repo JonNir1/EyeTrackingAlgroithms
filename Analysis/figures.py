@@ -38,10 +38,14 @@ def count_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
         - column_title_mapper: Function to map column names to titles.
         - row_title_mapper: Function to map row names to titles.
     """
-    fig = make_subplots(rows=data.index.size,
-                        cols=data.columns.size,
-                        row_titles=[kwargs.get("row_title_mapper", lambda x: x)(r) for r in data.index],
-                        column_titles=[kwargs.get("column_title_mapper", lambda x: x)(c) for c in data.columns])
+    fig = make_subplots(
+        rows=data.index.size,
+        cols=data.columns.size,
+        shared_xaxes=True,
+        shared_yaxes=True,
+        row_titles=[kwargs.get("row_title_mapper", lambda x: x)(r) for r in data.index],
+        column_titles=[kwargs.get("column_title_mapper", lambda x: x)(c) for c in data.columns]
+    )
     for row_num, row_name in enumerate(data.index):
         for col_num, col_name in enumerate(data.columns):
             cell = data.loc[row_name, col_name]
@@ -58,11 +62,10 @@ def count_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
     return fig
 
 
-def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figure:
+def distributions_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
     """
     Creates a grid of histograms or violin plots, showing the distribution of values in each cell of the DataFrame.
     :param data: DataFrame with the data to plot. Each cell should contain a list of values.
-    :param plot_type: Type of plot to use. Either "histogram" or "violin".
     :param kwargs: Additional arguments to pass to the plot:
         - title: Title of the plot.
         - column_title_mapper: Function to map column names to titles.
@@ -71,36 +74,28 @@ def distributions_grid(data: pd.DataFrame, plot_type: str, **kwargs) -> go.Figur
         - points: Points to show in violin plots (see go.Violin).
         - side: Side of the violin plot to show (see go.Violin).
     """
-    plot_type = plot_type.lower().strip()
-    fig = make_subplots(rows=data.index.size,
-                        cols=data.columns.size,
-                        row_titles=[kwargs.get("row_title_mapper", lambda x: x)(r) for r in data.index],
-                        column_titles=[kwargs.get("column_title_mapper", lambda x: x)(c) for c in data.columns])
+    fig = make_subplots(
+        rows=data.index.size,
+        cols=data.columns.size,
+        shared_xaxes=True,
+        shared_yaxes=True,
+        row_titles=[kwargs.get("row_title_mapper", lambda x: x)(r) for r in data.index],
+        column_titles=[kwargs.get("column_title_mapper", lambda x: x)(c) for c in data.columns]
+    )
     for row_num, row_name in enumerate(data.index):
         for col_num, col_name in enumerate(data.columns):
             cell = data.loc[row_name, col_name]
-            if plot_type == "histogram" or plot_type == "bar":
-                new_trace = go.Histogram(x=cell,
-                                         showlegend=False,
-                                         nbinsx=kwargs.get("max_bins", 20))
-            elif plot_type == "violin":
-                new_trace = go.Violin(y=cell,
-                                      showlegend=False,
-                                      name="",
-                                      points=kwargs.get("points", "all"),
-                                      side=kwargs.get("side", "positive"))
-                if kwargs.get("limit_pdf", False):
-                    min_val, max_val = np.min(cell), np.max(cell)
-                    new_trace.update(span=[min_val, max_val], spanmode="manual")
-            elif plot_type == "box":
-                # TODO: Implement box plots
-                raise NotImplementedError("Box plots are not supported yet.")
-            else:
-                raise NotImplementedError(f"Cannot draw distribution grid with Plot type {plot_type}")
+            trace = go.Violin(y=cell,
+                              showlegend=False,
+                              name="",
+                              points=kwargs.get("points", "all"),
+                              side=kwargs.get("side", "positive"))
+            if kwargs.get("pdf_min_val", None) and kwargs.get("pdf_max_val", None):
+                trace.update(span=[kwargs["pdf_min_val"], kwargs["pdf_max_val"]], spanmode="manual")
             fig.add_trace(
                 row=row_num + 1,
                 col=col_num + 1,
-                trace=new_trace,
+                trace=trace,
             )
     fig.update_layout(
         title_text=kwargs.get("title", "Distributions"),
