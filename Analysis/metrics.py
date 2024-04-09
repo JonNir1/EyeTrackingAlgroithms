@@ -2,7 +2,7 @@ from typing import Sequence
 
 import numpy as np
 import Levenshtein
-from sklearn.metrics import cohen_kappa_score, matthews_corrcoef
+from sklearn.metrics import balanced_accuracy_score, cohen_kappa_score, matthews_corrcoef
 
 import Config.constants as cnst
 import GazeEvents.helpers as hlp
@@ -12,6 +12,16 @@ _NUM_EVENTS = len(cnst.EVENT_LABELS)
 
 
 # TODO: calculate confusion matrix, precision, recall, F1-score, etc.
+
+
+def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
+    """
+    Calculates the weighted accuracy between two sequences of samples or events.
+    Use complementary support (1-P[class | GT]) as weight.
+    """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return balanced_accuracy_score(gt, pred)
 
 
 def levenshtein_distance(gt: Sequence, pred: Sequence, do_normalization: bool = True) -> float:

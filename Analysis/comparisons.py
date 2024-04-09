@@ -93,8 +93,10 @@ def compare_samples(samples: pd.DataFrame,
     :param samples: A DataFrame containing the detected samples of each rater/detector.
     :param metric: The measure to calculate.
         Options:
+            - "acc": Calculate the balanced accuracy between the sequence of labels.
             - "levenshtein": Calculate the (normalised) Levenshtein distance between the sequence of labels.
             - "kappa": Calculate the Cohen's Kappa coefficient between the sequence of labels.
+            - "mcc": Calculate the Matthews correlation coefficient between the sequence of labels.
             - "frobenius": Calculate the Frobenius norm of the difference between the labels' transition matrices.
             - "kl": Calculate the Kullback-Leibler divergence between the labels' transition matrices.
     :param group_by: The criteria to group the contrast measure by.
@@ -105,7 +107,9 @@ def compare_samples(samples: pd.DataFrame,
     """
     samples = samples.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
     metric = metric.lower().replace("_", " ").replace("-", " ").strip()
-    if metric == "lev" or metric == "levenshtein":
+    if metric == "acc" or metric == "accuracy" or metric == "balanced accuracy":
+        contrast = _compare_columns(samples, metrics.balanced_accuracy)
+    elif metric == "lev" or metric == "levenshtein":
         contrast = _compare_columns(samples, metrics.levenshtein_distance)
     elif metric == "kappa" or metric == "cohen kappa":
         contrast = _compare_columns(samples, metrics.cohen_kappa)
@@ -142,7 +146,7 @@ def event_matching_ratio(events: pd.DataFrame,
     :return: A DataFrame containing the ratio of matched events
     """
     events = events.map(lambda cell: hlp.drop_events(cell, to_drop=ignore_events))
-    matches = _match_events(events, match_by, ignore_events, is_symmetric=True, **match_kwargs)
+    matches = match_events(events, match_by, ignore_events, is_symmetric=True, **match_kwargs)
     event_counts = events.map(lambda cell: len(cell) if len(cell) else np.nan)
     match_counts = matches.map(lambda cell: len(cell) if pd.notnull(cell) else np.nan)
     ratios = np.zeros_like(match_counts, dtype=float)
@@ -180,7 +184,7 @@ def matched_events_feature_difference(events: pd.DataFrame,
     :raises NotImplementedError: If the comparison measure is unknown.
     """
     # TODO: replace "compare_by" with generic way to contrast event features
-    matches = _match_events(events, match_by, ignore_events, is_symmetric=True, **match_kwargs)
+    matches = match_events(events, match_by, ignore_events, is_symmetric=True, **match_kwargs)
     feature = feature.lower().replace("_", " ").replace("-", " ").strip()
     if feature in {"onset", "onset latency", "onset jitter"}:
         contrast = matches.map(
@@ -263,11 +267,11 @@ def _compare_columns(data: pd.DataFrame, measure: Callable, is_symmetric: bool =
     return res
 
 
-def _match_events(events: pd.DataFrame,
-                  match_by: str,
-                  ignore_events: List[cnst.EVENT_LABELS] = None,
-                  is_symmetric: bool = True,
-                  **match_kwargs) -> pd.DataFrame:
+def match_events(events: pd.DataFrame,
+                 match_by: str,
+                 ignore_events: List[cnst.EVENT_LABELS] = None,
+                 is_symmetric: bool = True,
+                 **match_kwargs) -> pd.DataFrame:
     """
     Match events between raters and detectors based on the given matching criteria.
     Ignores the specified event-labels during the matching process.
