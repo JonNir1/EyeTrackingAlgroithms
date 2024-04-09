@@ -45,6 +45,15 @@ class BaseGazeEvent(BaseEvent):
         # TODO: check if inside the screen
         return reasons
 
+    def l2_timing_offset(self, other):
+        """
+        Event-matching metric: L2 norm of the timing offset between two events.
+        See Kothari et al. (2020) for more details.
+        """
+        onset_diff = self.start_time - other.start_time
+        offset_diff = self.end_time - other.end_time
+        return np.sqrt(onset_diff ** 2 + offset_diff ** 2)
+
     @final
     @property
     def start_point(self) -> Tuple[float, float]:
