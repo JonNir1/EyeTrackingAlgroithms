@@ -38,9 +38,10 @@ def distributions_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
         - title: Title of the plot.
         - column_title_mapper: Function to map column names to titles.
         - row_title_mapper: Function to map row names to titles.
-        - max_bins: Maximum number of bins to use in histograms (see go.Histogram).
         - points: Points to show in violin plots (see go.Violin).
         - side: Side of the violin plot to show (see go.Violin).
+        - pdf_min_val & pdf_max_val: Min and max values to show in the PDF of the violin plot. Must both be provided to
+            apply the limits.
     """
     fig = make_subplots(
         rows=data.index.size,
