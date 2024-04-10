@@ -1,9 +1,10 @@
 import itertools
 from abc import ABC
-from typing import Sequence, Dict, Union
+from typing import Set, Sequence, Dict, Union
 
 import pandas as pd
 
+import Config.constants as cnst
 import Utils.array_utils as au
 from GazeEvents.BaseEvent import BaseEvent
 
@@ -19,7 +20,7 @@ class EventMatcher(ABC):
     @staticmethod
     def match_events(events: pd.DataFrame,
                      match_by: str,
-                     ignore_events: List[cnst.EVENT_LABELS] = None,
+                     ignore_events: Set[cnst.EVENT_LABELS] = None,
                      is_symmetric: bool = True,
                      **match_kwargs) -> pd.DataFrame:
         """
@@ -36,6 +37,7 @@ class EventMatcher(ABC):
         :return: A DataFrame where each row corresponds to a trial and each column corresponds to a pair of detectors/raters.
             The cells of the DataFrame contain a dictionary matching each event from the first detector/rater to the second one.
         """
+        ignore_events = ignore_events or set()
         events = events.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
         match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
         if match_by == "first" or match_by == "first overlap":
