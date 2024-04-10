@@ -10,6 +10,7 @@ import Config.constants as cnst
 import Utils.array_utils as au
 import Utils.metrics as metrics
 from GazeEvents.BaseEvent import BaseEvent
+from GazeDetectors.BaseDetector import BaseDetector
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from Analysis.EventMatcher import EventMatcher as matcher
 
@@ -38,20 +39,36 @@ MATCHED_EVENT_FEATURES = {
 }
 
 
-def preprocess_dataset(dataset_name: str, verbose=False, **match_kwargs):
+def get_default_detectors() -> Union[BaseDetector, List[BaseDetector]]:
+    from GazeDetectors.IVTDetector import IVTDetector
+    from GazeDetectors.IDTDetector import IDTDetector
+    from GazeDetectors.EngbertDetector import EngbertDetector
+    from GazeDetectors.NHDetector import NHDetector
+    from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
+    return [IVTDetector(), IDTDetector(), EngbertDetector(), NHDetector(), REMoDNaVDetector()]
+
+
+def preprocess_dataset(dataset_name: str,
+                       detectors: List[BaseDetector] = None,
+                       verbose=False,
+                       **kwargs):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         if verbose:
             print(f"Preprocessing dataset `{dataset_name}`...")
         start = time.time()
-        samples_df, events_df, detector_results_df = DataSetFactory.load_and_process(dataset_name)
-        samples_df.rename(columns=lambda col: col[:col.index("ector")] if "ector" in col else col, inplace=True)
-        events_df.rename(columns=lambda col: col[:col.index("ector")] if "ector" in col else col, inplace=True)
-        detector_results_df.rename(columns=lambda col: col[:col.index("ector")] if "ector" in col else col, inplace=True)
+        detectors = get_default_detectors() if detectors is None else detectors
+        samples_df, events_df, detector_results_df = DataSetFactory.load_and_detect(dataset_name, detectors)
+
+        # rename columns
+        column_mapper = kwargs.get("column_mapper", lambda col: col)
+        samples_df.rename(columns=column_mapper, inplace=True)
+        events_df.rename(columns=column_mapper, inplace=True)
+        detector_results_df.rename(columns=column_mapper, inplace=True)
 
         # match events
-        match_kwargs = {**_DEFAULT_EVENT_MATCHING_PARAMS, **match_kwargs}
-        matches = matcher.match_events(events_df, is_symmetric=True, **match_kwargs)
+        kwargs = {**_DEFAULT_EVENT_MATCHING_PARAMS, **kwargs}
+        matches = matcher.match_events(events_df, is_symmetric=True, **kwargs)
 
         # extract column-pairs to compare
         rater_names = [col.upper() for col in samples_df.columns if len(col) == 2]
