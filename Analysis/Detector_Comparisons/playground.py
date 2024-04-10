@@ -1,10 +1,13 @@
 import Config.constants as cnst
-import Analysis.Detector_Comparisons.helpers as hlp
+import Analysis.helpers as hlp
 
 DATASET = "Lund2013"
+COL_MAPPER = lambda col: col[:col.index("ector")] if "ector" in col else col
 VERBOSE = True
 
-samples, events, detector_results, event_matches, comparison_columns = hlp.preprocess_dataset(DATASET, verbose=VERBOSE)
+samples, events, _, event_matches, comparison_columns = hlp.preprocess_dataset(DATASET,
+                                                                               column_mapper=COL_MAPPER,
+                                                                               verbose=VERBOSE)
 
 # %%
 # All-Event Metrics
