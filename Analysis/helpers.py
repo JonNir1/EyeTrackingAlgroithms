@@ -82,6 +82,19 @@ def preprocess_dataset(dataset_name: str,
     return samples_df, events_df, detector_results_df, matches, comparison_columns
 
 
+def group_and_aggregate(data: pd.DataFrame, group_by: Optional[Union[str, List[str]]]) -> pd.DataFrame:
+    """ Group the data by the given criteria and aggregate the values in each group. """
+    if group_by is None:
+        return data
+    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
+    if len(grouped_vals.index) == 1:
+        return grouped_vals
+    # there is more than one group, so add a row for "all" groups
+    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
+    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
+    return grouped_vals
+
+
 def calc_sample_metrics(samples_df: pd.DataFrame,
                         verbose=False):
     global_start = time.time()
@@ -117,7 +130,7 @@ def extract_features(events_df: pd.DataFrame,
                 attr = feature.lower().replace(" ", "_")
                 feature_df = events_df.map(lambda cell: [getattr(e, attr) for e in cell
                                                          if e not in ignore_events and hasattr(e, attr)])
-                grouped = _group_and_aggregate(feature_df, group_by=cnst.STIMULUS)
+                grouped = group_and_aggregate(feature_df, group_by=cnst.STIMULUS)
             results[feature] = grouped
             end = time.time()
             if verbose:
@@ -147,7 +160,7 @@ def calc_event_matching_ratios(events_df: pd.DataFrame,
                 gt_col, _pred_col = match_counts.columns[j]
                 ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
         ratios = pd.DataFrame(100 * ratios, index=match_counts.index, columns=match_counts.columns)
-        ratios = _group_and_aggregate(ratios, group_by=cnst.STIMULUS)
+        ratios = group_and_aggregate(ratios, group_by=cnst.STIMULUS)
     global_end = time.time()
     if verbose:
         print(f"Total time:\t{global_end - global_start:.2f}s\n")
@@ -192,7 +205,7 @@ def _calc_sample_metric_impl(samples: pd.DataFrame,
                                        lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
     else:
         raise NotImplementedError(f"Unknown metric for samples:\t{metric}")
-    return _group_and_aggregate(res, cnst.STIMULUS)
+    return group_and_aggregate(res, cnst.STIMULUS)
 
 
 def _event_counts_impl(events: pd.DataFrame, ignore_events: Set[cnst.EVENT_LABELS] = None,) -> pd.DataFrame:
@@ -275,17 +288,4 @@ def _calc_matched_events_feature_impl(matches_df: pd.DataFrame,
         )
     else:
         raise ValueError(f"Unknown feature: {feature}")
-    return _group_and_aggregate(diffs, group_by=cnst.STIMULUS)
-
-
-def _group_and_aggregate(data: pd.DataFrame, group_by: Optional[Union[str, List[str]]]) -> pd.DataFrame:
-    """ Group the data by the given criteria and aggregate the values in each group. """
-    if group_by is None:
-        return data
-    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
-    if len(grouped_vals.index) == 1:
-        return grouped_vals
-    # there is more than one group, so add a row for "all" groups
-    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
-    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
-    return grouped_vals
+    return group_and_aggregate(diffs, group_by=cnst.STIMULUS)
