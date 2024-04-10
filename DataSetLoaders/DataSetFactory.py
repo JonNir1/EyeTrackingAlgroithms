@@ -20,8 +20,8 @@ class DataSetFactory(ABC):
 
     @staticmethod
     def load_and_process(name: str,
-                         raters: List[str] = None,
-                         detectors: List[BaseDetector] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+                         detectors: List[BaseDetector],
+                         raters: List[str] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Loads the dataset and detects events in it based on human-annotations and detection algorithms.
         Returns two dataframes:
@@ -30,7 +30,6 @@ class DataSetFactory(ABC):
         """
         dataset = DataSetFactory.load(name)
         raters = raters if raters else DataSetFactory.__get_default_raters(name)
-        detectors = detectors if detectors else DataSetFactory.__get_default_detectors()
         return DataSetFactory.process(dataset, raters, detectors)
 
     @staticmethod
@@ -106,18 +105,3 @@ class DataSetFactory(ABC):
         if dataset_name == "Lund2013":
             return ["MN", "RA"]
         raise ValueError(f"Unknown dataset name: {dataset_name}")
-
-    @staticmethod
-    def __get_default_detectors() -> List[BaseDetector]:
-        from GazeDetectors.IVTDetector import IVTDetector
-        from GazeDetectors.IDTDetector import IDTDetector
-        from GazeDetectors.EngbertDetector import EngbertDetector
-        from GazeDetectors.NHDetector import NHDetector
-        from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
-        return [
-            # IVTDetector(),
-            # IDTDetector(),
-            EngbertDetector(),
-            NHDetector(),
-            REMoDNaVDetector()
-        ]
