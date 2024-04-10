@@ -142,7 +142,7 @@ def apply_on_column_pairs(data: pd.DataFrame, func: Callable, is_symmetric: bool
             elif len(vals2) == 0 or pd.isnull(vals2).all():
                 res[idx][pair] = None
             else:
-                res[idx][pair] = measure(vals1, vals2)
+                res[idx][pair] = func(vals1, vals2)
     res = pd.DataFrame.from_dict(res, orient="index")
     res.index.names = data.index.names
     return res
