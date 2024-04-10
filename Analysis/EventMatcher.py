@@ -4,6 +4,7 @@ from typing import Sequence, Dict, Union
 
 import pandas as pd
 
+import Utils.array_utils as au
 from GazeEvents.BaseEvent import BaseEvent
 
 
@@ -38,47 +39,47 @@ class EventMatcher(ABC):
         events = events.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
         match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
         if match_by == "first" or match_by == "first overlap":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.first_overlap(seq1,
-                                                                                                     seq2,
-                                                                                                     **match_kwargs),
-                                               is_symmetric=is_symmetric)
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.first_overlap(seq1,
+                                                                                                  seq2,
+                                                                                                  **match_kwargs),
+                                            is_symmetric=is_symmetric)
         if match_by == "last" or match_by == "last overlap":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.last_overlap(seq1,
-                                                                                                    seq2,
-                                                                                                    **match_kwargs),
-                                               is_symmetric=is_symmetric)
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.last_overlap(seq1,
+                                                                                                 seq2,
+                                                                                                 **match_kwargs),
+                                            is_symmetric=is_symmetric)
         if match_by == "max" or match_by == "max overlap":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.max_overlap(seq1,
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.max_overlap(seq1,
+                                                                                                seq2,
+                                                                                                **match_kwargs),
+                                            is_symmetric=is_symmetric)
+        if match_by == "longest" or match_by == "longest match":
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.longest_match(seq1,
+                                                                                                  seq2,
+                                                                                                  **match_kwargs),
+                                            is_symmetric=is_symmetric)
+        if match_by == "iou" or match_by == "intersection over union":
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
+                                            is_symmetric=is_symmetric)
+        if match_by == "onset" or match_by == "onset latency":
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.onset_latency(seq1,
+                                                                                                  seq2,
+                                                                                                  **match_kwargs),
+                                            is_symmetric=is_symmetric)
+        if match_by == "offset" or match_by == "offset latency":
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.offset_latency(seq1,
                                                                                                    seq2,
                                                                                                    **match_kwargs),
-                                               is_symmetric=is_symmetric)
-        if match_by == "longest" or match_by == "longest match":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.longest_match(seq1,
-                                                                                                     seq2,
-                                                                                                     **match_kwargs),
-                                               is_symmetric=is_symmetric)
-        if match_by == "iou" or match_by == "intersection over union":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
-                                               is_symmetric=is_symmetric)
-        if match_by == "onset" or match_by == "onset latency":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.onset_latency(seq1,
-                                                                                                     seq2,
-                                                                                                     **match_kwargs),
-                                               is_symmetric=is_symmetric)
-        if match_by == "offset" or match_by == "offset latency":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.offset_latency(seq1,
-                                                                                                      seq2,
-                                                                                                      **match_kwargs),
-                                               is_symmetric=is_symmetric)
+                                            is_symmetric=is_symmetric)
         if match_by == "window" or match_by == "window based":
-            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.window_based(seq1,
-                                                                                                    seq2,
-                                                                                                    **match_kwargs),
-                                               is_symmetric=is_symmetric)
-        return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.generic_matching(seq1,
-                                                                                                    seq2,
-                                                                                                    **match_kwargs),
-                                           is_symmetric=is_symmetric)
+            return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.window_based(seq1,
+                                                                                                 seq2,
+                                                                                                 **match_kwargs),
+                                            is_symmetric=is_symmetric)
+        return au.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.generic_matching(seq1,
+                                                                                                 seq2,
+                                                                                                 **match_kwargs),
+                                        is_symmetric=is_symmetric)
 
     @staticmethod
     def generic_matching(ground_truth: Sequence[BaseEvent],
@@ -226,37 +227,6 @@ class EventMatcher(ABC):
         return EventMatcher.generic_matching(ground_truth, predictions, allow_cross_matching,
                                              max_onset_latency=max_onset_latency, max_offset_latency=max_offset_latency,
                                              reduction=reduction)
-
-    @staticmethod
-    def _match_columns(data: pd.DataFrame, match_function: Callable, is_symmetric: bool = True) -> pd.DataFrame:
-        """
-        Calculate the function between all pairs of columns in the given DataFrame.
-
-        :param data: The data frame to calculate the contrast measure on.
-        :param match_function: The function to calculate the contrast measure.
-        :param is_symmetric: If true, only calculate the measure once for each (unordered-)pair of columns,
-            e.g, (A, B) and (B, A) will be the same. If false, calculate the measure for all ordered-pairs of columns.
-        :return: A data frame with the contrast measure between all pairs of columns.
-        """
-        if is_symmetric:
-            column_pairs = list(itertools.combinations(data.columns, 2))
-        else:
-            column_pairs = list(itertools.product(data.columns, repeat=2))
-            column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
-        res = {}
-        for idx in data.index:
-            res[idx] = {}
-            for pair in column_pairs:
-                vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
-                if len(vals1) == 0 or pd.isnull(vals1).all():
-                    res[idx][pair] = None
-                elif len(vals2) == 0 or pd.isnull(vals2).all():
-                    res[idx][pair] = None
-                else:
-                    res[idx][pair] = match_function(vals1, vals2)
-        res = pd.DataFrame.from_dict(res, orient="index")
-        res.index.names = data.index.names
-        return res
 
     @staticmethod
     def __find_matches(gt: BaseEvent,
