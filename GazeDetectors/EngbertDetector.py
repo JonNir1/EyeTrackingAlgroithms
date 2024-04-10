@@ -32,8 +32,8 @@ class EngbertDetector(BaseDetector):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if kwargs.get('lambdaa', EngbertDetector.__DEFAULT_LAMBDAA) <= 0:
-            raise ValueError("lambdaa must be positive")
+        if kwargs.get('lambdaa', EngbertDetector.__DEFAULT_LAMBDAA) < 0:
+            raise ValueError("lambdaa must be non-negative")
         if kwargs.get('window_size', EngbertDetector.__DEFAULT_WINDOW_SIZE) <= 0:
             raise ValueError("window_size must be positive")
         self._lambda = kwargs.get('lambdaa', self.__DEFAULT_LAMBDAA)
