@@ -36,6 +36,7 @@ def distributions_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
     :param data: DataFrame with the data to plot. Each cell should contain a list of values.
     :param kwargs: Additional arguments to pass to the plot:
         - title: Title of the plot.
+        - show_counts: If True, show bar plots instead of violin plots.
         - column_title_mapper: Function to map column names to titles.
         - row_title_mapper: Function to map row names to titles.
         - points: Points to show in violin plots (see go.Violin).
