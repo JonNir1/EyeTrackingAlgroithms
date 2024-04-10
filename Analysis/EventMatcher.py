@@ -38,56 +38,47 @@ class EventMatcher(ABC):
         events = events.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
         match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
         if match_by == "first" or match_by == "first overlap":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.first_overlap(seq1,
-                                                                                               seq2,
-                                                                                               **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.first_overlap(seq1,
+                                                                                                     seq2,
+                                                                                                     **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "last" or match_by == "last overlap":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.last_overlap(seq1,
-                                                                                              seq2,
-                                                                                              **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.last_overlap(seq1,
+                                                                                                    seq2,
+                                                                                                    **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "max" or match_by == "max overlap":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.max_overlap(seq1,
-                                                                                             seq2,
-                                                                                             **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.max_overlap(seq1,
+                                                                                                   seq2,
+                                                                                                   **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "longest" or match_by == "longest match":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.longest_match(seq1,
-                                                                                               seq2,
-                                                                                               **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.longest_match(seq1,
+                                                                                                     seq2,
+                                                                                                     **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "iou" or match_by == "intersection over union":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "onset" or match_by == "onset latency":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.onset_latency(seq1,
-                                                                                               seq2,
-                                                                                               **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.onset_latency(seq1,
+                                                                                                     seq2,
+                                                                                                     **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "offset" or match_by == "offset latency":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.offset_latency(seq1,
-                                                                                                seq2,
-                                                                                                **match_kwargs),
-                                                 is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.offset_latency(seq1,
+                                                                                                      seq2,
+                                                                                                      **match_kwargs),
+                                               is_symmetric=is_symmetric)
         if match_by == "window" or match_by == "window based":
-            return EventMatcher._compare_columns(events,
-                                                 lambda seq1, seq2: EventMatcher.window_based(seq1,
-                                                                                              seq2,
-                                                                                              **match_kwargs),
-                                                 is_symmetric=is_symmetric)
-        return EventMatcher._compare_columns(events,
-                                             lambda seq1, seq2: EventMatcher.generic_matching(seq1,
-                                                                                              seq2,
-                                                                                              **match_kwargs),
-                                             is_symmetric=is_symmetric)
+            return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.window_based(seq1,
+                                                                                                    seq2,
+                                                                                                    **match_kwargs),
+                                               is_symmetric=is_symmetric)
+        return EventMatcher._match_columns(events, lambda seq1, seq2: EventMatcher.generic_matching(seq1,
+                                                                                                    seq2,
+                                                                                                    **match_kwargs),
+                                           is_symmetric=is_symmetric)
 
     @staticmethod
     def generic_matching(ground_truth: Sequence[BaseEvent],
@@ -237,12 +228,12 @@ class EventMatcher(ABC):
                                              reduction=reduction)
 
     @staticmethod
-    def _compare_columns(data: pd.DataFrame, function: Callable, is_symmetric: bool = True) -> pd.DataFrame:
+    def _match_columns(data: pd.DataFrame, match_function: Callable, is_symmetric: bool = True) -> pd.DataFrame:
         """
         Calculate the function between all pairs of columns in the given DataFrame.
 
         :param data: The data frame to calculate the contrast measure on.
-        :param measure: The function to calculate the contrast measure.
+        :param match_function: The function to calculate the contrast measure.
         :param is_symmetric: If true, only calculate the measure once for each (unordered-)pair of columns,
             e.g, (A, B) and (B, A) will be the same. If false, calculate the measure for all ordered-pairs of columns.
         :return: A data frame with the contrast measure between all pairs of columns.
@@ -262,7 +253,7 @@ class EventMatcher(ABC):
                 elif len(vals2) == 0 or pd.isnull(vals2).all():
                     res[idx][pair] = None
                 else:
-                    res[idx][pair] = measure(vals1, vals2)
+                    res[idx][pair] = match_function(vals1, vals2)
         res = pd.DataFrame.from_dict(res, orient="index")
         res.index.names = data.index.names
         return res
