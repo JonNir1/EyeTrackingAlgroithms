@@ -24,7 +24,7 @@ thresholds = pd.concat([detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: 
                        axis=1, keys=["Vx", "Vy"])
 agg_thresholds = hlp.group_and_aggregate(thresholds, group_by=cnst.STIMULUS)
 threshold_distribution_fig = figs.distributions_grid(agg_thresholds,
-                                                     title="Velocity-Threshold Distribution")
+                                                     title=f"{DATASET.upper()}:\t\tVelocity-Threshold Distribution")
 threshold_distribution_fig.show()
 
 
