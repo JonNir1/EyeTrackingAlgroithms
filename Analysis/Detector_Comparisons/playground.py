@@ -3,16 +3,15 @@ import Analysis.helpers as hlp
 
 DATASET = "Lund2013"
 COL_MAPPER = lambda col: col[:col.index("ector")] if "ector" in col else col
-VERBOSE = True
 
 samples, events, _, event_matches, comparison_columns = hlp.preprocess_dataset(DATASET,
                                                                                column_mapper=COL_MAPPER,
-                                                                               verbose=VERBOSE)
+                                                                               verbose=True)
 
 # %%
 # All-Event Metrics
-sample_metrics = hlp.calc_sample_metrics(samples, verbose=VERBOSE)
-event_features = hlp.extract_features(events, verbose=VERBOSE)
+sample_metrics = hlp.calc_sample_metrics(samples, verbose=True)
+event_features = hlp.extract_features(events, verbose=True)
 event_matching_ratios = hlp.calc_event_matching_ratios(events, event_matches, verbose=True)
 event_matching_feature_diffs = hlp.calc_matched_events_feature(event_matches, verbose=True)
 
