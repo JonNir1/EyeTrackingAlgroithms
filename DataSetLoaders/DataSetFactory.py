@@ -19,9 +19,9 @@ class DataSetFactory(ABC):
     _INDEXERS = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
 
     @staticmethod
-    def load_and_process(name: str,
-                         detectors: List[BaseDetector],
-                         raters: List[str] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    def load_and_detect(name: str,
+                        detectors: List[BaseDetector],
+                        raters: List[str] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Loads the dataset and detects events in it based on human-annotations and detection algorithms.
         Returns two dataframes:
@@ -30,7 +30,7 @@ class DataSetFactory(ABC):
         """
         dataset = DataSetFactory.load(name)
         raters = raters if raters else DataSetFactory.__get_default_raters(name)
-        return DataSetFactory.process(dataset, raters, detectors)
+        return DataSetFactory.detect(dataset, raters, detectors)
 
     @staticmethod
     def load(name: str) -> pd.DataFrame:
@@ -43,9 +43,9 @@ class DataSetFactory(ABC):
         return dataset
 
     @staticmethod
-    def process(dataset: pd.DataFrame,
-                raters: List[str],
-                detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    def detect(dataset: pd.DataFrame,
+               raters: List[str],
+               detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Detects events in the dataset based on human-annotations in the dataset and the provided detectors.
         Returns two dataframes:
