@@ -32,7 +32,7 @@ def compare_scarfplots(t: np.ndarray, *events, **kwargs) -> go.Figure:
     fig.update_layout(
         title=kwargs.get("title", "Scarfplot Comparison"),
         yaxis=dict(
-            range=[0, 2 * num_scarfs * scarf_size],
+            range=[0, (2 * num_scarfs - 1) * scarf_size],
             tickmode='array',
             tickvals=[(2 * i + 0.5) * scarf_size for i in range(num_scarfs)],
             ticktext=names,
