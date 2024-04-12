@@ -17,9 +17,9 @@ DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(1, 3)]
 # %%
 # Pre-Process
 samples, events, detector_results_df, event_matches, comparison_columns = Analyzer.preprocess_dataset(DATASET,
-                                                                                                 detectors=DETECTORS,
-                                                                                                 column_mapper=COL_MAPPER,
-                                                                                                 verbose=True)
+                                                                                                      detectors=DETECTORS,
+                                                                                                      column_mapper=COL_MAPPER,
+                                                                                                      verbose=True)
 
 # %%
 # Compare scarfplots
@@ -27,7 +27,8 @@ scarfplot_figures = {}
 for i, idx in enumerate(samples.index):
     num_samples = samples.loc[idx].map(len).max()  # Number of samples in the longest detected sequence
     t = np.arange(num_samples)
-    fig = scarf.compare_scarfplots(t, samples.loc[idx])  # TODO: fixme
+    detected_events = samples.loc[idx]
+    fig = scarf.compare_scarfplots(t, *detected_events.to_list(), names=detected_events.index)
     scarfplot_figures[idx] = fig
     fig.show()
     break
