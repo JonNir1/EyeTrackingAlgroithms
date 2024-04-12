@@ -9,6 +9,7 @@ samples, events, _, event_matches, comparison_columns = hlp.preprocess_dataset(D
                                                                                verbose=True)
 
 # %%
+#############################################
 # All-Event Metrics
 sample_metrics = hlp.calc_sample_metrics(samples, verbose=True)
 event_features = hlp.extract_features(events, verbose=True)
@@ -16,7 +17,9 @@ event_matching_ratios = hlp.calc_event_matching_ratios(events, event_matches, ve
 event_matching_feature_diffs = hlp.calc_matched_events_feature(event_matches, verbose=True)
 
 # %%
+#############################################
 # Fixation Metrics
+
 fixation_features = hlp.extract_features(events,
                                          ignore_events={v for v in cnst.EVENT_LABELS if
                                                         v != cnst.EVENT_LABELS.FIXATION},
@@ -32,11 +35,13 @@ fixation_matching_feature_diffs = hlp.calc_matched_events_feature(event_matches,
                                                                   verbose=True)
 
 # %%
+#############################################
 # Saccade Metrics
+
 saccade_features = hlp.extract_features(events,
                                         ignore_events={v for v in cnst.EVENT_LABELS if
                                                        v != cnst.EVENT_LABELS.SACCADE},
-                                        verbose=VERBOSE)
+                                        verbose=True)
 saccade_matching_ratios = hlp.calc_event_matching_ratios(events,
                                                          event_matches,
                                                          ignore_events={v for v in cnst.EVENT_LABELS if
