@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import plotly.io as pio
 
@@ -13,12 +12,12 @@ pio.renderers.default = "browser"
 DATASET = "Lund2013"
 LAMBDA_STR = "λ"
 COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", "") if LAMBDA_STR in col else col
-DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(7)]
+DETECTORS = [EngbertDetector(lambdaa=0)]
 
 # %%
-samples_df, events_df, detector_results_df, matches, comparison_columns = hlp.preprocess_dataset(DATASET,
-                                                                                                 column_mapper=COL_MAPPER,
-                                                                                                 verbose=True)
+_, _, detector_results_df, _, _ = hlp.preprocess_dataset(DATASET,
+                                                         column_mapper=COL_MAPPER,
+                                                         verbose=True)
 
 # %%
 # Velocity-Threshold Distribution
