@@ -29,7 +29,3 @@ agg_thresholds = hlp.group_and_aggregate(thresholds, group_by=cnst.STIMULUS)
 threshold_distribution_fig = figs.distributions_grid(agg_thresholds,
                                                      title=f"{DATASET.upper()}:\t\tVelocity-Threshold Distribution")
 threshold_distribution_fig.show()
-
-
-# TODO: copy from notebook to here and use helpers.py instead of comparisons.py
-
