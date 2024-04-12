@@ -61,7 +61,7 @@ def preprocess_dataset(dataset_name: str,
         samples_df, events_df, detector_results_df = DataSetFactory.load_and_detect(dataset_name, detectors)
 
         # rename columns
-        column_mapper = kwargs.get("column_mapper", lambda col: col)
+        column_mapper = kwargs.pop("column_mapper", lambda col: col)
         samples_df.rename(columns=column_mapper, inplace=True)
         events_df.rename(columns=column_mapper, inplace=True)
         detector_results_df.rename(columns=column_mapper, inplace=True)
