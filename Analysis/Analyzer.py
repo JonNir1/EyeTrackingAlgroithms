@@ -8,9 +8,8 @@ import numpy as np
 import pandas as pd
 
 import Config.constants as cnst
-import Utils.array_utils as au
-import Utils.metrics as metrics
 import Analysis.helpers as hlp
+import Utils.metrics as metrics
 
 from GazeEvents.BaseEvent import BaseEvent
 from GazeDetectors.BaseDetector import BaseDetector
@@ -119,7 +118,8 @@ class Analyzer(ABC):
             results = {}
             if samples_df and not ignore_events:
                 results["Sample Metrics"] = Analyzer._calc_sample_metrics(samples_df, verbose=verbose)
-            results["Event Features"] = Analyzer._extract_features(events_df, ignore_events=ignore_events, verbose=verbose)
+            results["Event Features"] = Analyzer._extract_features(events_df, ignore_events=ignore_events,
+                                                                   verbose=verbose)
             results["Event Matching Ratios"] = Analyzer._calc_event_matching_ratios(events_df, matches_df,
                                                                                     ignore_events=ignore_events,
                                                                                     verbose=verbose)
@@ -227,19 +227,19 @@ class Analyzer(ABC):
     def __calc_sample_metric_impl(samples: pd.DataFrame,
                                   metric: str) -> pd.DataFrame:
         if metric == "acc" or metric == "accuracy" or metric == "balanced accuracy":
-            res = au.apply_on_column_pairs(samples, metrics.balanced_accuracy)
+            res = hlp.apply_on_column_pairs(samples, metrics.balanced_accuracy)
         elif metric == "lev" or metric == "levenshtein":
-            res = au.apply_on_column_pairs(samples, metrics.levenshtein_distance)
+            res = hlp.apply_on_column_pairs(samples, metrics.levenshtein_distance)
         elif metric == "kappa" or metric == "cohen kappa":
-            res = au.apply_on_column_pairs(samples, metrics.cohen_kappa)
+            res = hlp.apply_on_column_pairs(samples, metrics.cohen_kappa)
         elif metric == "mcc" or metric == "matthews correlation":
-            res = au.apply_on_column_pairs(samples, metrics.matthews_correlation)
+            res = hlp.apply_on_column_pairs(samples, metrics.matthews_correlation)
         elif metric == "fro" or metric == "frobenius" or metric == "l2":
-            res = au.apply_on_column_pairs(samples,
-                                           lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro"))
+            res = hlp.apply_on_column_pairs(samples,
+                                            lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro"))
         elif metric == "kl" or metric == "kl divergence" or metric == "kullback leibler":
-            res = au.apply_on_column_pairs(samples,
-                                           lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
+            res = hlp.apply_on_column_pairs(samples,
+                                            lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
         else:
             raise NotImplementedError(f"Unknown metric for samples:\t{metric}")
         return hlp.group_and_aggregate(res, cnst.STIMULUS)
