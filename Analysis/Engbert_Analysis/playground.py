@@ -1,11 +1,14 @@
 import numpy as np
 import pandas as pd
+import plotly.io as pio
 
 import Config.constants as cnst
 from GazeDetectors.EngbertDetector import EngbertDetector
 
 import Analysis.helpers as hlp
 import Analysis.figures as figs
+
+pio.renderers.default = "browser"
 
 DATASET = "Lund2013"
 LAMBDA_STR = "λ"
