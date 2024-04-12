@@ -31,7 +31,6 @@ for i, idx in enumerate(samples.index):
     fig = scarf.compare_scarfplots(t, *detected_events.to_list(), names=detected_events.index)
     scarfplot_figures[idx] = fig
     fig.show()
-    break
 
 # %%
 # TODO: repeat the following analysis only for fixations/saccades
