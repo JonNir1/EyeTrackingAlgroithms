@@ -11,8 +11,9 @@ def compare_scarfplots(t: np.ndarray, *events, **kwargs) -> go.Figure:
     :param t: The time axis.
     :param events: The events to be plotted.
 
-    :keyword names: The names of the scarfplots, defaults to [0, 1, 2, ...].
     :keyword scarf_size: The width (in y-axis units) of each scarfplot, defaults to 1.
+    keyword title: The title of the figure, defaults to "Scarfplot Comparison".
+    :keyword names: The names of the scarfplots, defaults to [0, 1, 2, ...].
     :keyword colorbar_length: The length of the colorbar (range [0, 1] where 1 is the full height of the plot), defaults to 0.75.
     :keyword colorbar_thickness: The thickness of the colorbar, defaults to 25.
     :keyword colorbar_show: Whether to show the colorbar, defaults to True.
@@ -20,13 +21,23 @@ def compare_scarfplots(t: np.ndarray, *events, **kwargs) -> go.Figure:
     :return: The figure with the scarfplots.
     """
     num_scarfs = len(events)
-    names = kwargs.get("names", [str(i) for i in range(num_scarfs)])
     scarf_size = kwargs.get("scarf_size", 1)
-    assert len(names) == num_scarfs
     fig = go.Figure()
     for i, e in enumerate(events):
         ymin, ymax = 2 * i * scarf_size, (2 * i + 1) * scarf_size
         fig = add_scarfplot(fig, t, e, ymin, ymax, **kwargs)
+    # Update layout
+    names = kwargs.get("names", [str(i) for i in range(num_scarfs)])
+    assert len(names) == num_scarfs
+    fig.update_layout(
+        title=kwargs.get("title", "Scarfplot Comparison"),
+        yaxis=dict(
+            range=[0, 2 * num_scarfs * scarf_size],
+            tickmode='array',
+            tickvals=[(2 * i + 0.5) * scarf_size for i in range(num_scarfs)],
+            ticktext=names,
+        ),
+    )
     return fig
 
 
