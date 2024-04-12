@@ -20,7 +20,7 @@ event_matching_feature_diffs = hlp.calc_matched_events_feature(event_matches, ve
 fixation_features = hlp.extract_features(events,
                                          ignore_events={v for v in cnst.EVENT_LABELS if
                                                         v != cnst.EVENT_LABELS.FIXATION},
-                                         verbose=VERBOSE)
+                                         verbose=True)
 fixation_matching_ratios = hlp.calc_event_matching_ratios(events,
                                                           event_matches,
                                                           ignore_events={v for v in cnst.EVENT_LABELS if
