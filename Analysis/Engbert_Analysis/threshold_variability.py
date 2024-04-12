@@ -6,6 +6,7 @@ from GazeDetectors.EngbertDetector import EngbertDetector
 
 import Analysis.helpers as hlp
 import Analysis.figures as figs
+from Analysis.Analyzer import Analyzer
 
 pio.renderers.default = "browser"
 
@@ -15,10 +16,10 @@ COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", 
 DETECTORS = [EngbertDetector(lambdaa=1)]
 
 # %%
-_, _, detector_results_df, _, _ = hlp.preprocess_dataset(DATASET,
-                                                         detectors=DETECTORS,
-                                                         column_mapper=COL_MAPPER,
-                                                         verbose=True)
+_, _, detector_results_df, _, _ = Analyzer.preprocess_dataset(DATASET,
+                                                              detectors=DETECTORS,
+                                                              column_mapper=COL_MAPPER,
+                                                              verbose=True)
 
 # %%
 # Velocity-Threshold Distribution
