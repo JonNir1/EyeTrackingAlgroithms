@@ -12,10 +12,11 @@ pio.renderers.default = "browser"
 DATASET = "Lund2013"
 LAMBDA_STR = "λ"
 COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", "") if LAMBDA_STR in col else col
-DETECTORS = [EngbertDetector(lambdaa=0)]
+DETECTORS = [EngbertDetector(lambdaa=1)]
 
 # %%
 _, _, detector_results_df, _, _ = hlp.preprocess_dataset(DATASET,
+                                                         detectors=DETECTORS,
                                                          column_mapper=COL_MAPPER,
                                                          verbose=True)
 
