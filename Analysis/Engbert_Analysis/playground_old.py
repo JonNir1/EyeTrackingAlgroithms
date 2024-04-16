@@ -82,7 +82,7 @@ NUM_ITERATIONS = 4
 
 engbert = EngbertDetector()
 prev_gaze_data = lund_dataset.copy()
-indexers = [col for col in DataSetFactory._INDEXERS if col in prev_gaze_data.columns]
+indexers = [col for col in DataSetFactory.INDEXERS if col in prev_gaze_data.columns]
 
 results = {}
 with warnings.catch_warnings():

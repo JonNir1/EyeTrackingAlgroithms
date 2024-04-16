@@ -4,9 +4,8 @@ import plotly.io as pio
 import Config.constants as cnst
 from GazeDetectors.EngbertDetector import EngbertDetector
 
-import Analysis.helpers as hlp
 import Analysis.figures as figs
-from Analysis.Analyzer import Analyzer
+from Analysis.detector_comparison.DetectorComparisonAnalyzer import DetectorComparisonAnalyzer
 
 pio.renderers.default = "browser"
 
@@ -16,17 +15,17 @@ COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", 
 DETECTORS = [EngbertDetector(lambdaa=1)]
 
 # %%
-_, _, detector_results_df, _, _ = Analyzer.preprocess_dataset(DATASET,
-                                                              detectors=DETECTORS,
-                                                              column_mapper=COL_MAPPER,
-                                                              verbose=True)
+_, _, detector_results_df, _, _ = DetectorComparisonAnalyzer.preprocess_dataset(DATASET,
+                                                                                detectors=DETECTORS,
+                                                                                column_mapper=COL_MAPPER,
+                                                                                verbose=True)
 
 # %%
 # Velocity-Threshold Distribution
 thresholds = pd.concat([detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: cell['thresh_Vx']),
                         detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: cell['thresh_Vy'])],
                        axis=1, keys=["Vx", "Vy"])
-agg_thresholds = hlp.group_and_aggregate(thresholds, group_by=cnst.STIMULUS)
+agg_thresholds = DetectorComparisonAnalyzer.group_and_aggregate(thresholds, group_by=cnst.STIMULUS)
 threshold_distribution_fig = figs.distributions_grid(agg_thresholds,
                                                      title=f"{DATASET.upper()}:\t\tVelocity-Threshold Distribution")
 threshold_distribution_fig.show()

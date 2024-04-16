@@ -16,7 +16,7 @@ from GazeEvents.EventFactory import EventFactory
 
 
 class DataSetFactory(ABC):
-    _INDEXERS = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
+    INDEXERS = [cnst.TRIAL, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
 
     @staticmethod
     def load_and_detect(name: str,
@@ -52,7 +52,7 @@ class DataSetFactory(ABC):
              - The sequence of event-labels per sample for each trial and rater/detector.
              - The sequence of event objects for each trial and rater/detector.
         """
-        indexers = [col for col in DataSetFactory._INDEXERS if col in dataset.columns]
+        indexers = [col for col in DataSetFactory.INDEXERS if col in dataset.columns]
         samples_dict, event_dict, detector_results_dict = {}, {}, {}
         for trial_num in dataset[cnst.TRIAL].unique():
             trial_data = dataset[dataset[cnst.TRIAL] == trial_num]

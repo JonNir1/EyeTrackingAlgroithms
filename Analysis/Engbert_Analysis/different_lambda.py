@@ -5,7 +5,7 @@ from GazeDetectors.EngbertDetector import EngbertDetector
 
 import Analysis.figures as figs
 import Analysis.scarfplot as scarf
-from Analysis.Analyzer import Analyzer
+from Analysis.detector_comparison.DetectorComparisonAnalyzer import DetectorComparisonAnalyzer
 
 pio.renderers.default = "browser"
 
@@ -16,10 +16,10 @@ DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(1, 3)]
 
 # %%
 # Pre-Process
-samples, events, detector_results_df, event_matches, comparison_columns = Analyzer.preprocess_dataset(DATASET,
-                                                                                                      detectors=DETECTORS,
-                                                                                                      column_mapper=COL_MAPPER,
-                                                                                                      verbose=True)
+samples, events, detector_results_df, event_matches, comparison_columns = DetectorComparisonAnalyzer.preprocess_dataset(DATASET,
+                                                                                                                        detectors=DETECTORS,
+                                                                                                                        column_mapper=COL_MAPPER,
+                                                                                                                        verbose=True)
 
 # %%
 # Compare scarfplots
@@ -36,7 +36,7 @@ for i, idx in enumerate(samples.index):
 # TODO: repeat the following analysis only for fixations/saccades
 
 # %%
-all_event_metrics = Analyzer.analyze(events, event_matches, samples, verbose=True)
+all_event_metrics = DetectorComparisonAnalyzer.analyze(events, event_matches, samples, verbose=True)
 sample_metrics = all_event_metrics["Sample Metrics"]
 event_features = all_event_metrics["Event Features"]
 event_matching_ratios = all_event_metrics["Event Matching Ratios"]
