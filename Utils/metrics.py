@@ -103,10 +103,15 @@ def _calculate_stationary_distribution(probs: np.ndarray, allow_zero: bool = Fal
     See detailed explanation: https://stackoverflow.com/a/58334399/8543025
     """
     eigenvalues, eigenvectors = np.linalg.eig(probs.T)
-    stationary = np.array(eigenvectors[:, np.where(np.abs(eigenvalues - 1.) < cnst.EPSILON)[0][0]].flat)
-    stationary = (stationary / np.sum(stationary)).real
-    stationary[stationary < 0] = 0
-    if not allow_zero:
-        stationary[stationary == 0] = 0.01 * cnst.EPSILON
-    stationary /= np.sum(stationary)
+    try:
+        stationary = np.array(eigenvectors[:, np.where(np.abs(eigenvalues - 1.) < cnst.EPSILON)[0][0]].flat)
+        stationary = (stationary / np.sum(stationary)).real
+        stationary[stationary < 0] = 0
+        if not allow_zero:
+            stationary[stationary == 0] = 0.01 * cnst.EPSILON
+        stationary /= np.sum(stationary)
+    except IndexError:
+        # No eigenvalue is close enough to 1, so the matrix does not have a stationary distribution
+        stationary = np.full_like(eigenvalues.real, dtype=float, fill_value=np.nan)
     return stationary
+
