@@ -1,9 +1,10 @@
+import numpy as np
+import scipy.stats as stat
 import plotly.io as pio
 
 import Config.constants as cnst
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Analysis.multiple_iterations.MultiIterationAnalyzer import MultiIterationAnalyzer
-from Visualization.distributions_grid import *
 
 pio.renderers.default = "browser"
 
@@ -21,3 +22,7 @@ fixation_features = MultiIterationAnalyzer.analyze(multi_detect_events,
                                                    ignore_events={v for v in cnst.EVENT_LABELS if v != cnst.EVENT_LABELS.FIXATION})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
 
 #######################################
+
+saccade_amplitudes = saccade_features[cnst.AMPLITUDE.capitalize()].map(lambda cell: [e for e in cell if not np.isnan(e)])
+mw = stat.mannwhitneyu(saccade_amplitudes.iloc[0, 0], saccade_amplitudes.iloc[1, 0])
+rnk = stat.ranksums(saccade_amplitudes.iloc[0, 0], saccade_amplitudes.iloc[1, 0])
