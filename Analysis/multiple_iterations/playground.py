@@ -3,6 +3,7 @@ import scipy.stats as stat
 import plotly.io as pio
 
 import Config.constants as cnst
+import Config.experiment_config as cnfg
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Analysis.multiple_iterations.MultiIterationAnalyzer import MultiIterationAnalyzer
 
@@ -17,9 +18,9 @@ multi_detect_events = MultiIterationAnalyzer.preprocess_dataset(DATASET_NAME, de
 
 all_event_features = MultiIterationAnalyzer.analyze(multi_detect_events)[MultiIterationAnalyzer.EVENT_FEATURES_STR]
 saccade_features = MultiIterationAnalyzer.analyze(multi_detect_events,
-                                                  ignore_events={v for v in cnst.EVENT_LABELS if v != cnst.EVENT_LABELS.SACCADE})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
+                                                  ignore_events={v for v in cnfg.EVENT_LABELS if v != cnfg.EVENT_LABELS.SACCADE})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
 fixation_features = MultiIterationAnalyzer.analyze(multi_detect_events,
-                                                   ignore_events={v for v in cnst.EVENT_LABELS if v != cnst.EVENT_LABELS.FIXATION})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
+                                                   ignore_events={v for v in cnfg.EVENT_LABELS if v != cnfg.EVENT_LABELS.FIXATION})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
 
 #######################################
 

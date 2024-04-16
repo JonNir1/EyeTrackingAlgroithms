@@ -5,9 +5,11 @@ from typing import List, Union, Optional, Set, Dict
 
 import numpy as np
 import pandas as pd
+import scipy.stats as stat
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
+import Analysis.helpers as hlp
 from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.BaseEvent import BaseEvent
 
@@ -28,7 +30,7 @@ class BaseAnalyzer(ABC):
 
     @staticmethod
     def analyze(events_df: pd.DataFrame,
-                ignore_events: Set[cnst.EVENT_LABELS] = None,
+                ignore_events: Set[cnfg.EVENT_LABELS] = None,
                 verbose: bool = False,
                 **kwargs):
         """
@@ -68,6 +70,45 @@ class BaseAnalyzer(ABC):
         return grouped_vals
 
     @staticmethod
+    def event_feature_statistical_comparison(feature_df: pd.DataFrame, test_name: str):
+        """
+        Performs a two-sample statistical test on the set of measured event-features between two raters/detectors.
+        :param feature_df: A DataFrame containing the extracted features of the events detected by each rater/detector.
+            Each column represents a different rater/detector, and each cell contains a list of the measured values.
+        :param test_name: The name of the statistical test to perform.
+        :return: A DataFrame containing the results of the statistical test between each pair of raters/detectors.
+        """
+        test_name = test_name.lower().replace("_", " ").replace("-", " ").strip()
+        if test_name in {"u", "u test", "mann whitney", "mann whitney u", "mannwhitneyu"}:
+            test_func = stat.mannwhitneyu
+        elif test_name in {"rank sum", "ranksum", "ranksums", "wilcoxon rank sum"}:
+            test_func = stat.ranksums
+        else:
+            raise ValueError(f"Unknown test name: {test_name}")
+
+        # calculate the statistical test for each pair of columns
+        feature_df = feature_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
+        results = hlp.apply_on_column_pairs(feature_df, test_func, is_symmetric=True)
+
+        # remap the results to a DataFrame
+        statistics = {(col1, col2, cnst.STATISTIC): {vk: vv[0] for vk, vv in vals.items()}
+                      for (col1, col2), vals in results.items()}
+        p_values = {(col1, col2, cnst.P_VALUE): {vk: vv[1] for vk, vv in vals.items()}
+                    for (col1, col2), vals in results.items()}
+        results = {**statistics, **p_values}
+        results = pd.DataFrame(results)
+
+        # reorder columns to group by the first column, then the second column, and finally by the statistic type
+        column_order = {triplet: (
+            len([trp for trp in results.keys() if trp[0] == triplet[0]]),
+            len([trp for trp in results.keys() if trp[0] == triplet[1]]),
+            1 if triplet[2] == cnst.STATISTIC else 0
+        ) for triplet in results.keys()}
+        ordered_columns = sorted(results.columns, key=lambda col: column_order[col], reverse=True)
+        results = results[ordered_columns]
+        return results
+
+    @staticmethod
     def _get_default_detectors() -> Union[BaseDetector, List[BaseDetector]]:
         from GazeDetectors.IVTDetector import IVTDetector
         from GazeDetectors.IDTDetector import IDTDetector
@@ -78,7 +119,7 @@ class BaseAnalyzer(ABC):
 
     @staticmethod
     def _extract_event_features(events_df: pd.DataFrame,
-                                ignore_events: Set[cnst.EVENT_LABELS] = None,
+                                ignore_events: Set[cnfg.EVENT_LABELS] = None,
                                 verbose=False) -> Dict[str, pd.DataFrame]:
         global_start = time.time()
         if verbose:
@@ -108,7 +149,7 @@ class BaseAnalyzer(ABC):
         return results
 
     @staticmethod
-    def __event_counts_impl(events: pd.DataFrame, ignore_events: Set[cnst.EVENT_LABELS] = None, ) -> pd.DataFrame:
+    def __event_counts_impl(events: pd.DataFrame, ignore_events: Set[cnfg.EVENT_LABELS] = None, ) -> pd.DataFrame:
         """
         Counts the number of detected events for each detector by type of event, and groups the results by the stimulus.
         :param events: A DataFrame containing the detected events of each rater/detector.
@@ -116,14 +157,14 @@ class BaseAnalyzer(ABC):
             criteria (rows).
         """
 
-        def count_event_labels(data: List[Union[BaseEvent, cnst.EVENT_LABELS]]) -> pd.Series:
+        def count_event_labels(data: List[Union[BaseEvent, cnfg.EVENT_LABELS]]) -> pd.Series:
             labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
             counts = labels.value_counts()
             if counts.empty:
-                return pd.Series({l: 0 for l in cnst.EVENT_LABELS})
-            if len(counts) == len(cnst.EVENT_LABELS):
+                return pd.Series({l: 0 for l in cnfg.EVENT_LABELS})
+            if len(counts) == len(cnfg.EVENT_LABELS):
                 return counts
-            missing_labels = pd.Series({l: 0 for l in cnst.EVENT_LABELS if l not in counts.index})
+            missing_labels = pd.Series({l: 0 for l in cnfg.EVENT_LABELS if l not in counts.index})
             return pd.concat([counts, missing_labels]).sort_index()
 
         ignore_events = ignore_events or set()
@@ -140,7 +181,7 @@ class BaseAnalyzer(ABC):
     @staticmethod
     def __microsaccade_ratio_impl(events: pd.DataFrame,
                                   threshold_amplitude: float = cnfg.MICROSACCADE_AMPLITUDE_THRESHOLD) -> pd.DataFrame:
-        saccades = events.map(lambda cell: [e for e in cell if e.event_label == cnst.EVENT_LABELS.SACCADE])
+        saccades = events.map(lambda cell: [e for e in cell if e.event_label == cnfg.EVENT_LABELS.SACCADE])
         saccades_count = saccades.map(len).to_numpy()
         microsaccades = saccades.map(lambda cell: [e for e in cell if e.amplitude < threshold_amplitude])
         microsaccades_count = microsaccades.map(len).to_numpy()
