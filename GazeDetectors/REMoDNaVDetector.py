@@ -77,10 +77,10 @@ class REMoDNaVDetector(BaseDetector):
         classifier = remodnav.EyegazeClassifier(
             px2deg=self._pixel_size,
             sampling_rate=self._sr,
-            min_saccade_duration=cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.SACCADE][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
-            min_pursuit_duration=cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.SMOOTH_PURSUIT][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
-            min_fixation_duration=cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.FIXATION][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
-            max_pso_duration=cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.PSO][cnst.MAX_DURATION] / cnst.MILLISECONDS_PER_SECOND,
+            min_saccade_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.SACCADE][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
+            min_pursuit_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.SMOOTH_PURSUIT][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
+            min_fixation_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.FIXATION][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
+            max_pso_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.PSO][cnst.MAX_DURATION] / cnst.MILLISECONDS_PER_SECOND,
             min_intersaccade_duration=1/self._sr,  # allow saccades to be detected immediately after a previous saccade
             velthresh_startvelocity=self._saccade_initial_velocity_threshold,
             saccade_context_window_length=self._saccade_context_window_duration,
@@ -92,7 +92,7 @@ class REMoDNaVDetector(BaseDetector):
 
         xy = np.rec.fromarrays([x, y], names="{},{}".format(cnst.X, cnst.Y), formats="<f8,<f8")
         pp = classifier.preproc(xy,
-                                min_blink_duration=cnfg.EVENT_MAPPING[cnst.EVENT_LABELS.BLINK][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
+                                min_blink_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.BLINK][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
                                 dilate_nan=cnfg.DEFAULT_NAN_PADDING,
                                 median_filter_length=self._median_filter_length,
                                 savgol_length=self._savgol_length,
@@ -115,16 +115,16 @@ class REMoDNaVDetector(BaseDetector):
         return self._candidates
 
     def _parse_events(self, events: List[Dict[str, float]]) -> np.ndarray:
-        events_map = {'FIXA': cnst.EVENT_LABELS.FIXATION,
-                      'SACC': cnst.EVENT_LABELS.SACCADE,
-                      'ISAC': cnst.EVENT_LABELS.SACCADE,
-                      'HPSO': cnst.EVENT_LABELS.PSO,
-                      'IHPS': cnst.EVENT_LABELS.PSO,
-                      'LPSO': cnst.EVENT_LABELS.PSO,
-                      'ILPS': cnst.EVENT_LABELS.PSO,
-                      'PURS': cnst.EVENT_LABELS.SMOOTH_PURSUIT,
-                      'BLNK': cnst.EVENT_LABELS.BLINK}
-        candidates = np.full_like(self._candidates, cnst.EVENT_LABELS.UNDEFINED)
+        events_map = {'FIXA': cnfg.EVENT_LABELS.FIXATION,
+                      'SACC': cnfg.EVENT_LABELS.SACCADE,
+                      'ISAC': cnfg.EVENT_LABELS.SACCADE,
+                      'HPSO': cnfg.EVENT_LABELS.PSO,
+                      'IHPS': cnfg.EVENT_LABELS.PSO,
+                      'LPSO': cnfg.EVENT_LABELS.PSO,
+                      'ILPS': cnfg.EVENT_LABELS.PSO,
+                      'PURS': cnfg.EVENT_LABELS.SMOOTH_PURSUIT,
+                      'BLNK': cnfg.EVENT_LABELS.BLINK}
+        candidates = np.full_like(self._candidates, cnfg.EVENT_LABELS.UNDEFINED)
         for i, event in enumerate(events):
             start_sample = round(event["start_time"] * self._sr)
             end_sample = round(event["end_time"] * self._sr)

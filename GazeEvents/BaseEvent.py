@@ -13,7 +13,7 @@ import Utils.visual_angle_utils as visang_utils
 class BaseEvent(ABC):
     """ Base class for eye tracking events. """
 
-    _EVENT_LABEL: cnst.EVENT_LABELS
+    _EVENT_LABEL: cnfg.EVENT_LABELS
 
     def __init__(self,
                  timestamps: np.ndarray,
@@ -97,7 +97,7 @@ class BaseEvent(ABC):
 
     @final
     @property
-    def event_label(self) -> cnst.EVENT_LABELS:
+    def event_label(self) -> cnfg.EVENT_LABELS:
         return self.__class__._EVENT_LABEL
 
     @final

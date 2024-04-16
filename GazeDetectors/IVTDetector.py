@@ -1,6 +1,7 @@
 import numpy as np
 
 import Config.constants as cnst
+import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
 from Utils import visual_angle_utils as vis_utils
 
@@ -30,7 +31,7 @@ class IVTDetector(BaseDetector):
         self._velocity_threshold = kwargs.get('velocity_threshold', self.__DEFAULT_VELOCITY_THRESHOLD)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        candidates = np.asarray(self._candidates, dtype=cnst.EVENT_LABELS).copy()
+        candidates = np.asarray(self._candidates, dtype=cnfg.EVENT_LABELS).copy()
         angular_velocities = vis_utils.calculates_angular_velocities_from_pixels(xs=x, ys=y, timestamps=t,
                                                                                  d=self._viewer_distance,
                                                                                  pixel_size=self._pixel_size)
@@ -38,6 +39,6 @@ class IVTDetector(BaseDetector):
                                                    f"match the length of x (shape {x.shape})")
 
         # assume undefined (non-blink) samples are fixations, unless angular velocity is above threshold
-        candidates[candidates == cnst.EVENT_LABELS.UNDEFINED] = cnst.EVENT_LABELS.FIXATION
-        candidates[angular_velocities >= self._velocity_threshold] = cnst.EVENT_LABELS.SACCADE
+        candidates[candidates == cnfg.EVENT_LABELS.UNDEFINED] = cnfg.EVENT_LABELS.FIXATION
+        candidates[angular_velocities >= self._velocity_threshold] = cnfg.EVENT_LABELS.SACCADE
         return candidates

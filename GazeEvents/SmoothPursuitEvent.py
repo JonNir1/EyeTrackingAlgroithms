@@ -1,6 +1,6 @@
-import Config.constants as cnst
+import Config.experiment_config as cnfg
 from GazeEvents.BaseEvent import BaseEvent
 
 
 class SmoothPursuitEvent(BaseEvent):
-    _EVENT_LABEL = cnst.EVENT_LABELS.SMOOTH_PURSUIT
+    _EVENT_LABEL = cnfg.EVENT_LABELS.SMOOTH_PURSUIT

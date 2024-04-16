@@ -6,7 +6,7 @@ from typing import Set, Dict, List
 import numpy as np
 import pandas as pd
 
-import Config.constants as cnst
+import Config.experiment_config as cnfg
 import Utils.metrics as metrics
 import Analysis.helpers as hlp
 
@@ -95,7 +95,7 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
     def analyze(events_df: pd.DataFrame,
                 matches_df: pd.DataFrame = None,
                 samples_df: pd.DataFrame = None,
-                ignore_events: Set[cnst.EVENT_LABELS] = None,
+                ignore_events: Set[cnfg.EVENT_LABELS] = None,
                 verbose=False):
         """
         Analyze the given events, event-matches and samples, by calculating various metrics and features.
@@ -153,7 +153,7 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
     @staticmethod
     def _calc_event_matching_ratios(events_df: pd.DataFrame,
                                     matches_df: pd.DataFrame,
-                                    ignore_events: Set[cnst.EVENT_LABELS] = None,
+                                    ignore_events: Set[cnfg.EVENT_LABELS] = None,
                                     verbose=False) -> Dict[str, pd.DataFrame]:
         global_start = time.time()
         if verbose:
@@ -180,7 +180,7 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
 
     @staticmethod
     def _calc_matched_events_feature(matches_df: pd.DataFrame,
-                                     ignore_events: Set[cnst.EVENT_LABELS] = None,
+                                     ignore_events: Set[cnfg.EVENT_LABELS] = None,
                                      verbose=False) -> Dict[str, pd.DataFrame]:
         global_start = time.time()
         if verbose:
@@ -226,7 +226,7 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
     @staticmethod
     def __calc_matched_events_feature_impl(matches_df: pd.DataFrame,
                                            feature: str,
-                                           ignore_events: Set[cnst.EVENT_LABELS] = None) -> pd.DataFrame:
+                                           ignore_events: Set[cnfg.EVENT_LABELS] = None) -> pd.DataFrame:
         ignore_events = ignore_events or set()
         if feature == "Onset Jitter":
             diffs = matches_df.map(

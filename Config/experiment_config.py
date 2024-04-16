@@ -23,18 +23,18 @@ DEFAULT_VIEWER_DISTANCE = 60  # cm
 MICROSACCADE_AMPLITUDE_THRESHOLD = 1.0  # degrees
 
 EVENT_MAPPING = {
-    cnst.EVENT_LABELS.UNDEFINED: {cnst.LABEL: EVENT_LABELS.UNDEFINED.name,
-                                  cnst.COLOR: "#dddddd", cnst.MIN_DURATION: 0, cnst.MAX_DURATION: 1e6},
-    cnst.EVENT_LABELS.FIXATION: {cnst.LABEL: EVENT_LABELS.FIXATION.name,
-                                 cnst.COLOR: "#1f78b4", cnst.MIN_DURATION: 50, cnst.MAX_DURATION: 2000},
-    cnst.EVENT_LABELS.SACCADE: {cnst.LABEL: EVENT_LABELS.SACCADE.name,
-                                cnst.COLOR: "#33a02c", cnst.MIN_DURATION: 10, cnst.MAX_DURATION: 250},
-    cnst.EVENT_LABELS.PSO: {cnst.LABEL: EVENT_LABELS.PSO.name,
-                            cnst.COLOR: "#b2df8a", cnst.MIN_DURATION: 10, cnst.MAX_DURATION: 80},
-    cnst.EVENT_LABELS.SMOOTH_PURSUIT: {cnst.LABEL: EVENT_LABELS.SMOOTH_PURSUIT.name,
-                                       cnst.COLOR: "#fb9a99", cnst.MIN_DURATION: 40, cnst.MAX_DURATION: 2000},
-    cnst.EVENT_LABELS.BLINK: {cnst.LABEL: EVENT_LABELS.BLINK.name,
-                              cnst.COLOR: "#222222", cnst.MIN_DURATION: 20, cnst.MAX_DURATION: 2000}
+    EVENT_LABELS.UNDEFINED: {cnst.LABEL: EVENT_LABELS.UNDEFINED.name,
+                             cnst.COLOR: "#dddddd", cnst.MIN_DURATION: 0, cnst.MAX_DURATION: 1e6},
+    EVENT_LABELS.FIXATION: {cnst.LABEL: EVENT_LABELS.FIXATION.name,
+                            cnst.COLOR: "#1f78b4", cnst.MIN_DURATION: 50, cnst.MAX_DURATION: 2000},
+    EVENT_LABELS.SACCADE: {cnst.LABEL: EVENT_LABELS.SACCADE.name,
+                           cnst.COLOR: "#33a02c", cnst.MIN_DURATION: 10, cnst.MAX_DURATION: 250},
+    EVENT_LABELS.PSO: {cnst.LABEL: EVENT_LABELS.PSO.name,
+                       cnst.COLOR: "#b2df8a", cnst.MIN_DURATION: 10, cnst.MAX_DURATION: 80},
+    EVENT_LABELS.SMOOTH_PURSUIT: {cnst.LABEL: EVENT_LABELS.SMOOTH_PURSUIT.name,
+                                  cnst.COLOR: "#fb9a99", cnst.MIN_DURATION: 40, cnst.MAX_DURATION: 2000},
+    EVENT_LABELS.BLINK: {cnst.LABEL: EVENT_LABELS.BLINK.name,
+                         cnst.COLOR: "#222222", cnst.MIN_DURATION: 20, cnst.MAX_DURATION: 2000}
 }
 
 # DIRECTORIES

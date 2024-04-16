@@ -8,7 +8,7 @@ import pandas as pd
 
 
 import Config.constants as cnst
-import Utils.array_utils as au
+import Config.experiment_config as cnfg
 from Analysis.BaseAnalyzer import BaseAnalyzer
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
@@ -59,12 +59,12 @@ class MultiIterationAnalyzer(BaseAnalyzer):
 
     @staticmethod
     def analyze(events_df: pd.DataFrame,
-                ignore_events: Set[cnst.EVENT_LABELS] = None,
+                ignore_events: Set[cnfg.EVENT_LABELS] = None,
                 verbose: bool = False,
                 **kwargs):
         # ignore blinks when analyzing multi-iteration results, as they place-holders for previously detected saccades:
         ignore_events = ignore_events or set()
-        ignore_events.update({cnst.EVENT_LABELS.BLINK})
+        ignore_events.update({cnfg.EVENT_LABELS.BLINK})
         return BaseAnalyzer.analyze(events_df, ignore_events=ignore_events, verbose=verbose)
 
     @staticmethod
@@ -91,7 +91,7 @@ class MultiIterationAnalyzer(BaseAnalyzer):
 
                     # nullify detected saccades
                     detected_event_labels = res[cnst.GAZE][cnst.EVENT]
-                    saccade_idxs = trial_data.index[detected_event_labels == cnst.EVENT_LABELS.SACCADE]
+                    saccade_idxs = trial_data.index[detected_event_labels == cnfg.EVENT_LABELS.SACCADE]
                     data.loc[saccade_idxs, cnst.X] = np.nan
                     data.loc[saccade_idxs, cnst.Y] = np.nan
 

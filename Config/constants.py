@@ -2,8 +2,6 @@
 List of all the constants used as field names, column names, etc.
 """
 
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
-
 EPSILON = 1e-8
 
 MILLISECONDS_PER_SECOND = 1000
@@ -45,5 +43,3 @@ MAX_DURATION = "max_duration"
 
 STATISTIC = "statistic"
 P_VALUE = "p-value"
-
-EVENT_LABELS = GazeEventTypeEnum

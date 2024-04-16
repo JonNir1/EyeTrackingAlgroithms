@@ -5,10 +5,11 @@ import Levenshtein
 from sklearn.metrics import balanced_accuracy_score, cohen_kappa_score, matthews_corrcoef
 
 import Config.constants as cnst
+import Config.experiment_config as cnfg
 import GazeEvents.helpers as hlp
 
 
-_NUM_EVENTS = len(cnst.EVENT_LABELS)
+_NUM_EVENTS = len(cnfg.EVENT_LABELS)
 
 
 # TODO: calculate confusion matrix, precision, recall, F1-score, etc.

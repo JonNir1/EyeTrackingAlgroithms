@@ -3,7 +3,7 @@ from typing import Set, Sequence, Dict, Union, Callable
 
 import pandas as pd
 
-import Config.constants as cnst
+import Config.experiment_config as cnfg
 import Analysis.helpers as hlp
 from GazeEvents.BaseEvent import BaseEvent
 
@@ -21,7 +21,7 @@ class EventMatcher(ABC):
     @staticmethod
     def match_events(events: pd.DataFrame,
                      match_by: str,
-                     ignore_events: Set[cnst.EVENT_LABELS] = None,
+                     ignore_events: Set[cnfg.EVENT_LABELS] = None,
                      is_symmetric: bool = True,
                      **match_kwargs) -> pd.DataFrame:
         """

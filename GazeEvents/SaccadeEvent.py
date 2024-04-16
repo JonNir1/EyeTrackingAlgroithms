@@ -1,7 +1,6 @@
-import Config.constants as cnst
+import Config.experiment_config as cnfg
 from GazeEvents.BaseEvent import BaseEvent
-import Utils.pixel_utils as pixel_utils
 
 
 class SaccadeEvent(BaseEvent):
-    _EVENT_LABEL = cnst.EVENT_LABELS.SACCADE
+    _EVENT_LABEL = cnfg.EVENT_LABELS.SACCADE

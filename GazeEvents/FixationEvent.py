@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 from typing import Tuple
 
-import Config.constants as cnst
+import Config.experiment_config as cnfg
 from GazeEvents.BaseEvent import BaseEvent
 
 
 class FixationEvent(BaseEvent):
-    _EVENT_LABEL = cnst.EVENT_LABELS.FIXATION
+    _EVENT_LABEL = cnfg.EVENT_LABELS.FIXATION
 
     @property
     def center_of_mass(self) -> Tuple[float, float]:

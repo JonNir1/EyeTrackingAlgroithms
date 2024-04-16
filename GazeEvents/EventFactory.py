@@ -20,7 +20,7 @@ class EventFactory(ABC):
     # TODO: add `make from event table` that parses event-summary table and creates events
 
     @staticmethod
-    def make(label: cnst.EVENT_LABELS, t: np.ndarray, **event_data) -> Optional[BaseEvent]:
+    def make(label: cnfg.EVENT_LABELS, t: np.ndarray, **event_data) -> Optional[BaseEvent]:
         """
         Creates a single GazeEvent from the given data.
 
@@ -31,7 +31,7 @@ class EventFactory(ABC):
         :return: a GazeEvent object
         :raise: ValueError if the given event type is not valid
         """
-        if label == cnst.EVENT_LABELS.UNDEFINED:
+        if label == cnfg.EVENT_LABELS.UNDEFINED:
             return None
         if len(t) < cnfg.MINIMUM_SAMPLES_IN_EVENT:
             # TODO: log warning
@@ -41,15 +41,15 @@ class EventFactory(ABC):
         x = event_data.get("x", np.full_like(t, fill_value=np.nan))
         y = event_data.get("y", np.full_like(t, fill_value=np.nan))
         pupil = event_data.get("pupil", np.full_like(t, fill_value=np.nan))
-        if label == cnst.EVENT_LABELS.FIXATION:
+        if label == cnfg.EVENT_LABELS.FIXATION:
             return FixationEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
-        if label == cnst.EVENT_LABELS.SACCADE:
+        if label == cnfg.EVENT_LABELS.SACCADE:
             return SaccadeEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
-        if label == cnst.EVENT_LABELS.PSO:
+        if label == cnfg.EVENT_LABELS.PSO:
             return PSOEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
-        if label == cnst.EVENT_LABELS.SMOOTH_PURSUIT:
+        if label == cnfg.EVENT_LABELS.SMOOTH_PURSUIT:
             return SmoothPursuitEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
-        if label == cnst.EVENT_LABELS.BLINK:
+        if label == cnfg.EVENT_LABELS.BLINK:
             return BlinkEvent(timestamps=t, x=x, y=y, pupil=pupil, viewer_distance=vd, pixel_size=ps)
         raise ValueError(f"Invalid event type: {label}")
 
@@ -70,7 +70,7 @@ class EventFactory(ABC):
         chunk_idxs = arr_utils.get_chunk_indices(labels)
         event_list = []
         for idxs in chunk_idxs:
-            l: cnst.EVENT_LABELS = labels[idxs[0]]
+            l: cnfg.EVENT_LABELS = labels[idxs[0]]
             event_data = {}
             for k, v in kwargs.items():
                 event_data[k] = v[idxs] if hasattr(v, "__len__") else v
