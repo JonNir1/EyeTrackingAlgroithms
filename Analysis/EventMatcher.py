@@ -1,11 +1,11 @@
+import itertools
 from abc import ABC
-from typing import Set, Sequence, Dict, Union
+from typing import Set, Sequence, Dict, Union, Callable
 
 import pandas as pd
 
 import Config.constants as cnst
 from GazeEvents.BaseEvent import BaseEvent
-import Analysis.helpers as hlp
 
 
 class EventMatcher(ABC):
@@ -15,6 +15,8 @@ class EventMatcher(ABC):
         Startsev, M., Zemblys, R. Evaluating Eye Movement Event Detection: A Review of the State of the Art
         Behav Res 55, 1653–1714 (2023). https://doi.org/10.3758/s13428-021-01763-7
     """
+    __TYPE_EVENT_MATCHES = Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]
+    __TYPE_EVENT_MATCHING_FUNC = Callable[[Sequence[BaseEvent], Sequence[BaseEvent]], __TYPE_EVENT_MATCHES]
 
     @staticmethod
     def match_events(events: pd.DataFrame,
@@ -40,47 +42,56 @@ class EventMatcher(ABC):
         events = events.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
         match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
         if match_by == "first" or match_by == "first overlap":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.first_overlap(seq1,
-                                                                                                   seq2,
-                                                                                                   **match_kwargs),
-                                             is_symmetric=is_symmetric)
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.first_overlap(seq1,
+                                                                                                     seq2,
+                                                                                                     **match_kwargs),
+                                                       is_symmetric=is_symmetric)
         if match_by == "last" or match_by == "last overlap":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.last_overlap(seq1,
-                                                                                                  seq2,
-                                                                                                  **match_kwargs),
-                                             is_symmetric=is_symmetric)
-        if match_by == "max" or match_by == "max overlap":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.max_overlap(seq1,
-                                                                                                 seq2,
-                                                                                                 **match_kwargs),
-                                             is_symmetric=is_symmetric)
-        if match_by == "longest" or match_by == "longest match":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.longest_match(seq1,
-                                                                                                   seq2,
-                                                                                                   **match_kwargs),
-                                             is_symmetric=is_symmetric)
-        if match_by == "iou" or match_by == "intersection over union":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
-                                             is_symmetric=is_symmetric)
-        if match_by == "onset" or match_by == "onset latency":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.onset_latency(seq1,
-                                                                                                   seq2,
-                                                                                                   **match_kwargs),
-                                             is_symmetric=is_symmetric)
-        if match_by == "offset" or match_by == "offset latency":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.offset_latency(seq1,
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.last_overlap(seq1,
                                                                                                     seq2,
                                                                                                     **match_kwargs),
-                                             is_symmetric=is_symmetric)
+                                                       is_symmetric=is_symmetric)
+        if match_by == "max" or match_by == "max overlap":
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.max_overlap(seq1,
+                                                                                                   seq2,
+                                                                                                   **match_kwargs),
+                                                       is_symmetric=is_symmetric)
+        if match_by == "longest" or match_by == "longest match":
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.longest_match(seq1,
+                                                                                                     seq2,
+                                                                                                     **match_kwargs),
+                                                       is_symmetric=is_symmetric)
+        if match_by == "iou" or match_by == "intersection over union":
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
+                                                       is_symmetric=is_symmetric)
+        if match_by == "onset" or match_by == "onset latency":
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.onset_latency(seq1,
+                                                                                                     seq2,
+                                                                                                     **match_kwargs),
+                                                       is_symmetric=is_symmetric)
+        if match_by == "offset" or match_by == "offset latency":
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.offset_latency(seq1,
+                                                                                                      seq2,
+                                                                                                      **match_kwargs),
+                                                       is_symmetric=is_symmetric)
         if match_by == "window" or match_by == "window based":
-            return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.window_based(seq1,
-                                                                                                  seq2,
-                                                                                                  **match_kwargs),
-                                             is_symmetric=is_symmetric)
-        return hlp.apply_on_column_pairs(events, lambda seq1, seq2: EventMatcher.generic_matching(seq1,
-                                                                                                  seq2,
-                                                                                                  **match_kwargs),
-                                         is_symmetric=is_symmetric)
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.window_based(seq1,
+                                                                                                    seq2,
+                                                                                                    **match_kwargs),
+                                                       is_symmetric=is_symmetric)
+        return EventMatcher._apply_on_column_pairs(events,
+                                                   lambda seq1, seq2: EventMatcher.generic_matching(seq1,
+                                                                                                    seq2,
+                                                                                                    **match_kwargs),
+                                                   is_symmetric=is_symmetric)
 
     @staticmethod
     def generic_matching(ground_truth: Sequence[BaseEvent],
@@ -90,7 +101,7 @@ class EventMatcher(ABC):
                          min_iou: float = - float("inf"),
                          max_onset_latency: float = float("inf"),
                          max_offset_latency: float = float("inf"),
-                         reduction: str = "all") -> Dict[BaseEvent, Union[BaseEvent, Sequence[BaseEvent]]]:
+                         reduction: str = "all") -> __TYPE_EVENT_MATCHES:
         """
         Match each ground-truth event to a predicted event(s) that satisfies the specified criteria.
 
@@ -228,6 +239,45 @@ class EventMatcher(ABC):
         return EventMatcher.generic_matching(ground_truth, predictions, allow_cross_matching,
                                              max_onset_latency=max_onset_latency, max_offset_latency=max_offset_latency,
                                              reduction=reduction)
+
+    @staticmethod
+    def _apply_on_column_pairs(data: pd.DataFrame,
+                               matching_func: __TYPE_EVENT_MATCHING_FUNC,
+                               is_symmetric: bool = True) -> pd.DataFrame:
+        """
+        Applies the `matching_func` on each pair of columns in the given `data`, where cells contain sequences of
+        gaze-events detected by different raters/detectors. If `is_symmetric` is True, only calculate the measure once
+        for each (unordered-)pair of columns, e.g, (A, B) and (B, A) will be the same. If False, calculate the measure
+        for all ordered-pairs of columns.
+
+        :param data: The DataFrame to calculate the function on its columns. Each cell should contain a sequence of events.
+        :param matching_func: The function to calculate the measure between two columns. Should take two sequences of
+            gaze-events as input arguments, and return a dictionary where keys are ground-truth events and values are
+            their matched predicted event(s).
+        :param is_symmetric: Determines whether to calculate the measure for ordered or unordered pairs of columns.
+        :return: A DataFrame with the same index as the input data, columns as the pairs of columns of the input data,
+            and values in the DataFrame are dictionaries where keys are ground-truth events and values are their matched
+            predicted event(s).
+        """
+        if is_symmetric:
+            column_pairs = list(itertools.combinations(data.columns, 2))
+        else:
+            column_pairs = list(itertools.product(data.columns, repeat=2))
+            column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
+        res = {}
+        for idx in data.index:
+            res[idx] = {}
+            for pair in column_pairs:
+                vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
+                if len(vals1) == 0 or pd.isnull(vals1).all():
+                    res[idx][pair] = None
+                elif len(vals2) == 0 or pd.isnull(vals2).all():
+                    res[idx][pair] = None
+                else:
+                    res[idx][pair] = matching_func(vals1, vals2)
+        res = pd.DataFrame.from_dict(res, orient="index")
+        res.index.names = data.index.names
+        return res
 
     @staticmethod
     def __find_matches(gt: BaseEvent,
