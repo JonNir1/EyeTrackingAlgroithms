@@ -1,10 +1,10 @@
-import itertools
 from abc import ABC
 from typing import Set, Sequence, Dict, Union, Callable
 
 import pandas as pd
 
 import Config.constants as cnst
+import Analysis.helpers as hlp
 from GazeEvents.BaseEvent import BaseEvent
 
 
@@ -259,25 +259,7 @@ class EventMatcher(ABC):
             and values in the DataFrame are dictionaries where keys are ground-truth events and values are their matched
             predicted event(s).
         """
-        if is_symmetric:
-            column_pairs = list(itertools.combinations(data.columns, 2))
-        else:
-            column_pairs = list(itertools.product(data.columns, repeat=2))
-            column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
-        res = {}
-        for idx in data.index:
-            res[idx] = {}
-            for pair in column_pairs:
-                vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
-                if len(vals1) == 0 or pd.isnull(vals1).all():
-                    res[idx][pair] = None
-                elif len(vals2) == 0 or pd.isnull(vals2).all():
-                    res[idx][pair] = None
-                else:
-                    res[idx][pair] = matching_func(vals1, vals2)
-        res = pd.DataFrame.from_dict(res, orient="index")
-        res.index.names = data.index.names
-        return res
+        return hlp.apply_on_column_pairs(data, matching_func, is_symmetric)
 
     @staticmethod
     def __find_matches(gt: BaseEvent,

@@ -8,6 +8,7 @@ import pandas as pd
 
 import Config.constants as cnst
 import Utils.metrics as metrics
+import Analysis.helpers as hlp
 
 from Analysis.BaseAnalyzer import BaseAnalyzer
 from DataSetLoaders.DataSetFactory import DataSetFactory
@@ -201,41 +202,26 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
 
     @staticmethod
     def __calc_sample_metric_impl(samples: pd.DataFrame,
-                                  metric: str) -> pd.DataFrame:
+                                  metric_name: str) -> pd.DataFrame:
         # extract the function to calculate the metric
-        if metric == "acc" or metric == "accuracy" or metric == "balanced accuracy":
-            measure_func = metrics.balanced_accuracy
-        elif metric == "lev" or metric == "levenshtein":
-            measure_func = metrics.levenshtein_distance
-        elif metric == "kappa" or metric == "cohen kappa":
-            measure_func = metrics.cohen_kappa
-        elif metric == "mcc" or metric == "matthews correlation":
-            measure_func = metrics.matthews_correlation
-        elif metric == "fro" or metric == "frobenius" or metric == "l2":
-            measure_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro")
-        elif metric == "kl" or metric == "kl divergence" or metric == "kullback leibler":
-            measure_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl")
+        if metric_name == "acc" or metric_name == "accuracy" or metric_name == "balanced accuracy":
+            metric_func = metrics.balanced_accuracy
+        elif metric_name == "lev" or metric_name == "levenshtein":
+            metric_func = metrics.levenshtein_distance
+        elif metric_name == "kappa" or metric_name == "cohen kappa":
+            metric_func = metrics.cohen_kappa
+        elif metric_name == "mcc" or metric_name == "matthews correlation":
+            metric_func = metrics.matthews_correlation
+        elif metric_name == "fro" or metric_name == "frobenius" or metric_name == "l2":
+            metric_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro")
+        elif metric_name == "kl" or metric_name == "kl divergence" or metric_name == "kullback leibler":
+            metric_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl")
         else:
-            raise NotImplementedError(f"Unknown metric for samples:\t{metric}")
+            raise NotImplementedError(f"Unknown metric for samples:\t{metric_name}")
 
-        # perform the calculation
-        column_pairs = list(itertools.combinations(samples.columns, 2))
-        res = {}
-        for idx in samples.index:
-            res[idx] = {}
-            for pair in column_pairs:
-                vals1, vals2 = samples.loc[idx, pair[0]], samples.loc[idx, pair[1]]
-                if len(vals1) == 0 or pd.isnull(vals1).all():
-                    res[idx][pair] = None
-                elif len(vals2) == 0 or pd.isnull(vals2).all():
-                    res[idx][pair] = None
-                else:
-                    res[idx][pair] = measure_func(vals1, vals2)
-        res = pd.DataFrame.from_dict(res, orient="index")
-        res.index.names = samples.index.names
-
-        # aggregate over stimuli and return
-        return DetectorComparisonAnalyzer.group_and_aggregate(res)
+        # perform the calculation and aggregate over stimuli
+        metric_values = hlp.apply_on_column_pairs(samples, metric_func, is_symmetric=True)
+        return DetectorComparisonAnalyzer.group_and_aggregate(metric_values)
 
     @staticmethod
     def __calc_matched_events_feature_impl(matches_df: pd.DataFrame,
