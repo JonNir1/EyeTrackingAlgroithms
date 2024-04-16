@@ -3,7 +3,7 @@ import plotly.io as pio
 
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Visualization.distributions_grid import *
-import Analysis.scarfplot as scarf
+import Visualization.scarfplot as scarf
 from Analysis.detector_comparison.DetectorComparisonAnalyzer import DetectorComparisonAnalyzer
 
 pio.renderers.default = "browser"
@@ -29,7 +29,7 @@ for i, idx in enumerate(samples.index):
     num_samples = samples.loc[idx].map(len).max()  # Number of samples in the longest detected sequence
     t = np.arange(num_samples)
     detected_events = samples.loc[idx]
-    fig = scarf.compare_scarfplots(t, *detected_events.to_list(), names=detected_events.index)
+    fig = scarf.scarfplots_comparison_figure(t, *detected_events.to_list(), names=detected_events.index)
     scarfplot_figures[idx] = fig
     fig.show()
 
