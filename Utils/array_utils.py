@@ -4,6 +4,8 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 
+import Config.constants as cnst
+
 
 def is_one_dimensional(arr) -> bool:
     """ Returns true if the array's shape is (n,) or (1, n) or (n, 1) """
@@ -113,3 +115,8 @@ def find_sequences_in_sparse_array(sparse_array: np.ndarray, sequence: np.ndarra
     is_sequence = np.all(swv_non_nan_array == sequence, axis=1)
     start_end_idxs = list(zip(non_nan_idxs[:1-n][is_sequence], non_nan_idxs[n-1:][is_sequence]))
     return start_end_idxs
+
+
+def get_indexer_columns(data: pd.DataFrame) -> List[str]:
+    INDEXERS = [cnst.TRIAL, cnst.SUBJECT, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
+    return [col for col in INDEXERS if col in data.columns]
