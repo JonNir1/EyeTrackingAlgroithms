@@ -81,6 +81,8 @@ class BaseAnalyzer(ABC):
                                 ignore_events: Set[cnst.EVENT_LABELS] = None,
                                 verbose=False) -> Dict[str, pd.DataFrame]:
         global_start = time.time()
+        if verbose:
+            print("Extracting Event Features...")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             ignore_events = ignore_events or set()

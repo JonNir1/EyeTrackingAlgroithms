@@ -1,8 +1,7 @@
 import time
 import warnings
 import itertools
-from abc import ABC
-from typing import Set, Dict, Union, List
+from typing import Set, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -16,7 +15,7 @@ from GazeDetectors.BaseDetector import BaseDetector
 from Analysis.EventMatcher import EventMatcher as Matcher
 
 
-class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
+class DetectorComparisonAnalyzer(BaseAnalyzer):
     DEFAULT_EVENT_MATCHING_PARAMS = {
         "match_by": "onset",
         "max_onset_latency": 15,
@@ -113,13 +112,15 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
             warnings.simplefilter("ignore")
             start = time.time()
             ignore_events = ignore_events or set()
-            results = super(DetectorComparisonAnalyzer).analyze(events_df, ignore_events, verbose)
-            if matches_df and not matches_df.empty:
+            results = super(DetectorComparisonAnalyzer, DetectorComparisonAnalyzer).analyze(events_df,
+                                                                                            ignore_events,
+                                                                                            verbose=False)
+            if matches_df is not None and not matches_df.empty:
                 results[DetectorComparisonAnalyzer.MATCH_RATIO_STR] = DetectorComparisonAnalyzer._calc_event_matching_ratios(
                     events_df, matches_df, ignore_events=ignore_events, verbose=verbose)
                 results[DetectorComparisonAnalyzer.MATCH_FEATURES_STR] = DetectorComparisonAnalyzer._calc_matched_events_feature(
                     matches_df, ignore_events=ignore_events, verbose=verbose)
-            if samples_df and not samples_df.empty:
+            if samples_df is not None and not samples_df.empty:
                 results[DetectorComparisonAnalyzer.SAMPLE_METRICS_STR] = DetectorComparisonAnalyzer._calc_sample_metrics(
                     samples_df, verbose=verbose)
             end = time.time()
@@ -131,6 +132,8 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
     def _calc_sample_metrics(samples_df: pd.DataFrame,
                              verbose=False):
         global_start = time.time()
+        if verbose:
+            print("Calculating sample metrics...")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             results = {}
@@ -152,6 +155,8 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
                                     ignore_events: Set[cnst.EVENT_LABELS] = None,
                                     verbose=False) -> Dict[str, pd.DataFrame]:
         global_start = time.time()
+        if verbose:
+            print("Calculating % of matched-events...")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             ignore_events = ignore_events or set()
@@ -177,6 +182,8 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
                                      ignore_events: Set[cnst.EVENT_LABELS] = None,
                                      verbose=False) -> Dict[str, pd.DataFrame]:
         global_start = time.time()
+        if verbose:
+            print("Calculating matched-event features...")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             results = {}
