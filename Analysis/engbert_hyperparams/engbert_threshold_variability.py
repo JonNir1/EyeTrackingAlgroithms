@@ -25,7 +25,7 @@ _, _, detector_results_df, _, _ = BaseAnalyzer.preprocess_dataset(DATASET,
 thresholds = pd.concat([detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: cell['thresh_Vx']),
                         detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: cell['thresh_Vy'])],
                        axis=1, keys=["Vx", "Vy"])
-agg_thresholds = BaseAnalyzer.group_and_aggregate(thresholds, group_by=cnst.STIMULUS)
+agg_thresholds = BaseAnalyzer.group_and_aggregate(thresholds)
 threshold_distribution_fig = distributions_grid(agg_thresholds,
                                                 title=f"{DATASET.upper()}:\t\tVelocity-Threshold Distribution")
 threshold_distribution_fig.show()

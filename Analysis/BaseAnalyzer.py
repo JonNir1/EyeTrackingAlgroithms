@@ -54,7 +54,8 @@ class BaseAnalyzer(ABC):
         return results
 
     @staticmethod
-    def group_and_aggregate(data: pd.DataFrame, group_by: Optional[Union[str, List[str]]]) -> pd.DataFrame:
+    def group_and_aggregate(data: pd.DataFrame,
+                            group_by: Optional[Union[str, List[str]]] = cnst.STIMULUS) -> pd.DataFrame:
         """ Group the data by the given criteria and aggregate the values in each group. """
         if group_by is None:
             return data
@@ -94,7 +95,7 @@ class BaseAnalyzer(ABC):
                     attr = feature.lower().replace(" ", "_")
                     feature_df = events_df.map(lambda cell: [getattr(e, attr) for e in cell if
                                                              e.event_label not in ignore_events and hasattr(e, attr)])
-                    grouped = BaseAnalyzer.group_and_aggregate(feature_df, group_by=cnst.STIMULUS)
+                    grouped = BaseAnalyzer.group_and_aggregate(feature_df)
                 results[feature] = grouped
                 end = time.time()
                 if verbose:
@@ -146,4 +147,4 @@ class BaseAnalyzer(ABC):
                            out=np.full_like(saccades_count, fill_value=np.nan),  # fill with NaN if denominator is 0
                            where=saccades_count != 0)
         ratios = pd.DataFrame(ratios, index=events.index, columns=events.columns)
-        return BaseAnalyzer.group_and_aggregate(ratios, group_by=cnst.STIMULUS)
+        return BaseAnalyzer.group_and_aggregate(ratios)

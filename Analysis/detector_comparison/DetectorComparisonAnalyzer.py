@@ -166,7 +166,7 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
                     gt_col, _pred_col = match_counts.columns[j]
                     ratios[i, j] = match_counts.iloc[i, j] / event_counts.iloc[i][gt_col]
             ratios = pd.DataFrame(100 * ratios, index=match_counts.index, columns=match_counts.columns)
-            ratios = DetectorComparisonAnalyzer.group_and_aggregate(ratios, group_by=cnst.STIMULUS)
+            ratios = DetectorComparisonAnalyzer.group_and_aggregate(ratios)
         global_end = time.time()
         if verbose:
             print(f"Total time:\t{global_end - global_start:.2f}s\n")
@@ -228,7 +228,7 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
         res.index.names = samples.index.names
 
         # aggregate over stimuli and return
-        return DetectorComparisonAnalyzer.group_and_aggregate(res, cnst.STIMULUS)
+        return DetectorComparisonAnalyzer.group_and_aggregate(res)
 
     @staticmethod
     def __calc_matched_events_feature_impl(matches_df: pd.DataFrame,
@@ -285,4 +285,4 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
             )
         else:
             raise ValueError(f"Unknown feature: {feature}")
-        return DetectorComparisonAnalyzer.group_and_aggregate(diffs, group_by=cnst.STIMULUS)
+        return DetectorComparisonAnalyzer.group_and_aggregate(diffs)
