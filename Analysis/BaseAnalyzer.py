@@ -3,9 +3,11 @@ import warnings
 from abc import ABC, abstractmethod
 from typing import List, Union, Optional, Set, Dict
 
+import numpy as np
 import pandas as pd
 
 import Config.constants as cnst
+import Config.experiment_config as cnfg
 from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.BaseEvent import BaseEvent
 
@@ -13,7 +15,7 @@ from GazeEvents.BaseEvent import BaseEvent
 class BaseAnalyzer(ABC):
 
     EVENT_FEATURES = {
-        "Count", "Amplitude", "Duration", "Azimuth", "Peak Velocity"
+        "Count", "Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"
     }
     EVENT_FEATURES_STR = "Event Features"
 
@@ -86,6 +88,8 @@ class BaseAnalyzer(ABC):
                 start = time.time()
                 if feature == "Count":
                     grouped = BaseAnalyzer.__event_counts_impl(events_df, ignore_events=ignore_events)
+                elif feature == "Micro-Saccade Ratio":
+                    grouped = BaseAnalyzer.__microsaccade_ratio_impl(events_df)
                 else:
                     attr = feature.lower().replace(" ", "_")
                     feature_df = events_df.map(lambda cell: [getattr(e, attr) for e in cell if
@@ -129,3 +133,17 @@ class BaseAnalyzer(ABC):
         group_all = pd.Series(event_counts.sum(axis=0), index=event_counts.columns, name="all")
         grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
         return grouped_vals
+
+    @staticmethod
+    def __microsaccade_ratio_impl(events: pd.DataFrame,
+                                  threshold_amplitude: float = cnfg.MICROSACCADE_AMPLITUDE_THRESHOLD) -> pd.DataFrame:
+        saccades = events.map(lambda cell: [e for e in cell if e.event_label == cnst.EVENT_LABELS.SACCADE])
+        saccades_count = saccades.map(len).to_numpy()
+        microsaccades = saccades.map(lambda cell: [e for e in cell if e.amplitude < threshold_amplitude])
+        microsaccades_count = microsaccades.map(len).to_numpy()
+
+        ratios = np.divide(microsaccades_count, saccades_count,
+                           out=np.full_like(saccades_count, fill_value=np.nan),  # fill with NaN if denominator is 0
+                           where=saccades_count != 0)
+        ratios = pd.DataFrame(ratios, index=events.index, columns=events.columns)
+        return BaseAnalyzer.group_and_aggregate(ratios, group_by=cnst.STIMULUS)

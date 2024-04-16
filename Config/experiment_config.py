@@ -33,6 +33,8 @@ DEFAULT_VIEWER_DISTANCE = 60  # cm
 
 DEFAULT_NAN_PADDING = 0  # amount (ms) by which to extend before and after periods of data loss
 
+MICROSACCADE_AMPLITUDE_THRESHOLD = 1.0  # degrees
+
 # DIRECTORIES
 BASE_DIR = os.getcwd()  # TODO: set the base directory for the experiment
 STIMULI_DIR = psx.join(BASE_DIR, "Stimuli")
