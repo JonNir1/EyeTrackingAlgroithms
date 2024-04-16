@@ -2,7 +2,7 @@ import time
 import warnings
 import itertools
 from abc import ABC, abstractmethod
-from typing import List, Union, final
+from typing import List, Union, final, Optional
 
 import pandas as pd
 
