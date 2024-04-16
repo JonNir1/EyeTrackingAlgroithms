@@ -115,8 +115,3 @@ def find_sequences_in_sparse_array(sparse_array: np.ndarray, sequence: np.ndarra
     is_sequence = np.all(swv_non_nan_array == sequence, axis=1)
     start_end_idxs = list(zip(non_nan_idxs[:1-n][is_sequence], non_nan_idxs[n-1:][is_sequence]))
     return start_end_idxs
-
-
-def get_indexer_columns(data: pd.DataFrame) -> List[str]:
-    INDEXERS = [cnst.TRIAL, cnst.SUBJECT, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
-    return [col for col in INDEXERS if col in data.columns]

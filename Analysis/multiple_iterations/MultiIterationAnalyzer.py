@@ -18,6 +18,7 @@ class MultiIterationAnalyzer(BaseAnalyzer):
     LAMBDA_STR = "λ"
     ITERATION_STR = "Iteration"
     DEFAULT_NUM_ITERATIONS = 5
+    _INDEXERS = [cnst.TRIAL, cnst.SUBJECT, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
 
     @staticmethod
     def preprocess_dataset(dataset_name: str,
@@ -72,7 +73,7 @@ class MultiIterationAnalyzer(BaseAnalyzer):
                                num_iterations: int = DEFAULT_NUM_ITERATIONS,
                                events_only: bool = True):
         data = data.copy()  # copy the data to avoid modifying the original data
-        indexers = au.get_indexer_columns(data)
+        indexers = [col for col in MultiIterationAnalyzer._INDEXERS if col in data.columns]
         results = {}
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
