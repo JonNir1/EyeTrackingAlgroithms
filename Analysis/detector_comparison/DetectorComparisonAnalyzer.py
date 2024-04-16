@@ -1,5 +1,6 @@
 import time
 import warnings
+import itertools
 from abc import ABC
 from typing import Set, Dict, Union, List
 
@@ -7,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 import Config.constants as cnst
-import Analysis.helpers as hlp
 import Utils.metrics as metrics
 
 from Analysis.BaseAnalyzer import BaseAnalyzer
@@ -167,22 +167,39 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
     @staticmethod
     def __calc_sample_metric_impl(samples: pd.DataFrame,
                                   metric: str) -> pd.DataFrame:
+        # extract the function to calculate the metric
         if metric == "acc" or metric == "accuracy" or metric == "balanced accuracy":
-            res = hlp.apply_on_column_pairs(samples, metrics.balanced_accuracy)
+            measure_func = metrics.balanced_accuracy
         elif metric == "lev" or metric == "levenshtein":
-            res = hlp.apply_on_column_pairs(samples, metrics.levenshtein_distance)
+            measure_func = metrics.levenshtein_distance
         elif metric == "kappa" or metric == "cohen kappa":
-            res = hlp.apply_on_column_pairs(samples, metrics.cohen_kappa)
+            measure_func = metrics.cohen_kappa
         elif metric == "mcc" or metric == "matthews correlation":
-            res = hlp.apply_on_column_pairs(samples, metrics.matthews_correlation)
+            measure_func = metrics.matthews_correlation
         elif metric == "fro" or metric == "frobenius" or metric == "l2":
-            res = hlp.apply_on_column_pairs(samples,
-                                            lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro"))
+            measure_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="fro")
         elif metric == "kl" or metric == "kl divergence" or metric == "kullback leibler":
-            res = hlp.apply_on_column_pairs(samples,
-                                            lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl"))
+            measure_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl")
         else:
             raise NotImplementedError(f"Unknown metric for samples:\t{metric}")
+
+        # perform the calculation
+        column_pairs = list(itertools.combinations(samples.columns, 2))
+        res = {}
+        for idx in samples.index:
+            res[idx] = {}
+            for pair in column_pairs:
+                vals1, vals2 = samples.loc[idx, pair[0]], samples.loc[idx, pair[1]]
+                if len(vals1) == 0 or pd.isnull(vals1).all():
+                    res[idx][pair] = None
+                elif len(vals2) == 0 or pd.isnull(vals2).all():
+                    res[idx][pair] = None
+                else:
+                    res[idx][pair] = measure_func(vals1, vals2)
+        res = pd.DataFrame.from_dict(res, orient="index")
+        res.index.names = samples.index.names
+
+        # aggregate over stimuli and return
         return DetectorComparisonAnalyzer.group_and_aggregate(res, cnst.STIMULUS)
 
     @staticmethod
