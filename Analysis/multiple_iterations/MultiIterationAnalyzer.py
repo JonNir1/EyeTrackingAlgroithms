@@ -1,7 +1,6 @@
 import time
 import warnings
 import copy
-from abc import ABC
 from typing import Set
 
 import numpy as np
@@ -15,7 +14,7 @@ from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
 
 
-class MultiIterationAnalyzer(BaseAnalyzer, ABC):
+class MultiIterationAnalyzer(BaseAnalyzer):
     LAMBDA_STR = "λ"
     ITERATION_STR = "Iteration"
     DEFAULT_NUM_ITERATIONS = 5
