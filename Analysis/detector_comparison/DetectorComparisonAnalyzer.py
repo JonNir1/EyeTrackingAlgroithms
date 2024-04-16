@@ -11,10 +11,19 @@ import Config.constants as cnst
 import Utils.metrics as metrics
 
 from Analysis.BaseAnalyzer import BaseAnalyzer
-from GazeEvents.BaseEvent import BaseEvent
+from DataSetLoaders.DataSetFactory import DataSetFactory
+from GazeDetectors.BaseDetector import BaseDetector
+from Analysis.EventMatcher import EventMatcher as Matcher
 
 
 class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
+    DEFAULT_EVENT_MATCHING_PARAMS = {
+        "match_by": "onset",
+        "max_onset_latency": 15,
+        "allow_cross_matching": False,
+        "ignore_events": None,
+    }
+
     SAMPLE_METRICS = {
         "Accuracy": "acc",
         "Levenshtein Distance": "lev",
@@ -23,9 +32,6 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
         "Transition Matrix l2-norm": "frobenius",
         "Transition Matrix KL-Divergence": "kl"
     }
-    EVENT_FEATURES = {
-        "Counts", "Amplitude", "Duration", "Azimuth", "Peak Velocity"
-    }
 
     MATCHED_EVENT_FEATURES = {
         "Onset Jitter", "Offset Jitter", "L2 Timing Difference", "IoU", "Overlap Time", "Amplitude Difference",
@@ -33,10 +39,61 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
     }
 
     MATCH_RATIO_STR = "Match Ratio"
+    MATCH_FEATURES_STR = "Matched Event Features"
+    SAMPLE_METRICS_STR = "Sample Metrics"
+
+    @staticmethod
+    def preprocess_dataset(dataset_name: str,
+                           detectors: List[BaseDetector] = None,
+                           verbose=False,
+                           **kwargs):
+        """
+        Preprocess the dataset by:
+            1. Loading the dataset
+            2. Detecting events using the given detectors
+            3. Match events detected by each pair of detectors
+            4. Extract pairs of (human-rater, detector) for future analysis
+
+        :param dataset_name: The name of the dataset to load and preprocess.
+        :param detectors: A list of detectors to use for detecting events. If None, the default detectors will be used.
+        :param verbose: Whether to print the progress of the preprocessing.
+        :keyword column_mapper: A function to map the column names of the samples, events, and detector results DataFrames.
+        :additional keyword arguments: Additional parameters to pass to the event matching algorithm (see EventMatcher).
+
+        :return: the preprocessed samples, events, raw detector results, event matches, and comparison columns.
+        """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if verbose:
+                print(f"Preprocessing dataset `{dataset_name}`...")
+            start = time.time()
+            detectors = DetectorComparisonAnalyzer._get_default_detectors() if detectors is None else detectors
+            samples_df, events_df, detector_results_df = DataSetFactory.load_and_detect(dataset_name, detectors)
+
+            # rename columns
+            column_mapper = kwargs.pop("column_mapper", lambda col: col)
+            samples_df.rename(columns=column_mapper, inplace=True)
+            events_df.rename(columns=column_mapper, inplace=True)
+            detector_results_df.rename(columns=column_mapper, inplace=True)
+
+            # match events
+            kwargs = {**DetectorComparisonAnalyzer.DEFAULT_EVENT_MATCHING_PARAMS, **kwargs}
+            matches = Matcher.match_events(events_df, is_symmetric=True, **kwargs)
+
+            # extract column-pairs to compare
+            rater_names = [col.upper() for col in samples_df.columns if len(col) == 2]
+            detector_names = [col for col in samples_df.columns if "det" in col.lower()]
+            rater_rater_pairs = list(itertools.combinations(sorted(rater_names), 2))
+            rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
+            comparison_columns = rater_rater_pairs + rater_detector_pairs
+            end = time.time()
+            if verbose:
+                print(f"\tPreprocessing:\t{end - start:.2f}s")
+        return samples_df, events_df, detector_results_df, matches, comparison_columns
 
     @staticmethod
     def analyze(events_df: pd.DataFrame,
-                matches_df: pd.DataFrame,
+                matches_df: pd.DataFrame = None,
                 samples_df: pd.DataFrame = None,
                 ignore_events: Set[cnst.EVENT_LABELS] = None,
                 verbose=False):
@@ -45,8 +102,8 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
 
         :param events_df: A DataFrame containing the detected events of each rater/detector.
         :param matches_df: A DataFrame containing the matched events between each pair of raters/detectors.
-        :param samples_df: A DataFrame containing the detected samples of each rater/detector.
-            Only used for sample-level metrics, when `ignore_events` is None or empty.
+        :param samples_df: A DataFrame containing the detected samples of each rater/detector. Does not depend on
+            the `ignore_events` parameter.
         :param ignore_events: A set of event labels to ignore when calculating metrics and features.
         :param verbose: Whether to print the progress of the analysis.
 
@@ -56,17 +113,15 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
             warnings.simplefilter("ignore")
             start = time.time()
             ignore_events = ignore_events or set()
-            results = {}
-            if samples_df and not ignore_events:
-                results["Sample Metrics"] = DetectorComparisonAnalyzer._calc_sample_metrics(samples_df, verbose=verbose)
-            results["Event Features"] = DetectorComparisonAnalyzer._extract_features(events_df, ignore_events=ignore_events,
-                                                                                     verbose=verbose)
-            results["Event Matching Ratios"] = DetectorComparisonAnalyzer._calc_event_matching_ratios(events_df, matches_df,
-                                                                                                      ignore_events=ignore_events,
-                                                                                                      verbose=verbose)
-            results["Matched Event Features"] = DetectorComparisonAnalyzer._calc_matched_events_feature(matches_df,
-                                                                                                        ignore_events=ignore_events,
-                                                                                                        verbose=verbose)
+            results = super(DetectorComparisonAnalyzer).analyze(events_df, ignore_events, verbose)
+            if matches_df and not matches_df.empty:
+                results[DetectorComparisonAnalyzer.MATCH_RATIO_STR] = DetectorComparisonAnalyzer._calc_event_matching_ratios(
+                    events_df, matches_df, ignore_events=ignore_events, verbose=verbose)
+                results[DetectorComparisonAnalyzer.MATCH_FEATURES_STR] = DetectorComparisonAnalyzer._calc_matched_events_feature(
+                    matches_df, ignore_events=ignore_events, verbose=verbose)
+            if samples_df and not samples_df.empty:
+                results[DetectorComparisonAnalyzer.SAMPLE_METRICS_STR] = DetectorComparisonAnalyzer._calc_sample_metrics(
+                    samples_df, verbose=verbose)
             end = time.time()
             if verbose:
                 print(f"Total Analysis Time:\t{end - start:.2f}s")
@@ -89,33 +144,6 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
             global_end = time.time()
             if verbose:
                 print(f"Total time:\t{global_end - global_start:.2f}s\n")
-        return results
-
-    @staticmethod
-    def _extract_features(events_df: pd.DataFrame,
-                          ignore_events: Set[cnst.EVENT_LABELS] = None,
-                          verbose=False) -> Dict[str, pd.DataFrame]:
-        global_start = time.time()
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            ignore_events = ignore_events or set()
-            results = {}
-            for feature in DetectorComparisonAnalyzer.EVENT_FEATURES:
-                start = time.time()
-                if feature == "Counts":
-                    grouped = DetectorComparisonAnalyzer.__event_counts_impl(events_df, ignore_events=ignore_events)
-                else:
-                    attr = feature.lower().replace(" ", "_")
-                    feature_df = events_df.map(lambda cell: [getattr(e, attr) for e in cell
-                                                             if e not in ignore_events and hasattr(e, attr)])
-                    grouped = DetectorComparisonAnalyzer.group_and_aggregate(feature_df, group_by=cnst.STIMULUS)
-                results[feature] = grouped
-                end = time.time()
-                if verbose:
-                    print(f"\tExtracting {feature}s:\t{end - start:.2f}s")
-        global_end = time.time()
-        if verbose:
-            print(f"Total time:\t{global_end - global_start:.2f}s\n")
         return results
 
     @staticmethod
@@ -201,36 +229,6 @@ class DetectorComparisonAnalyzer(BaseAnalyzer, ABC):
 
         # aggregate over stimuli and return
         return DetectorComparisonAnalyzer.group_and_aggregate(res, cnst.STIMULUS)
-
-    @staticmethod
-    def __event_counts_impl(events: pd.DataFrame, ignore_events: Set[cnst.EVENT_LABELS] = None, ) -> pd.DataFrame:
-        """
-        Counts the number of detected events for each detector by type of event, and groups the results by the stimulus.
-        :param events: A DataFrame containing the detected events of each rater/detector.
-        :return: A DataFrame containing the count of events detected by each rater/detector (cols), grouped by the given
-            criteria (rows).
-        """
-
-        def count_event_labels(data: List[Union[BaseEvent, cnst.EVENT_LABELS]]) -> pd.Series:
-            labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
-            counts = labels.value_counts()
-            if counts.empty:
-                return pd.Series({l: 0 for l in cnst.EVENT_LABELS})
-            if len(counts) == len(cnst.EVENT_LABELS):
-                return counts
-            missing_labels = pd.Series({l: 0 for l in cnst.EVENT_LABELS if l not in counts.index})
-            return pd.concat([counts, missing_labels]).sort_index()
-
-        ignore_events = ignore_events or set()
-        events = events.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
-        event_counts = events.map(count_event_labels)
-        grouped_vals = event_counts.groupby(level=cnst.STIMULUS).agg(list).map(sum)
-        if len(grouped_vals.index) == 1:
-            return grouped_vals
-        # there is more than one group, so add a row for "all" groups
-        group_all = pd.Series(event_counts.sum(axis=0), index=event_counts.columns, name="all")
-        grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
-        return grouped_vals
 
     @staticmethod
     def __calc_matched_events_feature_impl(matches_df: pd.DataFrame,
