@@ -144,7 +144,7 @@ class BaseAnalyzer(ABC):
         microsaccades_count = microsaccades.map(len).to_numpy()
 
         ratios = np.divide(microsaccades_count, saccades_count,
-                           out=np.full_like(saccades_count, fill_value=np.nan),  # fill with NaN if denominator is 0
+                           out=np.full_like(saccades_count, fill_value=np.nan, dtype=float),  # fill NaN if denom is 0
                            where=saccades_count != 0)
         ratios = pd.DataFrame(ratios, index=events.index, columns=events.columns)
         return BaseAnalyzer.group_and_aggregate(ratios)
