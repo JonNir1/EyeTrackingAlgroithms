@@ -2,8 +2,7 @@ import numpy as np
 import plotly.io as pio
 
 from GazeDetectors.EngbertDetector import EngbertDetector
-
-import Analysis.figures as figs
+from Visualization.distributions_grid import *
 import Analysis.scarfplot as scarf
 from Analysis.detector_comparison.DetectorComparisonAnalyzer import DetectorComparisonAnalyzer
 
@@ -16,10 +15,12 @@ DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(1, 3)]
 
 # %%
 # Pre-Process
-samples, events, detector_results_df, event_matches, comparison_columns = DetectorComparisonAnalyzer.preprocess_dataset(DATASET,
-                                                                                                                        detectors=DETECTORS,
-                                                                                                                        column_mapper=COL_MAPPER,
-                                                                                                                        verbose=True)
+samples, events, detector_results_df, event_matches, comparison_columns = DetectorComparisonAnalyzer.preprocess_dataset(
+    DATASET,
+    detectors=DETECTORS,
+    column_mapper=COL_MAPPER,
+    verbose=True
+)
 
 # %%
 # Compare scarfplots
@@ -46,7 +47,7 @@ event_matching_feature_diffs = all_event_metrics["Event Matching Feature Diffs"]
 # Compare to Ground Truth - Sample-by-Sample
 sample_metric_figures = {}
 for metric, metric_df in sample_metrics.items():
-    fig = figs.distributions_grid(
+    fig = distributions_grid(
         metric_df[comparison_columns],
         title=f"{DATASET.upper()}:\t\tSample-Level {metric.title()}",
         pdf_min_val=0 if "Transition Matrix" not in metric else None,
@@ -64,7 +65,7 @@ for feature, feature_df in event_features.items():
         title = f"{DATASET.upper()}:\t\tEvent {feature.title()}"
     else:
         title = f"{DATASET.upper()}:\t\tEvents' {feature.title()} Distribution"
-    feature_figure = figs.distributions_grid(
+    feature_figure = distributions_grid(
         feature_df[comparison_columns],
         title=title,
         pdf_min_val=0,
@@ -78,7 +79,7 @@ for feature, feature_df in event_features.items():
 # Compare to Ground Truth - Event Matching
 event_matching_figures = {}
 
-event_matching_ratios_figure = figs.distributions_grid(
+event_matching_ratios_figure = distributions_grid(
     event_matching_ratios["Match Ratio"][comparison_columns],
     title=f"{DATASET.upper()}:\t\tEvent-Matching Ratios",
     pdf_min_val=0,
@@ -89,7 +90,7 @@ event_matching_ratios_figure.show()
 event_feature_figures["Match Ratio"] = event_matching_ratios_figure
 
 for feature, feature_df in event_matching_feature_diffs.items():
-    feature_figure = figs.distributions_grid(
+    feature_figure = distributions_grid(
         feature_df[comparison_columns],
         title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",

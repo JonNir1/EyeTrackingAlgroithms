@@ -3,8 +3,8 @@ import plotly.io as pio
 
 import Config.constants as cnst
 from GazeDetectors.EngbertDetector import EngbertDetector
+from Visualization.distributions_grid import *
 
-import Analysis.figures as figs
 from Analysis.BaseAnalyzer import BaseAnalyzer
 
 pio.renderers.default = "browser"
@@ -26,6 +26,6 @@ thresholds = pd.concat([detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: 
                         detector_results_df[f"{LAMBDA_STR}:0"].map(lambda cell: cell['thresh_Vy'])],
                        axis=1, keys=["Vx", "Vy"])
 agg_thresholds = BaseAnalyzer.group_and_aggregate(thresholds, group_by=cnst.STIMULUS)
-threshold_distribution_fig = figs.distributions_grid(agg_thresholds,
-                                                     title=f"{DATASET.upper()}:\t\tVelocity-Threshold Distribution")
+threshold_distribution_fig = distributions_grid(agg_thresholds,
+                                                title=f"{DATASET.upper()}:\t\tVelocity-Threshold Distribution")
 threshold_distribution_fig.show()
