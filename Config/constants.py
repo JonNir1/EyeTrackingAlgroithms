@@ -43,5 +43,7 @@ COLOR = "color"
 MIN_DURATION = "min_duration"
 MAX_DURATION = "max_duration"
 
+STATISTIC = "statistic"
+P_VALUE = "p-value"
+
 EVENT_LABELS = GazeEventTypeEnum
-MINIMUM_SAMPLES_IN_EVENT: int = 2  # minimum number of samples in an event

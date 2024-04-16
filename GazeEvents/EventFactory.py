@@ -33,7 +33,7 @@ class EventFactory(ABC):
         """
         if label == cnst.EVENT_LABELS.UNDEFINED:
             return None
-        if len(t) < cnst.MINIMUM_SAMPLES_IN_EVENT:
+        if len(t) < cnfg.MINIMUM_SAMPLES_IN_EVENT:
             # TODO: log warning
             return None
         vd = event_data.get("viewer_distance", cnfg.DEFAULT_VIEWER_DISTANCE)

@@ -169,7 +169,7 @@ class BaseDetector(ABC):
         min_event_duration = min([cnfg.EVENT_MAPPING[e][cnst.MIN_DURATION] for e in cnfg.EVENT_MAPPING.keys()
                                   if e != cnst.EVENT_LABELS.UNDEFINED])
         ns = self._calc_num_samples(min_event_duration)
-        min_samples = max(ns, cnst.MINIMUM_SAMPLES_IN_EVENT)
+        min_samples = max(ns, cnfg.MINIMUM_SAMPLES_IN_EVENT)
         cand = arr_utils.merge_close_chunks(candidates, min_samples, cnst.EVENT_LABELS.UNDEFINED)
         return cand
 
