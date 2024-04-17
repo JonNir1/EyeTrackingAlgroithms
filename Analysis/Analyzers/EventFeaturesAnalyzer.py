@@ -19,7 +19,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
         "Count", "Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"
     }
 
-    _DEFAULT_STATISTICAL_TEST = "Mann-Whitney U"
+    _DEFAULT_STATISTICAL_TEST = "Mann-Whitney"
 
     @staticmethod
     def preprocess_dataset(dataset_name: str,
@@ -32,7 +32,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
         if verbose:
             print(f"Preprocessing dataset `{dataset_name}`...")
         start = time.time()
-        samples_df, events_df, detector_results_df = super(EventFeaturesAnalyzer, EventFeaturesAnalyzer).preprocess_dataset(
+        _, events_df, _ = super(EventFeaturesAnalyzer, EventFeaturesAnalyzer).preprocess_dataset(
             dataset_name, detectors, False, **kwargs
         )
         end = time.time()
