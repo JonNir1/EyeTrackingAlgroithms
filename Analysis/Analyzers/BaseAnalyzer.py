@@ -85,7 +85,7 @@ class BaseAnalyzer(ABC):
             if verbose:
                 print("Performing Statistical Analysis...")
             stat_start = time.time()
-            stats_dict = cls.statistical_analysis(observations=obs_dict, test_name=test_name, **kwargs)
+            stats_dict = cls.statistical_analysis(obs_dict, test_name=test_name, **kwargs)
             stat_end = time.time()
             if verbose:
                 print(f"Statistical Analysis Time:\t{stat_end - stat_start:.2f}s")
