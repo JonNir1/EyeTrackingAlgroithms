@@ -136,3 +136,13 @@ class BaseAnalyzer(ABC):
         from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
         return [IVTDetector(), IDTDetector(), EngbertDetector(), NHDetector(), REMoDNaVDetector()]
 
+    @staticmethod
+    def _get_statistical_test_func(test_name: str):
+        test_name = test_name.lower().replace("_", " ").replace("-", " ").strip()
+        if test_name in {"u", "u test", "mann whitney", "mann whitney u", "mannwhitneyu"}:
+            return stat.mannwhitneyu
+        elif test_name in {"rank sum", "ranksum", "ranksums", "wilcoxon rank sum"}:
+            return stat.ranksums
+        else:
+            raise ValueError(f"Unknown test name: {test_name}")
+

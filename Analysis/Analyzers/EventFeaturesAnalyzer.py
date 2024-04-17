@@ -4,7 +4,6 @@ from typing import Set, Dict, List, Union
 
 import numpy as np
 import pandas as pd
-import scipy.stats as stat
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
@@ -20,7 +19,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
         "Count", "Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"
     }
 
-    _DEFAULT_STAT_TEST = "Mann-Whitney U"
+    _DEFAULT_STATISTICAL_TEST = "Mann-Whitney U"
 
     @staticmethod
     def preprocess_dataset(dataset_name: str,
@@ -63,17 +62,17 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
             warnings.simplefilter("ignore")
             ignore_events = ignore_events or set()
             results = {}
-            for feature in EventFeaturesAnalyzer.EVENT_FEATURES:
+            for feature in cls.EVENT_FEATURES:
                 start = time.time()
                 if feature == "Count":
-                    grouped = EventFeaturesAnalyzer.__event_counts_impl(events_df, ignore_events=ignore_events)
+                    grouped = cls.__event_counts_impl(events_df, ignore_events=ignore_events)
                 elif feature == "Micro-Saccade Ratio":
-                    grouped = EventFeaturesAnalyzer.__microsaccade_ratio_impl(events_df)
+                    grouped = cls.__microsaccade_ratio_impl(events_df)
                 else:
                     attr = feature.lower().replace(" ", "_")
                     feature_df = events_df.map(lambda cell: [getattr(e, attr) for e in cell if
                                                         e.event_label not in ignore_events and hasattr(e, attr)])
-                    grouped = EventFeaturesAnalyzer.group_and_aggregate(feature_df)
+                    grouped = cls.group_and_aggregate(feature_df)
                 results[feature] = grouped
                 end = time.time()
                 if verbose:
@@ -83,7 +82,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
     @classmethod
     def statistical_analysis(cls,
                              feature_df: pd.DataFrame,
-                             test_name: str = _DEFAULT_STAT_TEST,
+                             test_name: str = _DEFAULT_STATISTICAL_TEST,
                              **kwargs) -> pd.DataFrame:
         """
         Performs a two-sample statistical test on the set of measured event-features between two raters/detectors.
@@ -92,17 +91,10 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
         :param test_name: The name of the statistical test to perform.
         :return: A DataFrame containing the results of the statistical test between each pair of raters/detectors.
         """
-        test_name = test_name.lower().replace("_", " ").replace("-", " ").strip()
-        if test_name in {"u", "u test", "mann whitney", "mann whitney u", "mannwhitneyu"}:
-            test_func = stat.mannwhitneyu
-        elif test_name in {"rank sum", "ranksum", "ranksums", "wilcoxon rank sum"}:
-            test_func = stat.ranksums
-        else:
-            raise ValueError(f"Unknown test name: {test_name}")
-
         # calculate the statistical test for each pair of columns
         feature_df = feature_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
-        results = hlp.apply_on_column_pairs(feature_df, test_func, is_symmetric=True)
+        stat_test = cls._get_statistical_test_func(test_name)
+        results = hlp.apply_on_column_pairs(feature_df, stat_test, is_symmetric=True)
 
         # remap the results to a DataFrame
         statistics = {(col1, col2, cnst.STATISTIC): {vk: vv[0] for vk, vv in vals.items()}
