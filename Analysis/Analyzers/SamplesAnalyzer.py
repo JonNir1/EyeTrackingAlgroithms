@@ -43,13 +43,7 @@ class SamplesAnalyzer(BaseAnalyzer):
         samples_df, _, _ = super(SamplesAnalyzer, SamplesAnalyzer).preprocess_dataset(
             dataset_name, detectors, False, **kwargs
         )
-
-        # extract column-pairs to compare
-        rater_names = [col.upper() for col in samples_df.columns if len(col) == 2]
-        detector_names = [col for col in samples_df.columns if "det" in col.lower()]
-        rater_rater_pairs = list(itertools.combinations(sorted(rater_names), 2))
-        rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
-        comparison_columns = rater_rater_pairs + rater_detector_pairs
+        comparison_columns = SamplesAnalyzer._extract_rater_detector_pairs(samples_df)
         end = time.time()
         if verbose:
             print(f"\tPreprocessing:\t{end - start:.2f}s")

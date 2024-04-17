@@ -1,18 +1,16 @@
 import time
 import warnings
+import itertools
 from abc import ABC, abstractmethod
 from typing import List, Union, Optional, Set, Dict, final
 
-import numpy as np
 import pandas as pd
 import scipy.stats as stat
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
-import Analysis.helpers as hlp
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
-from GazeEvents.BaseEvent import BaseEvent
 
 
 class BaseAnalyzer(ABC):
@@ -136,6 +134,20 @@ class BaseAnalyzer(ABC):
         return [IVTDetector(), IDTDetector(), EngbertDetector(), NHDetector(), REMoDNaVDetector()]
 
     @staticmethod
+    def _extract_rater_detector_pairs(data: pd.DataFrame) -> List[Tuple[str, str]]:
+        """
+        Extracts pairs of (human-rater, human-rater) and (human-rater, detector) columns from the given DataFrame.
+        :param data: DataFrame where each column is either a human-rater or a detector.
+            human raters are columns with two-letter names, and detectors are columns with "det" in their name.
+        :return: a list of pairs of (human-rater, human-rater) and (human-rater, detector) column names.
+        """
+        rater_names = [col.upper() for col in data.columns if len(col) == 2]
+        detector_names = [col for col in data.columns if "det" in col.lower()]
+        rater_rater_pairs = list(itertools.combinations(sorted(rater_names), 2))
+        rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
+        return rater_rater_pairs + rater_detector_pairs
+
+    @staticmethod
     def _get_statistical_test_func(test_name: str):
         test_name = test_name.lower().replace("_", " ").replace("-", " ").strip()
         if test_name in {"u", "u test", "mann whitney", "mann whitney u", "mannwhitneyu"}:
@@ -166,4 +178,3 @@ class BaseAnalyzer(ABC):
         ordered_columns = sorted(results.columns, key=lambda col: column_order[col], reverse=True)
         results = results[ordered_columns]
         return results
-
