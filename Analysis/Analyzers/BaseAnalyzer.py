@@ -85,7 +85,7 @@ class BaseAnalyzer(ABC):
             if verbose:
                 print("Performing Statistical Analysis...")
             stat_start = time.time()
-            stats_dict = {k: cls.statistical_analysis(v, test_name, **kwargs) for k, v in obs_dict.items()}
+            stats_dict = cls.statistical_analysis(observations=obs_dict, test_name=test_name, **kwargs)
             stat_end = time.time()
             if verbose:
                 print(f"Statistical Analysis Time:\t{stat_end - stat_start:.2f}s")
@@ -108,9 +108,8 @@ class BaseAnalyzer(ABC):
     @classmethod
     @abstractmethod
     def statistical_analysis(cls,
-                             data: pd.DataFrame,
-                             test_name: str,
-                             **kwargs) -> pd.DataFrame:
+                             observations: Dict[str, pd.DataFrame],
+                             **kwargs) -> Dict[str, pd.DataFrame]:
         raise NotImplementedError
 
     @staticmethod

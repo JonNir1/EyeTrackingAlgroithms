@@ -14,7 +14,6 @@ from GazeEvents.BaseEvent import BaseEvent
 
 
 class EventFeaturesAnalyzer(BaseAnalyzer):
-
     EVENT_FEATURES = {
         "Count", "Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"
     }
@@ -71,7 +70,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
                 else:
                     attr = feature.lower().replace(" ", "_")
                     feature_df = events_df.map(lambda cell: [getattr(e, attr) for e in cell if
-                                                        e.event_label not in ignore_events and hasattr(e, attr)])
+                                                             e.event_label not in ignore_events and hasattr(e, attr)])
                     grouped = cls.group_and_aggregate(feature_df)
                 results[feature] = grouped
                 end = time.time()
@@ -81,9 +80,14 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
 
     @classmethod
     def statistical_analysis(cls,
-                             feature_df: pd.DataFrame,
-                             test_name: str = _DEFAULT_STATISTICAL_TEST,
-                             **kwargs) -> pd.DataFrame:
+                             features_dict: Dict[str, pd.DataFrame],
+                             test_name: str = _DEFAULT_STATISTICAL_TEST) -> Dict[str, pd.DataFrame]:
+        return {k: cls._statistical_analysis_impl(v, test_name) for k, v in features_dict.items()}
+
+    @classmethod
+    def _statistical_analysis_impl(cls,
+                                   feature_df: pd.DataFrame,
+                                   test_name: str) -> pd.DataFrame:
         """
         Performs a two-sample statistical test on the set of measured event-features between two raters/detectors.
         :param feature_df: A DataFrame containing the extracted features of the events detected by each rater/detector.
@@ -122,6 +126,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
         :return: A DataFrame containing the count of events detected by each rater/detector (cols), grouped by the given
             criteria (rows).
         """
+
         def count_event_labels(data: List[Union[BaseEvent, cnfg.EVENT_LABELS]]) -> pd.Series:
             labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
             counts = labels.value_counts()
