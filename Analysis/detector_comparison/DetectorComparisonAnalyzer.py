@@ -10,7 +10,7 @@ import Config.experiment_config as cnfg
 import Utils.metrics as metrics
 import Analysis.helpers as hlp
 
-from Analysis.BaseAnalyzer import BaseAnalyzer
+from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
 from Analysis.EventMatcher import EventMatcher as Matcher

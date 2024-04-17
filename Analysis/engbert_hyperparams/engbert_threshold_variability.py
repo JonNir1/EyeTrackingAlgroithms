@@ -1,11 +1,9 @@
-import pandas as pd
 import plotly.io as pio
 
-import Config.constants as cnst
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Visualization.distributions_grid import *
 
-from Analysis.BaseAnalyzer import BaseAnalyzer
+from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
 
 pio.renderers.default = "browser"
 

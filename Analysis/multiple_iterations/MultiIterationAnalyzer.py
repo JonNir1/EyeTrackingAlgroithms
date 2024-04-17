@@ -9,7 +9,7 @@ import pandas as pd
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
-from Analysis.BaseAnalyzer import BaseAnalyzer
+from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
 
