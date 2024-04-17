@@ -99,24 +99,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
         feature_df = feature_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
         stat_test = cls._get_statistical_test_func(test_name)
         results = hlp.apply_on_column_pairs(feature_df, stat_test, is_symmetric=True)
-
-        # remap the results to a DataFrame
-        statistics = {(col1, col2, cnst.STATISTIC): {vk: vv[0] for vk, vv in vals.items()}
-                      for (col1, col2), vals in results.items()}
-        p_values = {(col1, col2, cnst.P_VALUE): {vk: vv[1] for vk, vv in vals.items()}
-                    for (col1, col2), vals in results.items()}
-        results = {**statistics, **p_values}
-        results = pd.DataFrame(results)
-
-        # reorder columns to group by the first column, then the second column, and finally by the statistic type
-        column_order = {triplet: (
-            len([trp for trp in results.keys() if trp[0] == triplet[0]]),
-            len([trp for trp in results.keys() if trp[0] == triplet[1]]),
-            1 if triplet[2] == cnst.STATISTIC else 0
-        ) for triplet in results.keys()}
-        ordered_columns = sorted(results.columns, key=lambda col: column_order[col], reverse=True)
-        results = results[ordered_columns]
-        return results
+        return cls._rearrange_statistical_results(results)
 
     @staticmethod
     def __event_counts_impl(events: pd.DataFrame, ignore_events: Set[cnfg.EVENT_LABELS] = None) -> pd.DataFrame:
