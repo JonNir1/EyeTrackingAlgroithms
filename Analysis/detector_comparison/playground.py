@@ -28,6 +28,19 @@ event_amplitudes = event_features[cnst.AMPLITUDE.capitalize()].map(lambda cell: 
 amplitudes_test_res = DetectorComparisonAnalyzer.event_feature_statistical_comparison(event_amplitudes,
                                                                                       "u")
 
+# TODO: start from here, implement this as a function in BaseAnalyzer?
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.io as pio
+
+import Visualization.p_value_heatmap as pvh
+
+pio.renderers.default = "browser"
+
+z = amplitudes_test_res.xs(cnst.P_VALUE, axis=1, level=2)
+
+fig = pvh.heatmap_grid(z, alpha=0.05, correction="bonferroni", add_annotations=True, ignore_above_critical=True)
+fig.show()
 
 # %%
 #############################################
