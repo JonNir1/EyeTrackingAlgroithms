@@ -41,7 +41,7 @@ for feature in event_features.keys():
 
 # show p-value heatmaps
 all_events_p_value_heatmaps = dict()
-for feature in event_features.keys():
+for feature in event_feature_stats.keys():
     p_values = event_feature_stats[feature].xs(cnst.P_VALUE, axis=1, level=2)
     fig = heatmap_grid(
         p_values,
@@ -83,7 +83,7 @@ for feature in fixation_features.keys():
 
 # show p-value heatmaps
 fixation_p_value_heatmaps = dict()
-for feature in fixation_features.keys():
+for feature in fixation_feature_stats.keys():
     p_values = fixation_feature_stats[feature].xs(cnst.P_VALUE, axis=1, level=2)
     fig = heatmap_grid(
         p_values,
@@ -124,7 +124,7 @@ for feature in saccade_features.keys():
 
 # show p-value heatmaps
 saccade_p_value_heatmaps = dict()
-for feature in saccade_features.keys():
+for feature in saccade_feature_stats.keys():
     p_values = saccade_feature_stats[feature].xs(cnst.P_VALUE, axis=1, level=2)
     fig = heatmap_grid(
         p_values,
@@ -137,4 +137,4 @@ for feature in saccade_features.keys():
     saccade_p_value_heatmaps[feature] = fig
     fig.show()
 
-del feature, title, feature_values, stat_test_res, p_values
+del feature, title, p_values
