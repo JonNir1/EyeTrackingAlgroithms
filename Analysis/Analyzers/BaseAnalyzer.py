@@ -143,6 +143,8 @@ class BaseAnalyzer(ABC):
             return stat.mannwhitneyu
         elif test_name in {"rank sum", "ranksum", "ranksums", "wilcoxon rank sum"}:
             return stat.ranksums
+        elif test_name in {"wilcoxon", "wilcoxon signed rank", "signed rank"}:
+            return stat.wilcoxon
         else:
             raise ValueError(f"Unknown test name: {test_name}")
 
