@@ -163,15 +163,15 @@ class BaseEvent(ABC):
 
     @final
     @property
-    def peak_velocity(self) -> float:
+    def peak_velocity_px(self) -> float:
         """ Returns the maximum velocity of the event in pixels per second """
         return float(np.nanmax(self._velocities))
 
     @final
     @property
-    def peak_velocity_deg(self) -> float:
+    def peak_velocity(self) -> float:
         """ Returns the maximum velocity of the event in degrees per second """
-        px_vel = self.peak_velocity
+        px_vel = self.peak_velocity_px
         return visang_utils.pixels_to_visual_angle(num_px=px_vel,
                                                    d=self._viewer_distance,
                                                    pixel_size=self._pixel_size,
@@ -179,15 +179,15 @@ class BaseEvent(ABC):
 
     @final
     @property
-    def mean_velocity(self) -> float:
+    def mean_velocity_px(self) -> float:
         """ Returns the mean velocity of the event in pixels per second """
         return float(np.nanmean(self._velocities))
 
     @final
     @property
-    def mean_velocity_deg(self) -> float:
+    def mean_velocity(self) -> float:
         """ Returns the mean velocity of the event in degrees per second """
-        px_vel = self.mean_velocity
+        px_vel = self.mean_velocity_px
         return visang_utils.pixels_to_visual_angle(num_px=px_vel,
                                                    d=self._viewer_distance,
                                                    pixel_size=self._pixel_size,
@@ -242,8 +242,8 @@ class BaseEvent(ABC):
             - distance: event's distance (in pixels)
             - amplitude: event's visual angle (in degrees)
             - azimuth: event's azimuth (in degrees)
-            - peak_velocity: the maximum velocity of the event in pixels per second
-            - mean_velocity: the mean velocity of the event in pixels per second
+            - peak_velocity_px: the maximum velocity of the event in pixels per second
+            - mean_velocity_px: the mean velocity of the event in pixels per second
             - mean_pupil_size: mean pupil size during the fixation (in mm)
             - std_pupil_size: standard deviation of the pupil size during the fixation (in mm)
             - is_outlier: boolean indicating whether the event is an outlier or not
@@ -251,12 +251,12 @@ class BaseEvent(ABC):
         """
         return pd.Series(data=[
             self._EVENT_LABEL.name, self.start_time, self.end_time, self.duration, self.start_point, self.end_point,
-            self.distance, self.amplitude, self.azimuth, self.peak_velocity, self.mean_velocity, self.mean_pupil_size,
+            self.distance, self.amplitude, self.azimuth, self.peak_velocity_px, self.mean_velocity_px, self.mean_pupil_size,
             self.std_pupil_size, self.is_outlier, self.get_outlier_reasons()
         ],
             index=[
                 "event_label", "start_time", "end_time", "duration", "start_point", "end_point", "distance",
-                "amplitude", "azimuth", "peak_velocity", "mean_velocity", "mean_pupil_size", "std_pupil_size",
+                "amplitude", "azimuth", "peak_velocity_px", "mean_velocity_px", "mean_pupil_size", "std_pupil_size",
                 "is_outlier", "outlier_reasons"
             ])
 

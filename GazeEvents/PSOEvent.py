@@ -8,7 +8,7 @@ class PSOEvent(BaseEvent):
     _EVENT_LABEL = cnfg.EVENT_LABELS.PSO
 
     def is_high(self, threshold: float) -> bool:
-        if np.isnan(self.peak_velocity):
+        if np.isnan(self.peak_velocity_px):
             return False
-        return self.peak_velocity > threshold
+        return self.peak_velocity_px > threshold
 
