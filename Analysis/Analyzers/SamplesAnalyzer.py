@@ -70,34 +70,29 @@ class SamplesAnalyzer(BaseAnalyzer):
 
     @classmethod
     def statistical_analysis(cls,
-                             features_dict: Dict[str, pd.DataFrame],
+                             metrics_dict: Dict[str, pd.DataFrame],
                              test_name: str = _DEFAULT_STATISTICAL_TEST) -> Dict[str, pd.DataFrame]:
-        null_hypothesis_values = {k: 0 if "Transition Matrix" not in k else 1 for k in features_dict.keys()}
-        return {
-            k: cls._statistical_analysis_impl(v, test_name, null_hypothesis_values[k])
-            for k, v in features_dict.items()
-        }
-
-    @classmethod
-    def _statistical_analysis_impl(cls,
-                                   metric_df: pd.DataFrame,
-                                   test_name: str,
-                                   null_hypothesis_value: float) -> pd.DataFrame:
         """
         Performs a one-sample statistical test on the set calculated sample-metrics between two raters/detectors.
-        :param metric_df: A DataFrame containing the calculated sample-metrics for each pair of raters/detectors.
-            Each column represents a different pair of raters/detectors, and each cell contains a list of the calculated
-            sample-metrics for each trial.
+        The calculated metrics are compared to a null hypothesis value, which is determined by the metric being tested:
+            - Accuracy, Levenshtein Ratio, Cohen's Kappa, Matthew's Correlation: 1
+            - Transition Matrix l2-norm, Transition Matrix KL-Divergence: 0
+
+        :param metrics_dict: A dictionary mapping a metric name to a DataFrame containing the calculated sample-metrics
+            for each pair of raters/detectors. Each column represents a different pair of raters/detectors, and each
+            cell contains a list of the calculated sample-metrics for each trial.
         :param test_name: The name of the statistical test to perform.
-        :param null_hypothesis_value: The central value of the null hypothesis, which is used to run statistical test.
         :return: A DataFrame containing the results of the statistical test between each pair of raters/detectors.
         """
-        # calculate the statistical test for each pair of raters/detectors
-        metric_df = metric_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
         stat_test = cls._get_statistical_test_func(test_name)
-        results = metric_df.map(lambda cell: stat_test(cell, np.full_like(cell, null_hypothesis_value)))
-        return cls._rearrange_statistical_results(results)
-
+        results = {}
+        for metric_name, metric_df in metrics_dict.items():
+            metric_df = metric_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
+            null_hypothesis_value = 0 if "Transition Matrix" in metric_name else 1
+            stat_res = metric_df.map(lambda cell: stat_test(cell, np.full_like(cell, null_hypothesis_value)))
+            results[metric_name] = cls._rearrange_statistical_results(stat_res)
+        return results
+    
     @staticmethod
     def __calc_sample_metric_impl(samples: pd.DataFrame,
                                   metric_name: str) -> pd.DataFrame:
