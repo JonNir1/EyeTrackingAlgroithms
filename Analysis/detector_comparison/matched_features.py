@@ -1,9 +1,7 @@
-import numpy as np
 import plotly.io as pio
 
-import Config.constants as cnst
 import Config.experiment_config as cnfg
-from Analysis.detector_comparison.DetectorComparisonAnalyzer import DetectorComparisonAnalyzer
+from Analysis.Analyzers.MatchedEventsAnalyzer import MatchedEventsAnalyzer
 from Visualization.distributions_grid import distributions_grid
 from Visualization.p_value_heatmap import heatmap_grid
 
@@ -12,21 +10,30 @@ pio.renderers.default = "browser"
 DATASET = "Lund2013"
 COL_MAPPER = lambda col: col[:col.index("ector")] if "ector" in col else col
 
-_, events, _, event_matches, comparison_columns = DetectorComparisonAnalyzer.preprocess_dataset(DATASET,
-                                                                                                column_mapper=COL_MAPPER,
-                                                                                                verbose=True)
+SINGLE_TEST_NAME = "Wilcoxon"
+PAIRED_TEST_NAME = "Wilcoxon"
+CRITICAL_VALUE = 0.05
+CORRECTION = "Bonferroni"
+
+events, event_matches, comparison_columns = MatchedEventsAnalyzer.preprocess_dataset(DATASET,
+                                                                                     column_mapper=COL_MAPPER,
+                                                                                     verbose=True)
 
 # %%
 #############################################
 # All Events' Matched-Features
-all_event_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, None, verbose=True)
-event_matching_feature_diffs = all_event_metrics[DetectorComparisonAnalyzer.MATCH_FEATURES_STR]
-print(f"Available matched-event feature differences: {list(event_matching_feature_diffs.keys())}")
+events_matched_features, events_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
+                                                                                      event_matches,
+                                                                                      None,
+                                                                                      paired_sample_test=PAIRED_TEST_NAME,
+                                                                                      single_sample_test=SINGLE_TEST_NAME,
+                                                                                      verbose=True)
+print(f"Available matched-event feature differences: {list(events_matched_features.keys())}")
 
 # show feature distributions
-matched_events_feature_diff_distributions_figures = {}
-for feature in event_matching_feature_diffs.keys():
-    data = event_matching_feature_diffs[feature]
+events_matched_features_distribution_figures = {}
+for feature in events_matched_features.keys():
+    data = events_matched_features[feature]
     fig = distributions_grid(
         data=data[comparison_columns],
         title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
@@ -34,59 +41,110 @@ for feature in event_matching_feature_diffs.keys():
         pdf_min_val=0 if feature == "IoU" else None,
         pdf_max_val=1 if feature == "IoU" else None,
     )
-    matched_events_feature_diff_distributions_figures[feature] = fig
+    events_matched_features_distribution_figures[feature] = fig
     fig.show()
 
 # show p-value heatmaps
-# TODO
+events_matched_features_pvalue_figures = {}
+for feature in events_matched_feature_stats.keys():
+    p_values = events_matched_feature_stats[feature].xs("p-value", axis=1, level=2)
+    fig = heatmap_grid(
+        p_values,
+        title=f"{DATASET.upper()}:\t\tStatistical Comparison of Matched-Events' {feature.title()}",
+        critical_value=CRITICAL_VALUE,
+        correction=CORRECTION,
+        add_annotations=True,
+        ignore_above_critical=True
+    )
+    events_matched_features_pvalue_figures[feature] = fig
+    fig.show()
+
+del data, feature, p_values
 
 # %%
 #############################################
 # Fixations' Matched-Features
-fixation_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, None,
-                                                           ignore_events={v for v in cnfg.EVENT_LABELS if
-                                                                          v != cnfg.EVENT_LABELS.FIXATION},
-                                                           verbose=True)
-fixation_matching_feature_diffs = fixation_metrics[DetectorComparisonAnalyzer.MATCH_FEATURES_STR]
+fixations_matched_features, fixations_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
+                                                                                            event_matches,
+                                                                                            ignore_events={v for v in
+                                                                                                           cnfg.EVENT_LABELS
+                                                                                                           if
+                                                                                                           v != cnfg.EVENT_LABELS.FIXATION},
+                                                                                            paired_sample_test=PAIRED_TEST_NAME,
+                                                                                            single_sample_test=SINGLE_TEST_NAME,
+                                                                                            verbose=True)
 
 # show feature distributions
-matched_fixations_feature_diff_distributions_figures = {}
-for feature in fixation_matching_feature_diffs.keys():
-    data = fixation_matching_feature_diffs[feature]
+fixations_matched_features_distribution_figures = {}
+for feature in fixations_matched_features.keys():
+    data = fixations_matched_features[feature]
     fig = distributions_grid(
         data=data[comparison_columns],
-        title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
+        title=f"{DATASET.upper()}:\t\tMatched-Fixations' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
         pdf_min_val=0 if feature == "IoU" else None,
         pdf_max_val=1 if feature == "IoU" else None,
     )
-    matched_fixations_feature_diff_distributions_figures[feature] = fig
+    fixations_matched_features_distribution_figures[feature] = fig
     fig.show()
 
 # show p-value heatmaps
-# TODO
+fixations_matched_features_pvalue_figures = {}
+for feature in fixations_matched_feature_stats.keys():
+    p_values = fixations_matched_feature_stats[feature].xs("p-value", axis=1, level=2)
+    fig = heatmap_grid(
+        p_values,
+        title=f"{DATASET.upper()}:\t\tStatistical Comparison of Matched-Fixations' {feature.title()}",
+        critical_value=CRITICAL_VALUE,
+        correction=CORRECTION,
+        add_annotations=True,
+        ignore_above_critical=True
+    )
+    fixations_matched_features_pvalue_figures[feature] = fig
+    fig.show()
+
+del data, feature, p_values
 
 # %%
 #############################################
 # Saccades' Matched-Features
-saccade_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, None,
-                                                          ignore_events={v for v in cnfg.EVENT_LABELS if
-                                                                         v != cnfg.EVENT_LABELS.SACCADE}, verbose=True)
-saccade_matching_feature_diffs = saccade_metrics[DetectorComparisonAnalyzer.MATCH_FEATURES_STR]
+saccades_matched_features, saccades_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
+                                                                                          event_matches,
+                                                                                          ignore_events={v for v in
+                                                                                                         cnfg.EVENT_LABELS
+                                                                                                         if
+                                                                                                         v != cnfg.EVENT_LABELS.SACCADE},
+                                                                                          paired_sample_test=PAIRED_TEST_NAME,
+                                                                                          single_sample_test=SINGLE_TEST_NAME,
+                                                                                          verbose=True)
 
 # show feature distributions
-matched_saccades_feature_diff_distributions_figures = {}
-for feature in saccade_matching_feature_diffs.keys():
-    data = saccade_matching_feature_diffs[feature]
+saccades_matched_features_distribution_figures = {}
+for feature in saccades_matched_features.keys():
+    data = saccades_matched_features[feature]
     fig = distributions_grid(
         data=data[comparison_columns],
-        title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
+        title=f"{DATASET.upper()}:\t\tMatched-Saccades' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
         pdf_min_val=0 if feature == "IoU" else None,
         pdf_max_val=1 if feature == "IoU" else None,
     )
-    matched_saccades_feature_diff_distributions_figures[feature] = fig
+    saccades_matched_features_distribution_figures[feature] = fig
     fig.show()
 
 # show p-value heatmaps
-# TODO
+saccades_matched_features_pvalue_figures = {}
+for feature in saccades_matched_feature_stats.keys():
+    p_values = saccades_matched_feature_stats[feature].xs("p-value", axis=1, level=2)
+    fig = heatmap_grid(
+        p_values,
+        title=f"{DATASET.upper()}:\t\tStatistical Comparison of Matched-Saccades' {feature.title()}",
+        critical_value=CRITICAL_VALUE,
+        correction=CORRECTION,
+        add_annotations=True,
+        ignore_above_critical=True
+    )
+    saccades_matched_features_pvalue_figures[feature] = fig
+    fig.show()
+
+del data, feature, p_values
