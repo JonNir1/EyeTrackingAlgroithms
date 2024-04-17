@@ -59,12 +59,15 @@ class BaseEvent(ABC):
         return reasons
 
     @final
-    def overlap_time(self, other: "BaseEvent") -> float:
+    def overlap_time(self, other: "BaseEvent", normalized: bool = True) -> float:
         if self.start_time > other.end_time:
             return 0
         if other.start_time > self.end_time:
             return 0
-        return min(self.end_time, other.end_time) - max(self.start_time, other.start_time)
+        overlap = min(self.end_time, other.end_time) - max(self.start_time, other.start_time)
+        if normalized:
+            return overlap / min(self.duration, other.duration)
+        return overlap
 
     @final
     def l2_timing_offset(self, other: "BaseEvent") -> float:
