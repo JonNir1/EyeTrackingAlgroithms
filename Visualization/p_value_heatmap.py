@@ -15,6 +15,7 @@ def heatmap_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
     :param data: DataFrame with the p-values of the comparisons. The index should have 1 or 2 levels, with the first
         level corresponding to the columns of the grid and the second level corresponding to the rows of the grid.
     :param kwargs: Additional arguments to pass to the plot:
+        - title: Title of the figure.
         - critical_value: Significance level for the critical value.
         - correction: Correction method for the critical value.
         - colorscale: Color scale to use in the heatmaps.
@@ -47,6 +48,9 @@ def heatmap_grid(data: pd.DataFrame, **kwargs) -> go.Figure:
             if kwargs.get("add_annotations", True):
                 scat = _create_stat_sig_annotations(p_values, critical_value)
                 fig.add_trace(scat, row=r+1, col=c+1)
+    fig.update_layout(
+        title_text=kwargs.get("title", "P-Values Heatmap")
+    )
     return fig
 
 
