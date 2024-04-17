@@ -18,7 +18,7 @@ samples, comparison_columns = SamplesAnalyzer.preprocess_dataset(DATASET, column
 # %%
 #############################################
 # Sample Metrics
-sample_metrics, sample_metric_stats = SamplesAnalyzer.analyze(samples, "Mann-Whitney", verbose=True)
+sample_metrics, sample_metric_stats = SamplesAnalyzer.analyze(samples, test_name=STAT_TEST_NAME, verbose=True)
 print(f"Available sample metrics: {list(sample_metrics.keys())}")
 
 # show feature distributions

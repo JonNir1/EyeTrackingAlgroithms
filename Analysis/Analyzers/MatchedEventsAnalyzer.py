@@ -73,8 +73,8 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
     @classmethod
     def calculate_observed_data(cls,
                                 events_df: pd.DataFrame,
-                                matches_df: pd.DataFrame = None,
                                 ignore_events: Set[cnfg.EVENT_LABELS] = None,
+                                matches_df: pd.DataFrame = None,
                                 verbose: bool = False,
                                 **kwargs) -> Dict[str, pd.DataFrame]:
         with warnings.catch_warnings():
@@ -85,7 +85,7 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
             ignore_events = ignore_events or set()
             events_df = events_df.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
             matches_df = matches_df.map(
-                lambda cell: [k for k in cell.keys() if k.event_label not in ignore_events]
+                lambda cell: {k: v for k, v in cell.items() if k.event_label not in ignore_events}
                 if pd.notnull(cell) else np.nan
             )
 
@@ -127,15 +127,15 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
         single_test = cls._get_statistical_test_func(single_sample_test)
         results = {}
         for feature_name, feature_df in matched_features_dict.items():
-            feature_df = feature_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
+            feature_df = feature_df.map(lambda cell: [v for v in cell] if pd.notnull(cell) else np.nan)
             if feature_name in cls.SINGLE_EVENT_FEATURES:
-                stat_res = feature_df.map(lambda cell: paired_test([v[0] for v in cell], [v[1] for v in cell]))
+                stat_res = feature_df.map(lambda cell: paired_test([v[0] for v in cell], [v[1] for v in cell]) if pd.notnull(cell) else np.nan)
             elif feature_name in {"Onset Jitter", "Offset Jitter", "L2 Timing Difference"}:
                 null_hypothesis_value = 0
-                stat_res = feature_df.map(lambda cell: single_test(cell, np.full_like(cell, null_hypothesis_value)))
+                stat_res = feature_df.map(lambda cell: single_test(cell, np.full_like(cell, null_hypothesis_value)) if pd.notnull(cell) else np.nan)
             elif feature_name in {"Match Ratio", "IoU", "Overlap Time"}:
                 null_hypothesis_value = 1
-                stat_res = feature_df.map(lambda cell: single_test(cell, np.full_like(cell, null_hypothesis_value)))
+                stat_res = feature_df.map(lambda cell: single_test(cell, np.full_like(cell, null_hypothesis_value)) if pd.notnull(cell) else np.nan)
             else:
                 raise ValueError(f"Unknown feature: {feature_name}")
             results[feature_name] = cls._rearrange_statistical_results(stat_res)
@@ -143,7 +143,8 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
 
     @staticmethod
     def _calculate_matching_ratio(events_df: pd.DataFrame, matches_df: pd.DataFrame) -> pd.DataFrame:
-        event_counts, match_counts = events_df.map(len), matches_df.map(len)
+        event_counts = events_df.map(len)
+        match_counts = matches_df.map(lambda cell: len(cell) if pd.notnull(cell) else np.nan)
         ratios = np.zeros_like(match_counts, dtype=float)
         for i in range(match_counts.index.size):
             for j in range(match_counts.columns.size):

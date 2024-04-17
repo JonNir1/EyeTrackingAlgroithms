@@ -61,7 +61,6 @@ class BaseAnalyzer(ABC):
     @final
     def analyze(cls,
                 events_df: pd.DataFrame,
-                test_name: str,
                 ignore_events: Set[cnfg.EVENT_LABELS] = None,
                 verbose: bool = False,
                 **kwargs) -> (Dict[str, pd.DataFrame], Dict[str, pd.DataFrame]):

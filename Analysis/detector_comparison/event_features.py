@@ -21,7 +21,7 @@ events = EventFeaturesAnalyzer.preprocess_dataset(DATASET, column_mapper=COL_MAP
 # %%
 #############################################
 # All Events Features
-event_features, event_feature_stats = EventFeaturesAnalyzer.analyze(events, STAT_TEST_NAME, None, verbose=True)
+event_features, event_feature_stats = EventFeaturesAnalyzer.analyze(events, None, test_name=STAT_TEST_NAME, verbose=True)
 print(f"Available event features: {list(event_features.keys())}")
 
 # show feature distributions
@@ -61,9 +61,9 @@ del feature, title, p_values
 #############################################
 # Fixation Features
 fixation_features, fixation_feature_stats = EventFeaturesAnalyzer.analyze(events,
-                                                                          STAT_TEST_NAME,
                                                                           ignore_events={v for v in cnfg.EVENT_LABELS if
                                                                                          v != cnfg.EVENT_LABELS.FIXATION},
+                                                                          test_name=STAT_TEST_NAME,
                                                                           verbose=True)
 
 # show feature distributions
@@ -102,9 +102,9 @@ del feature, title, p_values
 #############################################
 # Saccade Features
 saccade_features, saccade_feature_stats = EventFeaturesAnalyzer.analyze(events,
-                                                                        STAT_TEST_NAME,
                                                                         ignore_events={v for v in cnfg.EVENT_LABELS if
                                                                                        v != cnfg.EVENT_LABELS.SACCADE},
+                                                                        test_name=STAT_TEST_NAME,
                                                                         verbose=True)
 
 # show feature distributions

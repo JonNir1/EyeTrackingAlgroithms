@@ -23,8 +23,8 @@ events, event_matches, comparison_columns = MatchedEventsAnalyzer.preprocess_dat
 #############################################
 # All Events' Matched-Features
 events_matched_features, events_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
-                                                                                      event_matches,
-                                                                                      None,
+                                                                                      ignore_events=None,
+                                                                                      matches_df=event_matches,
                                                                                       paired_sample_test=PAIRED_TEST_NAME,
                                                                                       single_sample_test=SINGLE_TEST_NAME,
                                                                                       verbose=True)
@@ -65,11 +65,11 @@ del data, feature, p_values
 #############################################
 # Fixations' Matched-Features
 fixations_matched_features, fixations_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
-                                                                                            event_matches,
                                                                                             ignore_events={v for v in
                                                                                                            cnfg.EVENT_LABELS
                                                                                                            if
                                                                                                            v != cnfg.EVENT_LABELS.FIXATION},
+                                                                                            matches_df=event_matches,
                                                                                             paired_sample_test=PAIRED_TEST_NAME,
                                                                                             single_sample_test=SINGLE_TEST_NAME,
                                                                                             verbose=True)
@@ -109,11 +109,11 @@ del data, feature, p_values
 #############################################
 # Saccades' Matched-Features
 saccades_matched_features, saccades_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
-                                                                                          event_matches,
                                                                                           ignore_events={v for v in
                                                                                                          cnfg.EVENT_LABELS
                                                                                                          if
                                                                                                          v != cnfg.EVENT_LABELS.SACCADE},
+                                                                                          matches_df=event_matches,
                                                                                           paired_sample_test=PAIRED_TEST_NAME,
                                                                                           single_sample_test=SINGLE_TEST_NAME,
                                                                                           verbose=True)
