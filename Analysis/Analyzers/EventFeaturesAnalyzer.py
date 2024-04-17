@@ -80,7 +80,21 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
     def statistical_analysis(cls,
                              features_dict: Dict[str, pd.DataFrame],
                              test_name: str = _DEFAULT_STATISTICAL_TEST) -> Dict[str, pd.DataFrame]:
-        return {k: cls._statistical_analysis_impl(v, test_name) for k, v in features_dict.items()}
+        """
+        Performs a two-sample statistical test on the set of measured event-features between two raters/detectors.
+        :param features_dict: A dictionary mapping a feature name to a DataFrame containing the extracted features of
+            the events detected by each rater/detector. Each column represents a different rater/detector, and each cell
+            contains a list of the measured values.
+        :param test_name: The name of the statistical test to perform.
+        :return: A DataFrame containing the results of the statistical test between each pair of raters/detectors.
+        """
+        stat_test = cls._get_statistical_test_func(test_name)
+        results = {}
+        for feature_name, feature_df in features_dict.items():
+            feature_df = feature_df.map(lambda cell: [v for v in cell if not np.isnan(v)])
+            stat_res = hlp.apply_on_column_pairs(feature_df, stat_test, is_symmetric=True)
+            results[feature_name] = cls._rearrange_statistical_results(stat_res)
+        return results
 
     @classmethod
     def _statistical_analysis_impl(cls,

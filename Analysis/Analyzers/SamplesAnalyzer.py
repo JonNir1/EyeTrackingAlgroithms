@@ -92,7 +92,7 @@ class SamplesAnalyzer(BaseAnalyzer):
             stat_res = metric_df.map(lambda cell: stat_test(cell, np.full_like(cell, null_hypothesis_value)))
             results[metric_name] = cls._rearrange_statistical_results(stat_res)
         return results
-    
+
     @staticmethod
     def __calc_sample_metric_impl(samples: pd.DataFrame,
                                   metric_name: str) -> pd.DataFrame:
