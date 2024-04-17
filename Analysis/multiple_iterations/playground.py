@@ -16,11 +16,13 @@ DATASET_NAME = "Lund2013"
 detector = EngbertDetector()
 multi_detect_events = MultiIterationAnalyzer.preprocess_dataset(DATASET_NAME, detector=detector, verbose=True)
 
-all_event_features = MultiIterationAnalyzer.analyze(multi_detect_events)[MultiIterationAnalyzer.EVENT_FEATURES_STR]
-saccade_features = MultiIterationAnalyzer.analyze(multi_detect_events,
-                                                  ignore_events={v for v in cnfg.EVENT_LABELS if v != cnfg.EVENT_LABELS.SACCADE})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
-fixation_features = MultiIterationAnalyzer.analyze(multi_detect_events,
-                                                   ignore_events={v for v in cnfg.EVENT_LABELS if v != cnfg.EVENT_LABELS.FIXATION})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
+all_event_features = MultiIterationAnalyzer.analyze_impl(multi_detect_events)[MultiIterationAnalyzer.EVENT_FEATURES_STR]
+saccade_features = MultiIterationAnalyzer.analyze_impl(multi_detect_events,
+                                                       ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                      v != cnfg.EVENT_LABELS.SACCADE})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
+fixation_features = MultiIterationAnalyzer.analyze_impl(multi_detect_events,
+                                                        ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                       v != cnfg.EVENT_LABELS.FIXATION})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
 
 #######################################
 

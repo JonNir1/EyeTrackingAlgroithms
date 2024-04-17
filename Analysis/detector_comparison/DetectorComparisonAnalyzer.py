@@ -92,11 +92,8 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
         return samples_df, events_df, detector_results_df, matches, comparison_columns
 
     @staticmethod
-    def analyze(events_df: pd.DataFrame,
-                matches_df: pd.DataFrame = None,
-                samples_df: pd.DataFrame = None,
-                ignore_events: Set[cnfg.EVENT_LABELS] = None,
-                verbose=False):
+    def analyze_impl(events_df: pd.DataFrame, ignore_events: pd.DataFrame = None, verbose: pd.DataFrame = False,
+                     **kwargs: Set[cnfg.EVENT_LABELS]):
         """
         Analyze the given events, event-matches and samples, by calculating various metrics and features.
 
@@ -113,9 +110,9 @@ class DetectorComparisonAnalyzer(BaseAnalyzer):
             warnings.simplefilter("ignore")
             start = time.time()
             ignore_events = ignore_events or set()
-            results = super(DetectorComparisonAnalyzer, DetectorComparisonAnalyzer).analyze(events_df,
-                                                                                            ignore_events,
-                                                                                            verbose=False)
+            results = super(DetectorComparisonAnalyzer, DetectorComparisonAnalyzer).analyze_impl(events_df,
+                                                                                                 ignore_events,
+                                                                                                 verbose=False)
             if matches_df is not None and not matches_df.empty:
                 results[DetectorComparisonAnalyzer.MATCH_RATIO_STR] = DetectorComparisonAnalyzer._calc_event_matching_ratios(
                     events_df, matches_df, ignore_events=ignore_events, verbose=verbose)

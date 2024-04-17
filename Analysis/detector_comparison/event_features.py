@@ -24,7 +24,7 @@ _, events, _, _, _ = DetectorComparisonAnalyzer.preprocess_dataset(DATASET,
 # %%
 #############################################
 # All Events Features
-all_event_metrics = DetectorComparisonAnalyzer.analyze(events, None, None, verbose=True)
+all_event_metrics = DetectorComparisonAnalyzer.analyze_impl(events, None, None, verbose=True)
 event_features = all_event_metrics[DetectorComparisonAnalyzer.EVENT_FEATURES_STR]
 print(f"Available event features: {list(event_features.keys())}")
 
@@ -68,12 +68,10 @@ del feature, title, feature_values, stat_test_res, p_values
 # %%
 #############################################
 # Fixation Features
-fixation_metrics = DetectorComparisonAnalyzer.analyze(events,
-                                                      None,
-                                                      None,
-                                                      ignore_events={v for v in cnfg.EVENT_LABELS if
-                                                                     v != cnfg.EVENT_LABELS.FIXATION},
-                                                      verbose=True)
+fixation_metrics = DetectorComparisonAnalyzer.analyze_impl(events, None, None,
+                                                           ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                          v != cnfg.EVENT_LABELS.FIXATION},
+                                                           verbose=True)
 fixation_features = fixation_metrics[DetectorComparisonAnalyzer.EVENT_FEATURES_STR]
 
 # show feature distributions
@@ -115,12 +113,9 @@ del feature, title, feature_values, stat_test_res, p_values
 # %%
 #############################################
 # Saccade Features
-saccade_metrics = DetectorComparisonAnalyzer.analyze(events,
-                                                     None,
-                                                     None,
-                                                     ignore_events={v for v in cnfg.EVENT_LABELS if
-                                                                    v != cnfg.EVENT_LABELS.SACCADE},
-                                                     verbose=True)
+saccade_metrics = DetectorComparisonAnalyzer.analyze_impl(events, None, None,
+                                                          ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                         v != cnfg.EVENT_LABELS.SACCADE}, verbose=True)
 saccade_features = saccade_metrics[DetectorComparisonAnalyzer.EVENT_FEATURES_STR]
 
 # show feature distributions

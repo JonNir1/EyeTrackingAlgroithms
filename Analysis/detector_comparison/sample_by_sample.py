@@ -15,7 +15,7 @@ samples, events, _, _, comparison_columns = DetectorComparisonAnalyzer.preproces
 # %%
 #############################################
 # Sample Metrics
-all_event_metrics = DetectorComparisonAnalyzer.analyze(events, None, samples, verbose=True)
+all_event_metrics = DetectorComparisonAnalyzer.analyze_impl(events, None, samples, verbose=True)
 sample_metrics = all_event_metrics[DetectorComparisonAnalyzer.SAMPLE_METRICS_STR]
 print(f"Available sample metrics: {list(sample_metrics.keys())}")
 

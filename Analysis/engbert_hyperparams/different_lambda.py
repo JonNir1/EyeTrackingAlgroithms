@@ -37,7 +37,7 @@ for i, idx in enumerate(samples.index):
 # TODO: repeat the following analysis only for fixations/saccades
 
 # %%
-all_event_metrics = DetectorComparisonAnalyzer.analyze(events, event_matches, samples, verbose=True)
+all_event_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, samples, verbose=True)
 sample_metrics = all_event_metrics["Sample Metrics"]
 event_features = all_event_metrics["Event Features"]
 event_matching_ratios = all_event_metrics["Event Matching Ratios"]

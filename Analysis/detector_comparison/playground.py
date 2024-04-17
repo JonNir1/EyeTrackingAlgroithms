@@ -16,7 +16,7 @@ samples, events, _, event_matches, comparison_columns = DetectorComparisonAnalyz
 # %%
 #############################################
 # All-Event Metrics
-all_event_metrics = DetectorComparisonAnalyzer.analyze(events, event_matches, samples, verbose=True)
+all_event_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, samples, verbose=True)
 sample_metrics = all_event_metrics[DetectorComparisonAnalyzer.SAMPLE_METRICS_STR]
 event_features = all_event_metrics[DetectorComparisonAnalyzer.EVENT_FEATURES_STR]
 event_matching_ratios = all_event_metrics[DetectorComparisonAnalyzer.MATCH_RATIO_STR]
@@ -45,9 +45,9 @@ fig.show()
 # %%
 #############################################
 # Fixation Metrics
-fixation_metrics = DetectorComparisonAnalyzer.analyze(events, event_matches,
-                                                      ignore_events={v for v in cnfg.EVENT_LABELS if v != cnfg.EVENT_LABELS.FIXATION},
-                                                      verbose=True)
+fixation_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, verbose=True,
+                                                           ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                          v != cnfg.EVENT_LABELS.FIXATION})
 fixation_features = fixation_metrics[DetectorComparisonAnalyzer.EVENT_FEATURES_STR]
 fixation_matching_ratios = fixation_metrics[DetectorComparisonAnalyzer.MATCH_RATIO_STR]
 fixation_matching_feature_diffs = fixation_metrics["Event Matching Feature Diffs"]
@@ -55,9 +55,9 @@ fixation_matching_feature_diffs = fixation_metrics["Event Matching Feature Diffs
 # %%
 #############################################
 # Saccade Metrics
-saccade_metrics = DetectorComparisonAnalyzer.analyze(events, event_matches,
-                                                     ignore_events={v for v in cnfg.EVENT_LABELS if v != cnfg.EVENT_LABELS.SACCADE},
-                                                     verbose=True)
+saccade_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, verbose=True,
+                                                          ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                         v != cnfg.EVENT_LABELS.SACCADE})
 saccade_features = saccade_metrics[DetectorComparisonAnalyzer.EVENT_FEATURES_STR]
 saccade_matching_ratios = saccade_metrics[DetectorComparisonAnalyzer.MATCH_RATIO_STR]
 saccade_matching_feature_diffs = saccade_metrics[DetectorComparisonAnalyzer.MATCH_FEATURES_STR]

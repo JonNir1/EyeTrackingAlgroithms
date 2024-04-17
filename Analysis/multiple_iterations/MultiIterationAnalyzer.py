@@ -58,14 +58,12 @@ class MultiIterationAnalyzer(BaseAnalyzer):
         return detected_events
 
     @staticmethod
-    def analyze(events_df: pd.DataFrame,
-                ignore_events: Set[cnfg.EVENT_LABELS] = None,
-                verbose: bool = False,
-                **kwargs):
+    def analyze_impl(events_df: pd.DataFrame, ignore_events: Set[cnfg.EVENT_LABELS] = None, verbose: bool = False,
+                     **kwargs):
         # ignore blinks when analyzing multi-iteration results, as they place-holders for previously detected saccades:
         ignore_events = ignore_events or set()
         ignore_events.update({cnfg.EVENT_LABELS.BLINK})
-        return BaseAnalyzer.analyze(events_df, ignore_events=ignore_events, verbose=verbose)
+        return BaseAnalyzer.analyze_impl(events_df, ignore_events=ignore_events, verbose=verbose)
 
     @staticmethod
     def _detect_multiple_times(data: pd.DataFrame,

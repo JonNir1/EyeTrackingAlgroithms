@@ -29,10 +29,10 @@ class BaseAnalyzer(ABC):
         raise NotImplementedError
 
     @staticmethod
-    def analyze(events_df: pd.DataFrame,
-                ignore_events: Set[cnfg.EVENT_LABELS] = None,
-                verbose: bool = False,
-                **kwargs):
+    def analyze_impl(events_df: pd.DataFrame,
+                     ignore_events: Set[cnfg.EVENT_LABELS] = None,
+                     verbose: bool = False,
+                     **kwargs):
         """
         Analyze the given events DataFrame and extract the features of the detected events.
 
