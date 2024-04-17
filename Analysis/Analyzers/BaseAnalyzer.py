@@ -1,7 +1,7 @@
 import time
 import warnings
 from abc import ABC, abstractmethod
-from typing import List, Union, Optional, Set, Dict
+from typing import List, Union, Optional, Set, Dict, final
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,7 @@ import scipy.stats as stat
 import Config.constants as cnst
 import Config.experiment_config as cnfg
 import Analysis.helpers as hlp
+from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.BaseEvent import BaseEvent
 
@@ -22,14 +23,99 @@ class BaseAnalyzer(ABC):
     EVENT_FEATURES_STR = "Event Features"
 
     @staticmethod
-    @abstractmethod
     def preprocess_dataset(dataset_name: str,
+                           detectors: List[BaseDetector] = None,
                            verbose=False,
-                           **kwargs):
+                           **kwargs) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+        """
+        Preprocess the dataset by:
+            1. Loading the dataset
+            2. Detecting events using the given detectors
+            3. Renaming the columns of the samples, events, and detector results DataFrames.
+
+        :param dataset_name: The name of the dataset to load and preprocess.
+        :param detectors: A list of detectors to use for detecting events. If None, the default detectors will be used.
+        :param verbose: Whether to print the progress of the preprocessing.
+        :keyword column_mapper: A function to map the column names of the samples, events, and detector results DataFrames.
+
+        :return: the preprocessed samples, events and raw detector results DataFrames.
+        """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if verbose:
+                print(f"Preprocessing dataset `{dataset_name}`...")
+            start = time.time()
+            detectors = BaseAnalyzer._get_default_detectors() if detectors is None else detectors
+            samples_df, events_df, detector_results_df = DataSetFactory.load_and_detect(dataset_name, detectors)
+
+            # rename columns
+            column_mapper = kwargs.pop("column_mapper", lambda col: col)
+            samples_df.rename(columns=column_mapper, inplace=True)
+            events_df.rename(columns=column_mapper, inplace=True)
+            detector_results_df.rename(columns=column_mapper, inplace=True)
+
+            end = time.time()
+            if verbose:
+                print(f"\tPreprocessing:\t{end - start:.2f}s")
+        return samples_df, events_df, detector_results_df
+
+    @classmethod
+    @final
+    def analyze(cls,
+                events_df: pd.DataFrame,
+                test_name: str,
+                ignore_events: Set[cnfg.EVENT_LABELS] = None,
+                verbose: bool = False,
+                **kwargs) -> (Dict[str, pd.DataFrame], Dict[str, pd.DataFrame]):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            start = time.time()
+            ignore_events = ignore_events or set()
+
+            # extract observations
+            if verbose:
+                print("Calculating Observations...")
+            observations_start = time.time()
+            obs_dict = cls.calculate_observed_data(events_df, ignore_events=ignore_events, **kwargs)
+            observations_end = time.time()
+            if verbose:
+                print(f"Observations Time:\t{observations_end - observations_start:.2f}s")
+
+            # perform statistical analysis
+            if verbose:
+                print("Performing Statistical Analysis...")
+            stat_start = time.time()
+            stats_dict = {k: cls.statistical_analysis(v, test_name, **kwargs) for k, v in obs_dict.items()}
+            stat_end = time.time()
+            if verbose:
+                print(f"Statistical Analysis Time:\t{stat_end - stat_start:.2f}s")
+
+            # conclude analysis
+            end = time.time()
+            if verbose:
+                print(f"Total Analysis Time:\t{end - start:.2f}s")
+        return obs_dict, stats_dict
+
+    @classmethod
+    @abstractmethod
+    def calculate_observed_data(cls,
+                                data: pd.DataFrame,
+                                ignore_events: Set[cnfg.EVENT_LABELS] = None,
+                                verbose: bool = False,
+                                **kwargs) -> Dict[str, pd.DataFrame]:
         raise NotImplementedError
 
-    @staticmethod
-    def analyze_impl(events_df: pd.DataFrame,
+    @classmethod
+    @abstractmethod
+    def statistical_analysis(cls,
+                             data: pd.DataFrame,
+                             test_name: str,
+                             **kwargs) -> pd.DataFrame:
+        raise NotImplementedError
+
+    @classmethod
+    def analyze_impl(cls,
+                     events_df: pd.DataFrame,
                      ignore_events: Set[cnfg.EVENT_LABELS] = None,
                      verbose: bool = False,
                      **kwargs):

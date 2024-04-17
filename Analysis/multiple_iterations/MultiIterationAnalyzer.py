@@ -57,8 +57,8 @@ class MultiIterationAnalyzer(BaseAnalyzer):
                 print(f"\tPreprocessing:\t{end - start:.2f}s")
         return detected_events
 
-    @staticmethod
-    def analyze_impl(events_df: pd.DataFrame, ignore_events: Set[cnfg.EVENT_LABELS] = None, verbose: bool = False,
+    @classmethod
+    def analyze_impl(cls, events_df: pd.DataFrame, ignore_events: Set[cnfg.EVENT_LABELS] = None, verbose: bool = False,
                      **kwargs):
         # ignore blinks when analyzing multi-iteration results, as they place-holders for previously detected saccades:
         ignore_events = ignore_events or set()
