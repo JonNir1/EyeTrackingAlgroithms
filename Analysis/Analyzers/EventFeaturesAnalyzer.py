@@ -25,9 +25,7 @@ class EventFeaturesAnalyzer(BaseAnalyzer):
                            detectors: List[BaseDetector] = None,
                            verbose=False,
                            **kwargs) -> pd.DataFrame:
-        """
-        Loads the dataset and preprocesses it to extract the detected events by each rater/detector.
-        """
+        """ Loads the dataset and preprocesses it to extract the detected events by each rater/detector. """
         if verbose:
             print(f"Preprocessing dataset `{dataset_name}`...")
         start = time.time()
