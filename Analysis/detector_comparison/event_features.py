@@ -38,7 +38,7 @@ for feature in event_features.keys():
     fig = distributions_grid(
         data=event_features[feature],
         title=title,
-        show_counts=feature == "Counts",
+        show_counts=feature == "Count",
     )
     all_events_distribution_figures[feature] = fig
     fig.show()
@@ -46,13 +46,14 @@ for feature in event_features.keys():
 # show p-value heatmaps
 all_events_p_value_heatmaps = dict()
 for feature in event_features.keys():
-    if feature == "Counts":
+    if feature == "Count":
         continue
     feature_values = event_features[feature].map(lambda cell: [v for v in cell if not np.isnan(v)])
     stat_test_res = DetectorComparisonAnalyzer.event_feature_statistical_comparison(feature_values, STAT_TEST_NAME)
     p_values = stat_test_res.xs(cnst.P_VALUE, axis=1, level=2)
     fig = heatmap_grid(
         p_values,
+        title=f"{DATASET.upper()}:\t\tStatistical Comparison of Events' {feature.title()}",
         critical_value=CRITICAL_VALUE,
         correction=CORRECTION,
         add_annotations=True,
@@ -100,6 +101,7 @@ for feature in fixation_features.keys():
     p_values = stat_test_res.xs(cnst.P_VALUE, axis=1, level=2)
     fig = heatmap_grid(
         p_values,
+        title=f"{DATASET.upper()}:\t\tStatistical Comparison of Fixations' {feature.title()}",
         critical_value=CRITICAL_VALUE,
         correction=CORRECTION,
         add_annotations=True,
@@ -146,6 +148,7 @@ for feature in saccade_features.keys():
     p_values = stat_test_res.xs(cnst.P_VALUE, axis=1, level=2)
     fig = heatmap_grid(
         p_values,
+        title=f"{DATASET.upper()}:\t\tStatistical Comparison of Saccades' {feature.title()}",
         critical_value=CRITICAL_VALUE,
         correction=CORRECTION,
         add_annotations=True,
