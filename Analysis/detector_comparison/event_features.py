@@ -35,6 +35,7 @@ for feature in event_features.keys():
         data=event_features[feature],
         title=title,
         show_counts=feature == "Count",
+        pdf_min_val=0, pdf_max_val=1,  # only applies if show_counts is False
     )
     all_events_distribution_figures[feature] = fig
     fig.show()
