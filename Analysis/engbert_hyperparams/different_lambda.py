@@ -4,23 +4,51 @@ import plotly.io as pio
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Visualization.distributions_grid import *
 import Visualization.scarfplot as scarf
-from Analysis.detector_comparison.DetectorComparisonAnalyzer import DetectorComparisonAnalyzer
+
+from Analysis.Analyzers.SamplesAnalyzer import SamplesAnalyzer
+from Analysis.Analyzers.EventFeaturesAnalyzer import EventFeaturesAnalyzer
+from Analysis.Analyzers.MatchedEventsAnalyzer import MatchedEventsAnalyzer
 
 pio.renderers.default = "browser"
 
 DATASET = "Lund2013"
 LAMBDA_STR = "λ"
 COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", "") if LAMBDA_STR in col else col
-DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(1, 3)]
+DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(1, 7)]
 
 # %%
-# Pre-Process
-samples, events, detector_results_df, event_matches, comparison_columns = DetectorComparisonAnalyzer.preprocess_dataset(
-    DATASET,
-    detectors=DETECTORS,
-    column_mapper=COL_MAPPER,
-    verbose=True
-)
+###########################################
+# Pre-Process & Analyze Samples
+SAMPLES_STAT_TEST = "Wilcoxon"
+samples, samples_comp_cols = SamplesAnalyzer.preprocess_dataset(DATASET,
+                                                                detectors=DETECTORS,
+                                                                column_mapper=COL_MAPPER,
+                                                                verbose=True)
+sample_metrics, sample_metric_stats = SamplesAnalyzer.analyze(samples, test_name=SAMPLES_STAT_TEST, verbose=True)
+print(f"Available sample metrics: {list(sample_metrics.keys())}")
+
+# %%
+###########################################
+# Pre-Process & Analyze Event Features
+FEATURES_STAT_TEST = "Mann-Whitney"
+events = EventFeaturesAnalyzer.preprocess_dataset(DATASET, column_mapper=COL_MAPPER, verbose=True)
+event_features, event_feature_stats = EventFeaturesAnalyzer.analyze(events, None, test_name=FEATURES_STAT_TEST, verbose=True)
+print(f"Available event features: {list(event_features.keys())}")
+
+# %%
+###########################################
+# Pre-Process & Analyze Event Features
+MATCHED_EVENTS_STAT_TEST = "Wilcoxon"
+_, event_matches, matches_comp_cols = MatchedEventsAnalyzer.preprocess_dataset(DATASET,
+                                                                               column_mapper=COL_MAPPER,
+                                                                               verbose=True)
+events_matched_features, events_matched_feature_stats = MatchedEventsAnalyzer.analyze(events,
+                                                                                      ignore_events=None,
+                                                                                      matches_df=event_matches,
+                                                                                      paired_sample_test=MATCHED_EVENTS_STAT_TEST,
+                                                                                      single_sample_test=MATCHED_EVENTS_STAT_TEST,
+                                                                                      verbose=True)
+print(f"Available matched-event feature differences: {list(events_matched_features.keys())}")
 
 # %%
 # Compare scarfplots
@@ -37,18 +65,14 @@ for i, idx in enumerate(samples.index):
 # TODO: repeat the following analysis only for fixations/saccades
 
 # %%
-all_event_metrics = DetectorComparisonAnalyzer.analyze_impl(events, event_matches, samples, verbose=True)
-sample_metrics = all_event_metrics["Sample Metrics"]
-event_features = all_event_metrics["Event Features"]
-event_matching_ratios = all_event_metrics["Event Matching Ratios"]
-event_matching_feature_diffs = all_event_metrics["Event Matching Feature Diffs"]
-
-# %%
 # Compare to Ground Truth - Sample-by-Sample
+
+# show feature distributions
 sample_metric_figures = {}
-for metric, metric_df in sample_metrics.items():
+for metric in sample_metrics.keys():
+    data = sample_metrics[metric]
     fig = distributions_grid(
-        metric_df[comparison_columns],
+        data=data[samples_comp_cols],
         title=f"{DATASET.upper()}:\t\tSample-Level {metric.title()}",
         pdf_min_val=0 if "Transition Matrix" not in metric else None,
         pdf_max_val=1 if "Transition Matrix" not in metric else None,
@@ -59,43 +83,36 @@ for metric, metric_df in sample_metrics.items():
 
 # %%
 # Compare to Ground Truth - Event features
-event_feature_figures = {}
-for feature, feature_df in event_features.items():
+
+# show feature distributions
+all_events_distribution_figures = dict()
+for feature in event_features.keys():
     if feature == "Counts":
         title = f"{DATASET.upper()}:\t\tEvent {feature.title()}"
     else:
         title = f"{DATASET.upper()}:\t\tEvents' {feature.title()} Distribution"
-    feature_figure = distributions_grid(
-        feature_df[comparison_columns],
+    fig = distributions_grid(
+        data=event_features[feature],
         title=title,
-        pdf_min_val=0,
-        pdf_max_val=1,
-        show_counts=feature == "Counts",
+        show_counts=feature == "Count",
+        pdf_min_val=0, pdf_max_val=1,  # only applies if show_counts is False
     )
-    feature_figure.show()
-    event_feature_figures[feature] = feature_figure
+    all_events_distribution_figures[feature] = fig
+    fig.show()
 
 # %%
 # Compare to Ground Truth - Event Matching
-event_matching_figures = {}
 
-event_matching_ratios_figure = distributions_grid(
-    event_matching_ratios["Match Ratio"][comparison_columns],
-    title=f"{DATASET.upper()}:\t\tEvent-Matching Ratios",
-    pdf_min_val=0,
-    pdf_max_val=100,
-    column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
-)
-event_matching_ratios_figure.show()
-event_feature_figures["Match Ratio"] = event_matching_ratios_figure
-
-for feature, feature_df in event_matching_feature_diffs.items():
-    feature_figure = distributions_grid(
-        feature_df[comparison_columns],
+# show distributions
+events_matched_features_distribution_figures = {}
+for feature in events_matched_features.keys():
+    data = events_matched_features[feature]
+    fig = distributions_grid(
+        data=data[events_matched_feature_stats],
         title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
         pdf_min_val=0 if feature == "IoU" else None,
         pdf_max_val=1 if feature == "IoU" else None,
     )
-    feature_figure.show()
-    event_matching_figures[feature] = feature_figure
+    events_matched_features_distribution_figures[feature] = fig
+    fig.show()
