@@ -5,27 +5,31 @@ import plotly.io as pio
 import Config.constants as cnst
 import Config.experiment_config as cnfg
 from GazeDetectors.EngbertDetector import EngbertDetector
-from Analysis.multiple_iterations.MultiIterationAnalyzer import MultiIterationAnalyzer
+from Analysis.Analyzers.MultiIterationAnalyzer import MultiIterationAnalyzer
 
 pio.renderers.default = "browser"
 
 DATASET_NAME = "Lund2013"
 
-#######################################
+STAT_TEST_NAME = "Mann-Whitney"
+CRITICAL_VALUE = 0.05
+CORRECTION = "Bonferroni"
 
+#######################################
 detector = EngbertDetector()
 multi_detect_events = MultiIterationAnalyzer.preprocess_dataset(DATASET_NAME, detector=detector, verbose=True)
 
-all_event_features = MultiIterationAnalyzer.analyze_impl(multi_detect_events)[MultiIterationAnalyzer.EVENT_FEATURES_STR]
-saccade_features = MultiIterationAnalyzer.analyze_impl(multi_detect_events,
-                                                       ignore_events={v for v in cnfg.EVENT_LABELS if
-                                                                      v != cnfg.EVENT_LABELS.SACCADE})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
-fixation_features = MultiIterationAnalyzer.analyze_impl(multi_detect_events,
-                                                        ignore_events={v for v in cnfg.EVENT_LABELS if
-                                                                       v != cnfg.EVENT_LABELS.FIXATION})[MultiIterationAnalyzer.EVENT_FEATURES_STR]
+event_features, event_feature_stats = MultiIterationAnalyzer.analyze(multi_detect_events, None,
+                                                                     test_name=STAT_TEST_NAME, verbose=True)
+saccade_features, saccade_feature_stats = MultiIterationAnalyzer.analyze(multi_detect_events,
+                                                                         ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                                        v != cnfg.EVENT_LABELS.SACCADE},
+                                                                         test_name=STAT_TEST_NAME,
+                                                                         verbose=True)
+fixation_features, fixation_feature_stats = MultiIterationAnalyzer.analyze(multi_detect_events,
+                                                                           ignore_events={v for v in cnfg.EVENT_LABELS if
+                                                                                          v != cnfg.EVENT_LABELS.FIXATION},
+                                                                           test_name=STAT_TEST_NAME,
+                                                                           verbose=True)
 
 #######################################
-
-saccade_amplitudes = saccade_features[cnst.AMPLITUDE.capitalize()].map(lambda cell: [e for e in cell if not np.isnan(e)])
-mw = stat.mannwhitneyu(saccade_amplitudes.iloc[0, 0], saccade_amplitudes.iloc[1, 0])
-rnk = stat.ranksums(saccade_amplitudes.iloc[0, 0], saccade_amplitudes.iloc[1, 0])

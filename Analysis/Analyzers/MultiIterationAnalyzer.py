@@ -1,7 +1,6 @@
 import time
 import warnings
 import copy
-from typing import Set
 
 import numpy as np
 import pandas as pd
@@ -9,12 +8,13 @@ import pandas as pd
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
-from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
+from Analysis.Analyzers.EventFeaturesAnalyzer import EventFeaturesAnalyzer
 from DataSetLoaders.DataSetFactory import DataSetFactory
 from GazeDetectors.BaseDetector import BaseDetector
 
 
-class MultiIterationAnalyzer(BaseAnalyzer):
+class MultiIterationAnalyzer(EventFeaturesAnalyzer):
+
     LAMBDA_STR = "λ"
     ITERATION_STR = "Iteration"
     DEFAULT_NUM_ITERATIONS = 5
@@ -56,14 +56,6 @@ class MultiIterationAnalyzer(BaseAnalyzer):
             if verbose:
                 print(f"\tPreprocessing:\t{end - start:.2f}s")
         return detected_events
-
-    @classmethod
-    def analyze_impl(cls, events_df: pd.DataFrame, ignore_events: Set[cnfg.EVENT_LABELS] = None, verbose: bool = False,
-                     **kwargs):
-        # ignore blinks when analyzing multi-iteration results, as they place-holders for previously detected saccades:
-        ignore_events = ignore_events or set()
-        ignore_events.update({cnfg.EVENT_LABELS.BLINK})
-        return BaseAnalyzer.analyze_impl(events_df, ignore_events=ignore_events, verbose=verbose)
 
     @staticmethod
     def _detect_multiple_times(data: pd.DataFrame,
