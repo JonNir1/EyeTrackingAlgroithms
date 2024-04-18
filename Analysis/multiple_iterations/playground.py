@@ -33,3 +33,6 @@ fixation_features, fixation_feature_stats = MultiIterationAnalyzer.analyze(multi
                                                                            verbose=True)
 
 #######################################
+
+# TODO: add stat comparisons for event features
+# TODO: add scarfplot comparisons (requires pre-processing to return samples)
