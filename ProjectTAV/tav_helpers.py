@@ -2,6 +2,8 @@ import numpy as np
 import scipy.signal as signal
 import pywt
 
+import Utils.array_utils as au
+
 
 SAMPLING_FREQUENCY = 1024  # eeg sampling frequency
 SRP_FILTER = np.array([
@@ -53,3 +55,51 @@ def apply_filter(data: np.ndarray, filter_name: str) -> np.ndarray:
         reog_convolved = reog_convolved[n - SPOnset: 1 - SPOnset]
         return reog_convolved
     raise ValueError(f"Filter {filter_name} not recognized")
+
+
+def hit_rate(gt_idxs, pred_idxs, half_window: int = 8):
+    """
+    Calculates the hit rate between Ground-Truth and Predictions, where a `hit` is defined as a prediction that has a
+    corresponding GT within a window of size `2 * half_window + 1` centered around the prediction.
+
+    :param gt_idxs: sample indices where the Ground-Truth events occur
+    :param pred_idxs: sample indices where the Predicted events occur
+    :param half_window: half the size of the window around the prediction
+    """
+    assert half_window >= 0, "Half-window size must be non-negative"
+    pred_window_idxs = np.array([np.arange(i - half_window, i + half_window + 1) for i in pred_idxs])
+    hit_count = np.sum(np.isin(gt_idxs, pred_window_idxs))
+    return hit_count / len(gt_idxs)
+
+
+def false_alarm_rate(gt_idxs, pred_idxs, num_samples: int, half_window: int = 8, trial_idxs: np.ndarray = None):
+    """
+    Calculates the false alarm rate between Ground-Truth and Predictions, where a `false alarm` is defined as a
+    prediction that does not have a corresponding GT within a window of size `2 * half_window + 1` centered around the
+    prediction. If `trial_idxs` is provided, only events (GT & Pred) that occur during a trial are considered.
+    The number of false alarms is divided by the number of GT windows that do not contain an event.
+    """
+    assert half_window >= 0, "Half-window size must be non-negative"
+    is_gt_event_window = _is_event_window(num_samples, gt_idxs, half_window)
+    is_pred_event_window = _is_event_window(num_samples, pred_idxs, half_window)
+    is_pred_not_gt_window = is_pred_event_window & ~is_gt_event_window
+    if trial_idxs is not None:
+        # only consider events that occur during a trial
+        is_trial_window = _is_event_window(num_samples, trial_idxs, half_window)
+        is_gt_event_window = is_gt_event_window[is_trial_window]
+        is_pred_not_gt_window = is_pred_not_gt_window[is_trial_window]
+    return np.sum(is_pred_not_gt_window) / np.sum(~is_gt_event_window)
+
+
+def _is_event_window(num_samples: int, is_event_idxs: np.ndarray, half_window: int = 8) -> np.ndarray:
+    """
+    Given an array of indices where events occur, returns a boolean array where True values indicate the presence
+    of an event within a window of size `2 * half_window + 1` centered around the event.
+    The output array has size of:
+        is_event_idxs.size // (2 * half_window + 1) or (is_event_idxs.size // (2 * half_window + 1)) + 1
+        (if is_event_idxs.size % (2 * half_window + 1) != 0, in which case the last window is smaller than the rest)
+    """
+    window_size = 2 * half_window + 1
+    is_event_array = au.create_boolean_array(num_samples, is_event_idxs)
+    is_event_windows = np.split(is_event_array, np.arange(window_size, is_event_array.size, window_size))
+    return np.array(list(map(any, is_event_windows)))
