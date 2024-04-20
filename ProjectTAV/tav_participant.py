@@ -8,8 +8,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.io import savemat
 from scipy import stats, signal
+
 mne.set_log_level(verbose="CRITICAL")
-import scipy
 mne.viz.set_3d_backend("notebook")
 
 plots_dir = "plots"
@@ -18,14 +18,15 @@ channels_for_epochs = ["O1", "O2", "P10"]
 
 ####################################################################
 
-SRPfilt = [0,   -0.0000,   -0.0001,   -0.0002,  -0.0002,   -0.0001,    0.0001,    0.0003,    0.0007,    0.0015,   0.0028,
-    0.0050,    0.0080,    0.0114,    0.0151,    0.0188,    0.0217,    0.0241,    0.0267,    0.0272,    0.0271,    0.0287,
-    0.0329,    0.0391,    0.0462,    0.0544,    0.0605,    0.0602,    0.0447,    0.0030,   -0.0672,   -0.1615,   -0.2631,
-   -0.3490,   -0.3965,   -0.3834,   -0.3045,   -0.1706,   -0.0109,    0.1349,    0.2355,    0.2789,    0.2707,    0.2271,
-    0.1683,    0.1100,    0.0631,    0.0319,    0.0174,   0.0142,    0.0193,    0.0274,    0.0312,    0.0303,    0.0257,
-    0.0183,    0.0088,   -0.0007,   -0.0086,   -0.0152,   -0.0198,   -0.0221,   -0.0229,   -0.0230,   -0.0219,   -0.0199,
-   -0.0179,   -0.0157,   -0.0129,   -0.0101,   -0.0070,   -0.0042,   -0.0020,   -0.0003,    0.0009,    0.0013,    0.0013,
-    0.0011,    0.0008,    0.0005,    0.0002,    0.0001,    0.0000,         0]
+SRPfilt = [0, -0.0000, -0.0001, -0.0002, -0.0002, -0.0001, 0.0001, 0.0003, 0.0007, 0.0015, 0.0028,
+           0.0050, 0.0080, 0.0114, 0.0151, 0.0188, 0.0217, 0.0241, 0.0267, 0.0272, 0.0271, 0.0287,
+           0.0329, 0.0391, 0.0462, 0.0544, 0.0605, 0.0602, 0.0447, 0.0030, -0.0672, -0.1615, -0.2631,
+           -0.3490, -0.3965, -0.3834, -0.3045, -0.1706, -0.0109, 0.1349, 0.2355, 0.2789, 0.2707, 0.2271,
+           0.1683, 0.1100, 0.0631, 0.0319, 0.0174, 0.0142, 0.0193, 0.0274, 0.0312, 0.0303, 0.0257,
+           0.0183, 0.0088, -0.0007, -0.0086, -0.0152, -0.0198, -0.0221, -0.0229, -0.0230, -0.0219, -0.0199,
+           -0.0179, -0.0157, -0.0129, -0.0101, -0.0070, -0.0042, -0.0020, -0.0003, 0.0009, 0.0013, 0.0013,
+           0.0011, 0.0008, 0.0005, 0.0002, 0.0001, 0.0000, 0]
+
 
 def filterSRP(x, fs=1024):
     # resample to 1024 if necessary
@@ -48,7 +49,6 @@ def filterSRP(x, fs=1024):
 ####################################################################
 
 class Participant:
-
     # _BASE_PATH = r'E:\Tav'
     _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
 
@@ -56,12 +56,14 @@ class Participant:
         self.participant = participant
 
         self.only_blinks_data = \
-        read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_ica_onlyBlinks.mat"))['dat']
+            read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_ica_onlyBlinks.mat"))[
+                'dat']
         self.r = np.arange(self.only_blinks_data.shape[0])
 
         self.only_blinks_data = np.swapaxes(self.only_blinks_data, 0, 1)
 
-        self.interp_data = read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_interp.mat"))['data']
+        self.interp_data = \
+        read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_interp.mat"))['data']
         self.interp_data = np.swapaxes(self.interp_data, 0, 1)
         self.channels = pd.read_csv(os.path.join(Participant._BASE_PATH, "data", f"{self.participant}_channels.csv"))
 
@@ -71,10 +73,14 @@ class Participant:
         self.end_idx = self.info_data[self.info_data["Codes"] == 12]['latency'].to_numpy()
         self.trials_length = np.cumsum(self.end_idx - self.start_idx)
 
-        self.epochs_erp_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-erp-sacc-epo.fif')
-        self.epochs_frp_et_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-frp-et-sacc-epo.fif')
-        self.epochs_frp_et_fix_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-frp-et-fix-epo.fif')
-        self.epochs_frp_eog_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs', f'{self.participant}-frp-eog-sacc-epo.fif')
+        self.epochs_erp_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+                                                  f'{self.participant}-erp-sacc-epo.fif')
+        self.epochs_frp_et_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+                                                     f'{self.participant}-frp-et-sacc-epo.fif')
+        self.epochs_frp_et_fix_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+                                                    f'{self.participant}-frp-et-fix-epo.fif')
+        self.epochs_frp_eog_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+                                                      f'{self.participant}-frp-eog-sacc-epo.fif')
 
         self.channel_for_plots = "O2"
 
@@ -210,3 +216,35 @@ class Participant:
             self.frp_eog_epochs = mne.read_epochs(fname=self.epochs_frp_eog_sacc_fname)
         else:
             self.calc_epochs()
+
+    def count_hits(self):
+        as_strided = np.lib.stride_tricks.as_strided
+        r = 9
+        above_threshold_ext = np.concatenate((np.full(r, np.nan), self.above_threshold, np.full(r, np.nan)))
+        windows = as_strided(above_threshold_ext,
+                             (above_threshold_ext.shape[0], 2 * r + 1),
+                             above_threshold_ext.strides * 2)
+        windows = windows[self.eye_tracker_sacc_idx]
+        detected = np.count_nonzero(np.sum(windows, axis=1))
+        sacc_count = np.sum(self.eye_tracker_sacc_vec)  # len(s101._saccade_onset_idxs)
+        ## p101.above_threshold is s101.is_reog_saccade_onset
+        ## p101.eye_tracker_sacc_idx is s101._saccade_onset_idxs
+        return detected / sacc_count
+
+    def count_false_alarms(self):
+        section_len = 19
+        N = self.above_threshold.shape[0] // section_len * section_len
+
+        sacc_windows = np.reshape(self.eye_tracker_sacc_vec[:N],
+                                  (-1, section_len))  # eye_tracker_sacc_vec is for entire session
+        above_threshold_windows = np.reshape(self.above_threshold[:N],
+                                             (-1, section_len))  # above_threshold is during trials only!
+
+        is_sacc = sacc_windows.sum(axis=1)
+        count_no_sacc = np.count_nonzero(is_sacc == 0)
+
+        is_sp = above_threshold_windows.sum(axis=1)
+        is_sp = np.where(is_sacc == 0, is_sp, 0)
+        count_sp_no_sacc = np.count_nonzero(is_sp)
+
+        return count_sp_no_sacc / count_no_sacc
