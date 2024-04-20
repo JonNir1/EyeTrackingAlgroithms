@@ -31,7 +31,7 @@ class Subject:
 
         # read trial start & end times
         trial_starts, trial_ends = self.__read_trial_data(idx)
-        ts = self.timestamps
+        ts = self.get_sample_indices()
         self._is_trial = ((ts >= trial_starts[:, None]) & (ts < trial_ends[:, None])).any(axis=0)
 
         # read eyetracking data
@@ -44,9 +44,8 @@ class Subject:
     def num_samples(self) -> int:
         return self._num_samples
 
-    @property
-    def timestamps(self) -> np.ndarray:
-        return np.arange(self._num_samples)
+    def get_sample_indices(self) -> np.ndarray:
+        return np.arange(self.num_samples)
 
     def get_eeg_channel(self, channel_name: str, full_ica: bool = False) -> np.ndarray:
         channel_name = channel_name.upper().strip()
