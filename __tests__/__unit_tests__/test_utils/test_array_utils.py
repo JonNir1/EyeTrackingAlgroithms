@@ -16,6 +16,21 @@ class TestIOUtils(unittest.TestCase):
         self.assertFalse(arr_utils.is_one_dimensional([[1, 2], [3, 4]]))
         self.assertRaises(ValueError, arr_utils.is_one_dimensional, [[1, 2], [3]])
 
+
+    def test_create_boolean_array(self):
+        s = 10
+        true_indices = np.array([1, 3, 5, 7])
+        obs = arr_utils.create_boolean_array(s, true_indices)
+        exp = np.array([False, True, False, True, False, True, False, True, False, False])
+        self.assertTrue(np.array_equal(obs, exp))
+
+        true_indices = np.array([1, 3, 5, 7, 10])
+        self.assertRaises(ValueError, arr_utils.create_boolean_array, s, true_indices)
+        true_indices = np.array([[1, 3, 5, 7]])
+        self.assertRaises(ValueError, arr_utils.create_boolean_array, s, true_indices)
+        true_indices = np.array([1, 3, 5, 7, -1])
+        self.assertRaises(ValueError, arr_utils.create_boolean_array, s, true_indices)
+
     def test_temporal_derivative(self):
         n_samples = 10
         t = np.arange(n_samples)

@@ -17,6 +17,18 @@ def is_one_dimensional(arr) -> bool:
     return False
 
 
+
+def create_boolean_array(s: int, true_indices: np.ndarray) -> np.ndarray:
+    """ Creates a boolean array of length `s` with True values at the indices specified in `true_indices`. """
+    if not is_one_dimensional(true_indices):
+        raise ValueError("true_indices must be one-dimensional")
+    if not (0 <= min(true_indices) and max(true_indices) < s):
+        raise ValueError(f"true_indices must be within the range [0, {s})")
+    bool_array = np.zeros(s, dtype=bool)
+    bool_array[true_indices] = True
+    return bool_array
+
+
 def numeric_derivative(y, x, deg: int = 1, mul_const: float = 1) -> np.ndarray:
     """
     Calculates the `deg`-th derivative of the given numeric function `y` with respect to `x`.
