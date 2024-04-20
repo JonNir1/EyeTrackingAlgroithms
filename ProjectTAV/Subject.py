@@ -169,4 +169,3 @@ class Subject:
             (df["NewCodes"] // 10000 % 10 == 1) & (df["NewCodes"] // 10 % 10 == 1) &
             (df["NewCodes"] // 1000 % 10 == 0)]['latency'].to_numpy().astype('int64')
         return saccade_onset_times, erp_onset_times, frp_saccade_onset_times, frp_fixation_onset_times
-
