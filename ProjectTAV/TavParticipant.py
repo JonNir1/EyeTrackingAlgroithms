@@ -48,7 +48,7 @@ def filterSRP(x, fs=1024):
 
 ####################################################################
 
-class Participant:
+class TavParticipant:
     # _BASE_PATH = r'E:\Tav'
     _BASE_PATH = r'C:\Users\nirjo\Desktop\TAV'
 
@@ -56,30 +56,30 @@ class Participant:
         self.participant = participant
 
         self.only_blinks_data = \
-            read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_ica_onlyBlinks.mat"))[
+            read_mat(os.path.join(TavParticipant._BASE_PATH, "data", f"S{self.participant}_data_ica_onlyBlinks.mat"))[
                 'dat']
         self.r = np.arange(self.only_blinks_data.shape[0])
 
         self.only_blinks_data = np.swapaxes(self.only_blinks_data, 0, 1)
 
         self.interp_data = \
-        read_mat(os.path.join(Participant._BASE_PATH, "data", f"S{self.participant}_data_interp.mat"))['data']
+        read_mat(os.path.join(TavParticipant._BASE_PATH, "data", f"S{self.participant}_data_interp.mat"))['data']
         self.interp_data = np.swapaxes(self.interp_data, 0, 1)
-        self.channels = pd.read_csv(os.path.join(Participant._BASE_PATH, "data", f"{self.participant}_channels.csv"))
+        self.channels = pd.read_csv(os.path.join(TavParticipant._BASE_PATH, "data", f"{self.participant}_channels.csv"))
 
-        self.info_data = pd.read_csv(os.path.join(Participant._BASE_PATH, "data", f"{self.participant}_info.csv"))
+        self.info_data = pd.read_csv(os.path.join(TavParticipant._BASE_PATH, "data", f"{self.participant}_info.csv"))
 
         self.start_idx = self.info_data[self.info_data["Codes"] == 11]['latency'].to_numpy()
         self.end_idx = self.info_data[self.info_data["Codes"] == 12]['latency'].to_numpy()
         self.trials_length = np.cumsum(self.end_idx - self.start_idx)
 
-        self.epochs_erp_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+        self.epochs_erp_sacc_fname = os.path.join(TavParticipant._BASE_PATH, 'epochs',
                                                   f'{self.participant}-erp-sacc-epo.fif')
-        self.epochs_frp_et_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+        self.epochs_frp_et_sacc_fname = os.path.join(TavParticipant._BASE_PATH, 'epochs',
                                                      f'{self.participant}-frp-et-sacc-epo.fif')
-        self.epochs_frp_et_fix_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+        self.epochs_frp_et_fix_fname = os.path.join(TavParticipant._BASE_PATH, 'epochs',
                                                     f'{self.participant}-frp-et-fix-epo.fif')
-        self.epochs_frp_eog_sacc_fname = os.path.join(Participant._BASE_PATH, 'epochs',
+        self.epochs_frp_eog_sacc_fname = os.path.join(TavParticipant._BASE_PATH, 'epochs',
                                                       f'{self.participant}-frp-eog-sacc-epo.fif')
 
         self.channel_for_plots = "O2"
