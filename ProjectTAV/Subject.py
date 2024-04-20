@@ -62,8 +62,7 @@ class Subject:
         of an event at the corresponding index. If `enforce_trial` is True, only events that occur during a trial are
         marked as True.
         """
-        is_event = np.zeros(self.num_samples, dtype=bool)
-        is_event[event_idxs] = True
+        is_event = tavh.au.create_boolean_array(self.num_samples, event_idxs)
         if enforce_trials:
             is_event &= self._is_trial
         return is_event
