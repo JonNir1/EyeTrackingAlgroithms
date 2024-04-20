@@ -217,9 +217,9 @@ class TavParticipant:
         else:
             self.calc_epochs()
 
-    def count_hits(self, r: int = 9):
-        assert r >= 0, "r must be non-negative"
+    def count_hits(self):
         as_strided = np.lib.stride_tricks.as_strided
+        r = 9
         above_threshold_ext = np.concatenate((np.full(r, np.nan), self.above_threshold, np.full(r, np.nan)))
         windows = as_strided(above_threshold_ext,
                              (above_threshold_ext.shape[0], 2 * r + 1),
@@ -231,9 +231,8 @@ class TavParticipant:
         ## p101.eye_tracker_sacc_idx is s101._saccade_onset_idxs
         return detected / sacc_count
 
-    def count_false_alarms(self, r: int = 9):
-        assert r >= 0, "r must be non-negative"
-        section_len = 2 * r + 1
+    def count_false_alarms(self):
+        section_len = 19
         N = self.above_threshold.shape[0] // section_len * section_len
 
         sacc_windows = np.reshape(self.eye_tracker_sacc_vec[:N],
