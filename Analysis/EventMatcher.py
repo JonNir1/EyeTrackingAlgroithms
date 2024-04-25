@@ -103,7 +103,7 @@ class EventMatcher(ABC):
     def generic_matching(ground_truth: Sequence[BaseEvent],
                          predictions: Sequence[BaseEvent],
                          allow_cross_matching: bool,
-                         min_overlap: float = - float("inf"),
+                         min_overlap: float = 0,
                          min_iou: float = - float("inf"),
                          max_l2_timing_offset: float = float("inf"),
                          max_onset_latency: float = float("inf"),
@@ -115,7 +115,7 @@ class EventMatcher(ABC):
         :param ground_truth: sequence of ground-truth events
         :param predictions: sequence of predicted events
         :param allow_cross_matching: if True, a ground-truth event can match a predicted event of a different type
-        :param min_overlap: minimum overlap time (in ms) to consider a possible match
+        :param min_overlap: minimum overlap time (normalized to GT duration) to consider a possible match (between 0 and 1)
         :param min_iou: minimum intersection-over-union to consider a possible match
         :param max_l2_timing_offset: maximum L2-timing-offset to consider a possible match
         :param max_onset_latency: maximum absolute difference (in ms) between the start times of the GT and predicted events
@@ -125,7 +125,7 @@ class EventMatcher(ABC):
             - 'first': return the first matched event
             - 'last': return the last matched event
             - 'longest': return the longest matched event
-            - 'max overlap': return the matched event with maximum overlap with the GT event
+            - 'max overlap': return the matched event with maximum overlap with the GT event (normalized by GT duration)
             - 'iou': return the matched event with the maximum intersection-over-union with the GT event
             - 'l2': return the matched event with the minimum L2-timing-offset with the GT event
             - 'onset latency': return the matched event with the least onset latency
@@ -200,6 +200,7 @@ class EventMatcher(ABC):
                     allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
         """
         Matches the predicted event with maximum overlap with each ground-truth event, above a minimal overlap time.
+        Overlap-time is normalized by the duration of the ground-truth event, so values are between 0 and 1.
         """
         return EventMatcher.generic_matching(ground_truth, predictions, allow_cross_matching, min_overlap=min_overlap,
                                              reduction="max overlap")
@@ -327,7 +328,7 @@ class EventMatcher(ABC):
             - 'first': return the first matched event
             - 'last': return the last matched event
             - 'longest': return the longest matched event
-            - 'max overlap': return the matched event with maximum overlap with the GT event
+            - 'max overlap': return the matched event with maximum overlap with the GT event (normalized by GT duration)
             - 'iou': return the matched event with the maximum intersection-over-union with the GT event
             - 'l2': return the matched event with the minimum L2-timing-offset with the GT event
             - 'onset latency': return the matched event with the least onset latency
