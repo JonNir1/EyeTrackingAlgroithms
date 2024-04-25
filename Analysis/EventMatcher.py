@@ -129,9 +129,11 @@ class EventMatcher(ABC):
         matched_predictions = set()
         for gt in ground_truth:
             unmatched_predictions = [p for p in predictions if p not in matched_predictions]
-            possible_matches = EventMatcher.__find_matches(gt=gt, predictions=unmatched_predictions,
+            possible_matches = EventMatcher.__find_matches(gt=gt,
+                                                           predictions=unmatched_predictions,
                                                            allow_cross_matching=allow_cross_matching,
-                                                           min_overlap=min_overlap, min_iou=min_iou,
+                                                           min_overlap=min_overlap,
+                                                           min_iou=min_iou,
                                                            max_onset_latency=max_onset_latency,
                                                            max_offset_latency=max_offset_latency)
             p = EventMatcher.__choose_match(gt, possible_matches, reduction)
