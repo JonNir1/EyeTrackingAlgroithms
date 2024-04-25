@@ -151,10 +151,12 @@ class BaseAnalyzer(ABC):
         test_name = test_name.lower().replace("_", " ").replace("-", " ").strip()
         if test_name in {"u", "u test", "mann whitney", "mann whitney u", "mannwhitneyu"}:
             return stat.mannwhitneyu
-        elif test_name in {"rank sum", "ranksum", "ranksums", "wilcoxon rank sum"}:
+        if test_name in {"rank sum", "ranksum", "ranksums", "wilcoxon rank sum"}:
             return stat.ranksums
-        elif test_name in {"wilcoxon", "wilcoxon signed rank", "signed rank"}:
+        if test_name in {"wilcoxon", "wilcoxon signed rank", "signed rank"}:
             return stat.wilcoxon
+        if test_name in {"kruskal wallis", "kruskal"}:
+            return lambda *samples: stat.kruskal(*samples, nan_policy="omit")
         else:
             raise ValueError(f"Unknown test name: {test_name}")
 
