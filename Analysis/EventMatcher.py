@@ -69,6 +69,12 @@ class EventMatcher(ABC):
             return EventMatcher._apply_on_column_pairs(events,
                                                        lambda seq1, seq2: EventMatcher.iou(seq1, seq2, **match_kwargs),
                                                        is_symmetric=is_symmetric)
+        if match_by in {"l2", "l2 timing", "l2 timing offset", "timing l2", "timing l2 offset"}:
+            return EventMatcher._apply_on_column_pairs(events,
+                                                       lambda seq1, seq2: EventMatcher.l2_timing(seq1,
+                                                                                                 seq2,
+                                                                                                 **match_kwargs),
+                                                       is_symmetric=is_symmetric)
         if match_by == "onset" or match_by == "onset latency":
             return EventMatcher._apply_on_column_pairs(events,
                                                        lambda seq1, seq2: EventMatcher.onset_latency(seq1,
@@ -121,6 +127,7 @@ class EventMatcher(ABC):
             - 'longest': return the longest matched event
             - 'max overlap': return the matched event with maximum overlap with the GT event
             - 'iou': return the matched event with the maximum intersection-over-union with the GT event
+            - 'l2': return the matched event with the minimum L2-timing-offset with the GT event
             - 'onset latency': return the matched event with the least onset latency
             - 'offset latency': return the matched event with the least offset latency
         :return: dictionary, where keys are ground-truth events and values are their matched predicted event(s)
@@ -207,6 +214,17 @@ class EventMatcher(ABC):
         """
         return EventMatcher.generic_matching(ground_truth, predictions, allow_cross_matching, min_iou=min_iou,
                                              reduction="iou")
+
+    @staticmethod
+    def l2_timing(ground_truth: Sequence[BaseEvent],
+                  predictions: Sequence[BaseEvent],
+                  max_l2: float = 0,
+                  allow_cross_matching: bool = True) -> Dict[BaseEvent, BaseEvent]:
+        """
+        Matches the predicted event with minimum L2-timing-offset with each ground-truth event, below a maximum l2 value.
+        """
+        return EventMatcher.generic_matching(ground_truth, predictions, allow_cross_matching,
+                                             max_l2_timing_offset=max_l2, reduction="l2")
 
     @staticmethod
     def onset_latency(ground_truth: Sequence[BaseEvent],
@@ -311,6 +329,7 @@ class EventMatcher(ABC):
             - 'longest': return the longest matched event
             - 'max overlap': return the matched event with maximum overlap with the GT event
             - 'iou': return the matched event with the maximum intersection-over-union with the GT event
+            - 'l2': return the matched event with the minimum L2-timing-offset with the GT event
             - 'onset latency': return the matched event with the least onset latency
             - 'offset latency': return the matched event with the least offset latency
 
@@ -338,6 +357,8 @@ class EventMatcher(ABC):
             return [max(matches, key=lambda e: gt.overlap_time(e))]
         if reduction == "iou":
             return [max(matches, key=lambda e: gt.intersection_over_union(e))]
+        if reduction in {"l2", "timing l2", "l2 timing offset"}:
+            return [min(matches, key=lambda e: gt.l2_timing_offset(e))]
         if reduction == "onset latency":
             return [min(matches, key=lambda e: abs(e.start_time - gt.start_time))]
         if reduction == "offset latency":
