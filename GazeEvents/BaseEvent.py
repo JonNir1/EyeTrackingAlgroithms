@@ -85,7 +85,7 @@ class BaseEvent(ABC):
         Calculate the intersection over union (IoU) between two events.
         See Startsev & Zemblys (2023) for more information.
         """
-        intersection = self.overlap_time(other)
+        intersection = self.overlap_time(other, normalized=False)
         union = self.duration + other.duration - intersection
         return intersection / union
 
