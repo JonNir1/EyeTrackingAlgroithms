@@ -38,8 +38,8 @@ for feature in events_matched_features.keys():
         data=data[comparison_columns],
         title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
-        pdf_min_val=0 if feature == "IoU" else None,
-        pdf_max_val=1 if feature == "IoU" else None,
+        pdf_min_val=0 if feature in {"IoU", "Overlap Time"} else None,
+        pdf_max_val=1 if feature in {"IoU", "Overlap Time"} else None,
     )
     events_matched_features_distribution_figures[feature] = fig
     fig.show()
@@ -82,8 +82,8 @@ for feature in fixations_matched_features.keys():
         data=data[comparison_columns],
         title=f"{DATASET.upper()}:\t\tMatched-Fixations' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
-        pdf_min_val=0 if feature == "IoU" else None,
-        pdf_max_val=1 if feature == "IoU" else None,
+        pdf_min_val=0 if feature in {"IoU", "Overlap Time"} else None,
+        pdf_max_val=1 if feature in {"IoU", "Overlap Time"} else None,
     )
     fixations_matched_features_distribution_figures[feature] = fig
     fig.show()
@@ -126,8 +126,8 @@ for feature in saccades_matched_features.keys():
         data=data[comparison_columns],
         title=f"{DATASET.upper()}:\t\tMatched-Saccades' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
-        pdf_min_val=0 if feature == "IoU" else None,
-        pdf_max_val=1 if feature == "IoU" else None,
+        pdf_min_val=0 if feature in {"IoU", "Overlap Time"} else None,
+        pdf_max_val=1 if feature in {"IoU", "Overlap Time"} else None,
     )
     saccades_matched_features_distribution_figures[feature] = fig
     fig.show()

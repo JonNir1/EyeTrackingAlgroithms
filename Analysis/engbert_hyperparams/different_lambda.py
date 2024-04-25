@@ -111,8 +111,8 @@ for feature in events_matched_features.keys():
         data=data[events_matched_feature_stats],
         title=f"{DATASET.upper()}:\t\tMatched-Events' {feature.title()} Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
-        pdf_min_val=0 if feature == "IoU" else None,
-        pdf_max_val=1 if feature == "IoU" else None,
+        pdf_min_val=0 if feature in {"IoU", "Overlap Time"} else None,
+        pdf_max_val=1 if feature in {"IoU", "Overlap Time"} else None,
     )
     events_matched_features_distribution_figures[feature] = fig
     fig.show()
