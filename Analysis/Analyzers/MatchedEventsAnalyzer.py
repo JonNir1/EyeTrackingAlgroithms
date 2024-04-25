@@ -19,7 +19,7 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
         # "Duration Difference", "Amplitude Difference", "Azimuth Difference", "Peak Velocity Difference"  # uninteresting
     }
 
-    _DEFAULT_EVENT_MATCHING_PARAMS = {
+    _DEFAULT_MATCHING_SCHEME = {
         "match_by": "onset",
         "max_onset_latency": 15,
         "allow_cross_matching": False,
@@ -45,7 +45,7 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
         :param verbose: Whether to print the progress of the preprocessing.
         :keyword arguments:
             - column_mapper: A function to map the column names of the samples, events, and detector results DataFrames.
-            - event_matching_params: Additional parameters to pass to the event matching algorithm (see EventMatcher).
+            - matching_scheme: Additional parameters to pass to the event matching algorithm (see EventMatcher).
 
         :return: the preprocessed samples, events, raw detector results, event matches, and comparison columns.
         """
@@ -56,9 +56,8 @@ class MatchedEventsAnalyzer(BaseAnalyzer):
             dataset_name, detectors, False, **kwargs
         )
         # match events
-        event_matching_params = kwargs.pop("event_matching_params",
-                                           MatchedEventsAnalyzer._DEFAULT_EVENT_MATCHING_PARAMS)
-        matches_df = Matcher.match_events(events_df, is_symmetric=True, **event_matching_params)
+        matching_scheme = kwargs.pop("matching_scheme", MatchedEventsAnalyzer._DEFAULT_MATCHING_SCHEME)
+        matches_df = Matcher.match_events(events_df, is_symmetric=True, **matching_scheme)
         # extract column-pairs to compare
         comparison_columns = MatchedEventsAnalyzer._extract_rater_detector_pairs(events_df)
         end = time.time()
