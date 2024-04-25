@@ -99,6 +99,7 @@ class EventMatcher(ABC):
                          allow_cross_matching: bool,
                          min_overlap: float = - float("inf"),
                          min_iou: float = - float("inf"),
+                         max_l2_timing_offset: float = float("inf"),
                          max_onset_latency: float = float("inf"),
                          max_offset_latency: float = float("inf"),
                          reduction: str = "all") -> __TYPE_EVENT_MATCHES:
@@ -110,6 +111,7 @@ class EventMatcher(ABC):
         :param allow_cross_matching: if True, a ground-truth event can match a predicted event of a different type
         :param min_overlap: minimum overlap time (in ms) to consider a possible match
         :param min_iou: minimum intersection-over-union to consider a possible match
+        :param max_l2_timing_offset: maximum L2-timing-offset to consider a possible match
         :param max_onset_latency: maximum absolute difference (in ms) between the start times of the GT and predicted events
         :param max_offset_latency: maximum absolute difference (in ms) between the end times of the GT and predicted events
         :param reduction: name of reduction function used to choose a predicted event(s) from multiple matching ones:
@@ -134,6 +136,7 @@ class EventMatcher(ABC):
                                                            allow_cross_matching=allow_cross_matching,
                                                            min_overlap=min_overlap,
                                                            min_iou=min_iou,
+                                                           max_l2_timing_offset=max_l2_timing_offset,
                                                            max_onset_latency=max_onset_latency,
                                                            max_offset_latency=max_offset_latency)
             p = EventMatcher.__choose_match(gt, possible_matches, reduction)
@@ -269,6 +272,7 @@ class EventMatcher(ABC):
                        allow_cross_matching: bool,
                        min_overlap: float,
                        min_iou: float,
+                       max_l2_timing_offset: float,
                        max_onset_latency: float,
                        max_offset_latency: float, ) -> Sequence[BaseEvent]:
         """
@@ -279,6 +283,7 @@ class EventMatcher(ABC):
         :param allow_cross_matching: if True, a GT event can match a predicted event of a different type
         :param min_overlap: minimum overlap time to consider a possible match
         :param min_iou: minimum intersection-over-union to consider a possible match
+        :param max_l2_timing_offset: maximum L2-timing-offset to consider a possible match
         :param max_onset_latency: maximum absolute difference between the start times of the GT and predicted events
         :param max_offset_latency: maximum absolute difference between the end times of the GT and predicted events
         :return: sequence of predicted events that are possible matches for the ground-truth event
@@ -288,6 +293,7 @@ class EventMatcher(ABC):
         predictions = [p for p in predictions if
                        gt.overlap_time(p) >= min_overlap and
                        gt.intersection_over_union(p) >= min_iou and
+                       gt.l2_timing_offset(p) <= max_l2_timing_offset and
                        abs(p.start_time - gt.start_time) <= max_onset_latency and
                        abs(p.end_time - gt.end_time) <= max_offset_latency]
         return predictions
