@@ -121,5 +121,5 @@ class DataSetFactory(ABC):
         if dataset_name == "IRF":
             return ["RZ"]
         if dataset_name == "Lund2013":
-            return ["MN", "RA"]
+            return ["RA", "MN"]
         raise ValueError(f"Unknown dataset name: {dataset_name}")
