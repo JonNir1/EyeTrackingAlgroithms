@@ -13,7 +13,7 @@ pio.renderers.default = "browser"
 
 DATASET = "Lund2013"
 LAMBDA_STR = "λ"
-COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", "") if LAMBDA_STR in col else col
+COL_MAPPER = lambda col: col[col.index(LAMBDA_STR):col.index(",")].replace("'", "").replace("\"", "") if LAMBDA_STR in col else col
 DETECTORS = [EngbertDetector(lambdaa=lmda) for lmda in np.arange(1, 7)]
 
 # %%
