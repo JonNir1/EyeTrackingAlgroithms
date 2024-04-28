@@ -1,5 +1,5 @@
 import itertools
-from typing import Callable
+from typing import Callable, Optional, Union, List, Tuple
 
 import pandas as pd
 
@@ -43,3 +43,31 @@ def apply_on_column_pairs(data: pd.DataFrame,
     res = pd.DataFrame.from_dict(res, orient="index")
     res.index.names = data.index.names
     return res
+
+
+def group_and_aggregate(data: pd.DataFrame,
+                        group_by: Optional[Union[str, List[str]]]) -> pd.DataFrame:
+    """ Group the data by the given criteria and aggregate the values in each group. """
+    if group_by is None:
+        return data
+    grouped_vals = data.groupby(level=group_by).agg(list).map(lambda group: pd.Series(group).explode().to_list())
+    if len(grouped_vals.index) == 1:
+        return grouped_vals
+    # there is more than one group, so add a row for "all" groups
+    group_all = pd.Series([data[col].explode().to_list() for col in data.columns], index=data.columns, name="all")
+    grouped_vals = pd.concat([grouped_vals.T, group_all], axis=1).T  # add "all" row
+    return grouped_vals
+
+
+def extract_rater_detector_pairs(data: pd.DataFrame) -> List[Tuple[str, str]]:
+    """
+    Extracts pairs of (human-rater, human-rater) and (human-rater, detector) columns from the given DataFrame.
+    :param data: DataFrame where each column is either a human-rater or a detector.
+        human raters are columns with two-letter names, and detectors are columns with "det" in their name.
+    :return: a list of pairs of (human-rater, human-rater) and (human-rater, detector) column names.
+    """
+    rater_names = [col.upper() for col in data.columns if len(col) == 2]
+    detector_names = [col for col in data.columns if "det" in col.lower()]
+    rater_rater_pairs = list(itertools.combinations(sorted(rater_names), 2))
+    rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
+    return rater_rater_pairs + rater_detector_pairs
