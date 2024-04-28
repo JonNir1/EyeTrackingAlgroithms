@@ -1,0 +1,144 @@
+import os
+from typing import Dict
+
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+
+import Config.constants as cnst
+import Analysis.helpers as hlp
+from Visualization import scarfplot
+from Visualization import distributions_grid as dg
+
+
+def create_comparison_scarfplots(
+        samples_df: pd.DataFrame,
+        output_dir: str
+) -> Dict[str, go.Figure]:
+    figures = {}
+    for i, idx in enumerate(samples_df.index):
+        num_samples = samples_df.loc[idx].map(len).max()  # Number of samples in the longest detected sequence
+        t = np.arange(num_samples)
+        detected_labels = samples_df.loc[idx]
+        is_all_nan = detected_labels.apply(lambda arr: pd.isna(arr).all())
+        detected_labels = detected_labels.loc[~is_all_nan]
+        fig = scarfplot.scarfplots_comparison_figure(t, *detected_labels.to_list(), names=detected_labels.index)
+        fig.write_html(os.path.join(output_dir, f"Subj_{idx[1]}_StimType_{idx[2]}_StimName_{idx[3]}.html"))
+        figures[str(idx)] = fig
+    return figures
+
+
+def create_sample_metric_distributions(
+        metrics: dict,
+        dataset_name: str,
+        output_dir: str,
+        columns: list = None
+) -> Dict[str, go.Figure]:
+    figures = {}
+    for metric in metrics.keys():
+        data = metrics[metric][columns] if columns is not None else metrics[metric]
+        grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
+        fig = dg.distributions_grid(
+            data=grouped,
+            title=f"{dataset_name.upper()}:\t\tSample-Level {metric.title()}",
+            pdf_min_val=0 if "Transition Matrix" not in metric else None,
+            pdf_max_val=1 if "Transition Matrix" not in metric else None,
+            column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
+        )
+        fig.write_html(os.path.join(output_dir, f"{metric}.html"))
+        figures[metric] = fig
+    return figures
+
+
+def create_event_feature_distributions(
+        features: dict,
+        dataset_name: str,
+        output_dir: str,
+        columns: list = None
+) -> Dict[str, go.Figure]:
+    figures = {}
+    for feature in features.keys():
+        data = features[feature][columns] if columns is not None else features[feature]
+        if feature == "Count":
+            # needs unique grouping
+            grouped = data.groupby(level=cnst.STIMULUS).agg(list).map(sum)
+            if len(grouped.index) == 1:
+                return grouped
+            # there is more than one group, so add a row for "all" groups
+            group_all = pd.Series(data.sum(axis=0), index=data.columns, name="all")
+            grouped = pd.concat([grouped.T, group_all], axis=1).T  # add "all" row
+            title = f"{dataset_name.upper()}:\t\tEvent {feature.title()}"
+        else:
+            grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
+            title = f"{dataset_name.upper()}:\t\tEvents' {feature.title()} Distribution"
+        fig = dg.distributions_grid(
+            data=grouped,
+            title=title,
+            show_counts=feature == "Count",
+            pdf_min_val=0,
+            pdf_max_val=1,
+        )
+        fig.write_html(os.path.join(output_dir, f"{feature}.html"))
+        figures[feature] = fig
+    return figures
+
+
+def create_matched_event_feature_distributions(
+        matched_features: dict,
+        dataset_name: str,
+        output_dir: str,
+        columns: list = None
+) -> Dict[str, go.Figure]:
+
+    FEATURES_WITHIN_EVENT = {
+        "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity",
+    }
+    FEATURES_BETWEEN_EVENTS = {
+        "L2 Timing Difference", "IoU", "Overlap Time", "CoM Distance", "Dispersion Ratio",
+    }
+
+    figures = {}
+    for feature in matched_features.keys():
+        multi_data = {}
+        for scheme, df in matched_features[feature].items():
+            scheme_df = df[columns] if columns else df
+            if feature in FEATURES_WITHIN_EVENT:   # calculate difference of within-event features
+                scheme_df = scheme_df.map(
+                    lambda cell: [v[0] - v[1] for v in cell if not np.any(pd.isna(v))] if np.all(pd.notnull(cell)) else np.nan
+                )
+                title = f"{dataset_name.upper()}:\t\tMatched-Events' Difference in {feature.title()} Distribution"
+            elif feature in FEATURES_BETWEEN_EVENTS:
+                title = f"{dataset_name.upper()}:\t\tMatched-Events' {feature.title()} Distribution"
+            else:
+                raise ValueError(f"Feature {feature} is not supported for matched event distributions.")
+            multi_data[scheme] = hlp.group_and_aggregate(scheme_df, group_by=cnst.STIMULUS)
+        fig = dg.multi_distributions_grid(
+            multi_data=multi_data,
+            title=title,
+            column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
+            pdf_min_val=0 if feature in {"IoU", "Overlap Time"} else None,
+            pdf_max_val=1 if feature in {"IoU", "Overlap Time"} else None,
+        )
+        fig.write_html(os.path.join(output_dir, f"{feature}.html"))
+        figures[feature] = fig
+    return figures
+
+
+def create_matching_ratio_distributions(
+        ratios: dict,
+        dataset_name: str,
+        output_dir: str,
+        columns: list = None
+) -> go.Figure:
+    for scheme in ratios.keys():
+        data = ratios[scheme][columns] if columns is not None else ratios[scheme]
+        ratios[scheme] = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
+    fig = dg.multi_distributions_grid(
+        multi_data=ratios,
+        title=f"{dataset_name.upper()}:\t\tMatched-Events' Match Ratio Distribution",
+        column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
+        pdf_min_val=0,
+        pdf_max_val=1,
+    )
+    fig.write_html(os.path.join(output_dir, f"Match Ratios.html"))
+    return fig
