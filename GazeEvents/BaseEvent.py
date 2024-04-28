@@ -86,7 +86,7 @@ class BaseEvent(ABC):
         See Startsev & Zemblys (2023) for more information.
         """
         intersection = self.overlap_time(other, normalized=False)
-        union = self.duration + other.duration
+        union = self.duration + other.duration - intersection
         return intersection / union
 
     @final
