@@ -24,11 +24,11 @@ def apply_on_column_pairs(data: pd.DataFrame,
     :return: A DataFrame with the same index as the input data, columns as the pairs of columns of the input data,
         and values in the DataFrame are the result of the function applied to the corresponding pair of columns.
     """
+    cols = sorted(data.columns)
     if is_symmetric:
-        column_pairs = list(itertools.combinations(data.columns, 2))
+        column_pairs = list(itertools.combinations(cols, 2))
     else:
-        column_pairs = list(itertools.product(data.columns, repeat=2))
-        column_pairs = [pair for pair in column_pairs if pair[0] != pair[1]]
+        column_pairs = [pair for pair in itertools.product(cols, repeat=2) if pair[0] != pair[1]]
     res = {}
     for idx in data.index:
         res[idx] = {}
@@ -66,8 +66,8 @@ def extract_rater_detector_pairs(data: pd.DataFrame) -> List[Tuple[str, str]]:
         human raters are columns with two-letter names, and detectors are columns with "det" in their name.
     :return: a list of pairs of (human-rater, human-rater) and (human-rater, detector) column names.
     """
-    rater_names = [col.upper() for col in data.columns if len(col) == 2]
-    detector_names = [col for col in data.columns if "det" in col.lower()]
-    rater_rater_pairs = list(itertools.combinations(sorted(rater_names), 2))
+    rater_names = sorted([col.upper() for col in data.columns if len(col) == 2])
+    rater_rater_pairs = [(r1, r2) for r1, r2 in itertools.product(rater_names, repeat=2) if r1 != r2]
+    detector_names = sorted([col for col in data.columns if "det" in col.lower()])
     rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
     return rater_rater_pairs + rater_detector_pairs
