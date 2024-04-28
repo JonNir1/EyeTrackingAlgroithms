@@ -38,6 +38,20 @@ class FixationEvent(BaseEvent):
                                                     use_radians=False)
         return x_deg, y_deg
 
+    def center_distance_px(self, other: "FixationEvent") -> float:
+        """ returns the distance between the centers of mass of two fixations (in pixels units) """
+        x1, y1 = self.center_of_mass
+        x2, y2 = other.center_of_mass
+        return np.linalg.norm([x1 - x2, y1 - y2])
+
+    def center_distance_deg(self, other: "FixationEvent") -> float:
+        """ returns the distance between the centers of mass of two fixations (in visual degrees units) """
+        dist_px = self.center_distance_px(other)
+        return visang_utils.pixels_to_visual_angle(num_px=dist_px,
+                                                   d=self._viewer_distance,
+                                                   pixel_size=self._pixel_size,
+                                                   use_radians=False)
+
     @property
     def dispersion_px(self) -> float:
         """ returns the maximum distance between any two points in the fixation (in pixels units) """
