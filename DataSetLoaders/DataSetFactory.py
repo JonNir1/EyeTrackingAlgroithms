@@ -33,7 +33,7 @@ class DataSetFactory(ABC):
         """
         dataset = DataSetFactory.load(name)
         raters = raters if raters else DataSetFactory.__get_default_raters(name)
-        return DataSetFactory.detect(dataset, raters, detectors, column_mapper)
+        return DataSetFactory.detect(dataset, sorted(raters), detectors, column_mapper)
 
     @staticmethod
     def load(name: str) -> pd.DataFrame:
@@ -121,5 +121,5 @@ class DataSetFactory(ABC):
         if dataset_name == "IRF":
             return ["RZ"]
         if dataset_name == "Lund2013":
-            return ["RA", "MN"]
+            return ["MN", "RA"]
         raise ValueError(f"Unknown dataset name: {dataset_name}")
