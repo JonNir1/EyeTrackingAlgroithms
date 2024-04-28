@@ -45,6 +45,8 @@ class PreProcessor(ABC):
         if verbose:
             print(f"Dataset: {dataset_name}\tPipeline: {pipeline_name}")
         dataset_dir = os.path.join(cnfg.OUTPUT_DIR, dataset_name, pipeline_name)
+        if not os.path.exists(dataset_dir):
+            os.makedirs(dataset_dir)
         try:
             samples = pd.read_pickle(os.path.join(dataset_dir, "samples.pkl"))
             events = pd.read_pickle(os.path.join(dataset_dir, "events.pkl"))
