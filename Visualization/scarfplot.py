@@ -51,6 +51,7 @@ def add_scarfplot(fig: go.Figure,
     assert len(t) == len(events)
     _borders, centers, colormap = _discrete_colormap({e for e in cnfg.EVENT_LABELS},
                                                      {k: v[cnst.COLOR] for k, v in cnfg.EVENT_MAPPING.items()})
+    colorbar_length = colorbar_kwargs.get("colorbar_length", 1)
     scarfplot = go.Heatmap(
         x=t,
         y=[ymin, ymax],
@@ -59,9 +60,9 @@ def add_scarfplot(fig: go.Figure,
         zmax=np.nanmax([e.value for e in cnfg.EVENT_LABELS]),
         colorscale=colormap,
         colorbar=dict(
-            len=colorbar_kwargs.get("colorbar_length", 0.75),
+            len=colorbar_length,
             thickness=colorbar_kwargs.get("colorbar_thickness", 25),
-            tickvals=centers,
+            tickvals=np.array(centers) * colorbar_length,
             ticktext=[e.name for e in cnfg.EVENT_LABELS],
         ),
         showscale=colorbar_kwargs.get("colorbar_show", True),
