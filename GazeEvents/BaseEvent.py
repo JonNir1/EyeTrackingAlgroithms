@@ -129,7 +129,7 @@ class BaseEvent(ABC):
     @final
     @property
     def start_point(self) -> Tuple[float, float]:
-        """ returns the saccade's start point as a tuple of the X,Y coordinates """
+        """ returns the event's start point as a tuple of the X,Y coordinates """
         x = float(self._x[0])
         y = float(self._y[0])
         return x, y
@@ -137,7 +137,7 @@ class BaseEvent(ABC):
     @final
     @property
     def end_point(self) -> Tuple[float, float]:
-        """ returns the saccade's end point as a tuple of the X,Y coordinates """
+        """ returns the event's end point as a tuple of the X,Y coordinates """
         x = float(self._x[-1])
         y = float(self._y[-1])
         return x, y
@@ -145,7 +145,7 @@ class BaseEvent(ABC):
     @final
     @property
     def distance(self) -> float:
-        """ returns the distance of the saccade in pixels """
+        """ returns the distance of the event in pixels """
         x_start, y_start = self.start_point
         x_end, y_end = self.end_point
         return np.sqrt((x_end - x_start) ** 2 + (y_end - y_start) ** 2)
@@ -153,6 +153,7 @@ class BaseEvent(ABC):
     @final
     @property
     def amplitude(self) -> float:
+        """ returns the amplitude of the event in visual degrees """
         return visang_utils.pixels_to_visual_angle(num_px=self.distance,
                                                    d=self._viewer_distance,
                                                    pixel_size=self._pixel_size,
@@ -161,7 +162,7 @@ class BaseEvent(ABC):
     @final
     @property
     def azimuth(self) -> float:
-        """ returns the azimuth of the saccade in degrees """
+        """ returns the azimuth of the event in visual degrees """
         return pixel_utils.calculate_azimuth(p1=self.start_point, p2=self.end_point, use_radians=False)
 
     @final
