@@ -1,16 +1,12 @@
 import warnings
 import copy
 from abc import ABC
-from typing import List
+from typing import List, Callable
 
 import pandas as pd
 
 import Config.constants as cnst
 from DataSetLoaders.BaseDataSetLoader import BaseDataSetLoader
-from DataSetLoaders.GazeComDataSetLoader import GazeComDataSetLoader
-from DataSetLoaders.HFCDataSetLoader import HFCDataSetLoader
-from DataSetLoaders.IRFDataSetLoader import IRFDataSetLoader
-from DataSetLoaders.Lund2013DataSetLoader import Lund2013DataSetLoader
 from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.EventFactory import EventFactory
 
@@ -21,20 +17,31 @@ class DataSetFactory(ABC):
     @staticmethod
     def load_and_detect(name: str,
                         detectors: List[BaseDetector],
-                        raters: List[str] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+                        raters: List[str] = None,
+                        column_mapper: Callable[[str], str] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Loads the dataset and detects events in it based on human-annotations and detection algorithms.
-        Returns two dataframes:
-            - The sequence of event-labels per sample for each trial and rater/detector.
-            - The sequence of event objects for each trial and rater/detector.
+        Returns three dataframes:
+             - The sequence of event-labels per sample for each trial and rater/detector.
+             - The sequence of event objects for each trial and rater/detector.
+             - The full detection results for each detector, over every trial.
+
+        :param dataset: The dataset to detect events in.
+        :param raters: The list of human raters in the dataset.
+        :param detectors: The list of detectors to use for detecting events.
+        :param column_mapper: A function to map the column names of the output DataFrames (default: identity).
         """
         dataset = DataSetFactory.load(name)
         raters = raters if raters else DataSetFactory.__get_default_raters(name)
-        return DataSetFactory.detect(dataset, raters, detectors)
+        return DataSetFactory.detect(dataset, raters, detectors, column_mapper)
 
     @staticmethod
     def load(name: str) -> pd.DataFrame:
         """ Loads the dataset. """
+        from DataSetLoaders.GazeComDataSetLoader import GazeComDataSetLoader
+        from DataSetLoaders.HFCDataSetLoader import HFCDataSetLoader
+        from DataSetLoaders.IRFDataSetLoader import IRFDataSetLoader
+        from DataSetLoaders.Lund2013DataSetLoader import Lund2013DataSetLoader
         loader_class = [c for c in BaseDataSetLoader.__subclasses__() if c.dataset_name().lower() == name.lower()]
         if not loader_class:
             raise ValueError(f"Dataset loader for {name} not found")
@@ -45,12 +52,19 @@ class DataSetFactory(ABC):
     @staticmethod
     def detect(dataset: pd.DataFrame,
                raters: List[str],
-               detectors: List[BaseDetector]) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+               detectors: List[BaseDetector],
+               column_mapper: Callable[[str], str] = None) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
         """
         Detects events in the dataset based on human-annotations in the dataset and the provided detectors.
-        Returns two dataframes:
+        Returns three dataframes:
              - The sequence of event-labels per sample for each trial and rater/detector.
              - The sequence of event objects for each trial and rater/detector.
+             - The full detection results for each detector, over every trial.
+
+        :param dataset: The dataset to detect events in.
+        :param raters: The list of human raters in the dataset.
+        :param detectors: The list of detectors to use for detecting events.
+        :param column_mapper: A function to map the column names of the output DataFrames (default: identity).
         """
         indexers = [col for col in DataSetFactory._INDEXERS if col in dataset.columns]
         samples_dict, event_dict, detector_results_dict = {}, {}, {}
@@ -63,12 +77,16 @@ class DataSetFactory(ABC):
             detector_results_dict[idx] = copy.deepcopy(detector_results)
 
         # create output dataframes
+        column_mapper = column_mapper or (lambda col: col)
         samples_df = pd.DataFrame.from_dict(samples_dict, orient="index").sort_index()
         samples_df.index.names = indexers
+        samples_df.rename(columns=column_mapper, inplace=True)
         events_df = pd.DataFrame.from_dict(event_dict, orient="index").sort_index()
         events_df.index.names = indexers
+        events_df.rename(columns=column_mapper, inplace=True)
         detector_results_df = pd.DataFrame.from_dict(detector_results_dict, orient="index").sort_index()
         detector_results_df.index.names = indexers
+        detector_results_df.rename(columns=column_mapper, inplace=True)
         return samples_df, events_df, detector_results_df
 
     @staticmethod
@@ -82,8 +100,8 @@ class DataSetFactory(ABC):
             }
             events = {
                 rater: EventFactory.make_from_gaze_data(
-                    trial_data, vd=viewer_distance, ps=pixel_size, column_mapping={rater: cnst.EVENT})
-                if rater in trial_data.columns else [float("nan")] for rater in raters
+                    trial_data, vd=viewer_distance, ps=pixel_size, column_mapping={rater: cnst.EVENT}
+                ) if rater in trial_data.columns else [float("nan")] for rater in raters
             }
         detector_results = {}
         for det in detectors:
