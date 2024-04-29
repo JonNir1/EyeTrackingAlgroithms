@@ -10,6 +10,13 @@ import Analysis.helpers as hlp
 from Visualization import scarfplot
 from Visualization import distributions_grid as dg
 
+FEATURES_WITHIN_EVENT = {
+    "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity",
+}
+FEATURES_BETWEEN_EVENTS = {
+    "L2 Timing Difference", "IoU", "Overlap Time", "CoM Distance", "Dispersion Ratio",
+}
+
 
 def create_comparison_scarfplots(
         samples_df: pd.DataFrame,
@@ -89,14 +96,6 @@ def create_matched_event_feature_distributions(
         output_dir: str,
         columns: list = None
 ) -> Dict[str, go.Figure]:
-
-    FEATURES_WITHIN_EVENT = {
-        "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity",
-    }
-    FEATURES_BETWEEN_EVENTS = {
-        "L2 Timing Difference", "IoU", "Overlap Time", "CoM Distance", "Dispersion Ratio",
-    }
-
     figures = {}
     for feature in matched_features.keys():
         multi_data = {}
