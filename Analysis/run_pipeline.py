@@ -5,12 +5,6 @@ from Analysis.PreProcessor import PreProcessor
 import Analysis.helpers as hlp
 import Analysis.figures as figs
 
-pipelines = {
-    "Detector_Comparison": {
-        "column_mapper": lambda col: col[:col.index("ector")] if "ector" in col else col
-    },
-}
-
 
 def run_pipeline(
         dataset_name: str,
@@ -109,9 +103,6 @@ def _fixation_figures(
     )
     fixation_matched_features["CoM Distance"] = {scheme: fixation_matches[scheme].map(
         lambda cell: [k.center_distance(v) for k, v in cell.items()] if cell is not None else None
-    ) for scheme in fixation_matches.keys()}
-    fixation_matched_features["Dispersion Ratio"] = {scheme: fixation_matches[scheme].map(
-        lambda cell: [k.dispersion / v.dispersion for k, v in cell.items()] if cell is not None else None
     ) for scheme in fixation_matches.keys()}
 
     # Fixation Feature Distributions Per-Stimulus Type
