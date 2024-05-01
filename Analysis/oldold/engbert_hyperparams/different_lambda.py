@@ -5,9 +5,9 @@ from GazeDetectors.EngbertDetector import EngbertDetector
 from Visualization.distributions_grid import *
 import Visualization.scarfplot as scarf
 
-from Analysis.Analyzers.SamplesAnalyzer import SamplesAnalyzer
-from Analysis.Analyzers.EventFeaturesAnalyzer import EventFeaturesAnalyzer
-from Analysis.Analyzers.MatchedEventsAnalyzer import MatchedEventsAnalyzer
+from Analysis.old.Analyzers.SamplesAnalyzer import SamplesAnalyzer
+from Analysis.old.Analyzers.EventFeaturesAnalyzer import EventFeaturesAnalyzer
+from Analysis.old.Analyzers.MatchedEventsAnalyzer import MatchedEventsAnalyzer
 
 pio.renderers.default = "browser"
 

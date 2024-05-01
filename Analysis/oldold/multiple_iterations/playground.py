@@ -1,11 +1,8 @@
-import numpy as np
-import scipy.stats as stat
 import plotly.io as pio
 
-import Config.constants as cnst
 import Config.experiment_config as cnfg
 from GazeDetectors.EngbertDetector import EngbertDetector
-from Analysis.Analyzers.MultiIterationAnalyzer import MultiIterationAnalyzer
+from Analysis.old.Analyzers.MultiIterationAnalyzer import MultiIterationAnalyzer
 
 pio.renderers.default = "browser"
 

@@ -1,9 +1,8 @@
-import numpy as np
 import plotly.io as pio
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
-from Analysis.Analyzers.EventFeaturesAnalyzer import EventFeaturesAnalyzer
+from Analysis.old.Analyzers.EventFeaturesAnalyzer import EventFeaturesAnalyzer
 from Visualization.distributions_grid import distributions_grid
 from Visualization.p_value_heatmap import heatmap_grid
 

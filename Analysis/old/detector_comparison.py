@@ -1,4 +1,4 @@
-from Analysis.run_pipeline import run_pipeline
+from Analysis.old.run_pipeline import run_pipeline
 
 DATASET_NAME = "Lund2013"
 PIPELINE_NAME = "Detector_Comparison"

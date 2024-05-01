@@ -1,6 +1,6 @@
 import plotly.io as pio
 
-from Analysis.Analyzers.SamplesAnalyzer import SamplesAnalyzer
+from Analysis.old.Analyzers.SamplesAnalyzer import SamplesAnalyzer
 from Visualization.distributions_grid import distributions_grid
 from Visualization.p_value_heatmap import heatmap_grid
 

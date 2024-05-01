@@ -1,7 +1,7 @@
 import plotly.io as pio
 
 import Config.experiment_config as cnfg
-from Analysis.Analyzers.MatchedEventsAnalyzer import MatchedEventsAnalyzer
+from Analysis.old.Analyzers.MatchedEventsAnalyzer import MatchedEventsAnalyzer
 from Visualization.distributions_grid import distributions_grid
 from Visualization.p_value_heatmap import heatmap_grid
 

@@ -1,7 +1,7 @@
 import os
 
 import Config.experiment_config as cnfg
-from Analysis.PreProcessor import PreProcessor
+from Analysis.old.PreProcessor import PreProcessor
 import Analysis.helpers as hlp
 import Analysis.figures as figs
 

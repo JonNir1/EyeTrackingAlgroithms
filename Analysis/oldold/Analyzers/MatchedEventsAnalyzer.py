@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 import Config.experiment_config as cnfg
-from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
+from Analysis.old.Analyzers.BaseAnalyzer import BaseAnalyzer
 from GazeDetectors.BaseDetector import BaseDetector
 from Analysis.EventMatcher import EventMatcher as Matcher
 

@@ -8,7 +8,7 @@ import pandas as pd
 import Config.constants as cnst
 import Config.experiment_config as cnfg
 import Analysis.helpers as hlp
-from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
+from Analysis.old.Analyzers.BaseAnalyzer import BaseAnalyzer
 from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.BaseEvent import BaseEvent
 

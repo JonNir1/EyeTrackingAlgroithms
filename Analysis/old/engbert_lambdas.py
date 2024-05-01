@@ -6,7 +6,7 @@ import pandas as pd
 import Config.constants as cnst
 import Config.experiment_config as cnfg
 from GazeDetectors.EngbertDetector import EngbertDetector
-from Analysis.run_pipeline import run_pipeline
+from Analysis.old.run_pipeline import run_pipeline
 import Analysis.helpers as hlp
 from Visualization import distributions_grid as dg
 

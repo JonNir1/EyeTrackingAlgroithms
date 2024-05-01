@@ -3,7 +3,7 @@ import plotly.io as pio
 from GazeDetectors.EngbertDetector import EngbertDetector
 from Visualization.distributions_grid import *
 
-from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
+from Analysis.old.Analyzers.BaseAnalyzer import BaseAnalyzer
 
 pio.renderers.default = "browser"
 

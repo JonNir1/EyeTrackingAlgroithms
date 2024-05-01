@@ -1,19 +1,14 @@
 import time
 import warnings
-import itertools
-from typing import Set, Dict, List, Union
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-import scipy.stats as stat
 
-import Config.constants as cnst
-import Config.experiment_config as cnfg
 import Analysis.helpers as hlp
 import Utils.metrics as metrics
-from Analysis.Analyzers.BaseAnalyzer import BaseAnalyzer
+from Analysis.old.Analyzers.BaseAnalyzer import BaseAnalyzer
 from GazeDetectors.BaseDetector import BaseDetector
-from GazeEvents.BaseEvent import BaseEvent
 
 
 class SamplesAnalyzer(BaseAnalyzer):
