@@ -70,7 +70,9 @@ class BasePipeline(ABC):
                     samples.to_pickle(os.path.join(self._dataset_dir, "samples.pkl"))
                     events.to_pickle(os.path.join(self._dataset_dir, "events.pkl"))
                     detector_results.to_pickle(os.path.join(self._dataset_dir, "detector_results.pkl"))
-            self._rater_detector_pairs = hlp.extract_rater_detector_pairs(samples)
+            self._rater_detector_pairs = [
+                pair for pair in hlp.extract_rater_detector_pairs(samples) if pair[0] == self.reference_rater
+            ]
             end = time.time()
             if verbose:
                 print(f"Preprocessing Completed:\t{end - start:.2f}s")
@@ -129,12 +131,12 @@ class BasePipeline(ABC):
             if verbose:
                 print(f"Creating Sample Figures...")
             # create scarfplots
-            scarfplot_dir = os.path.join(self._dataset_dir, f"{cnst.LABELS}", self._SCARFPLOTS_STR)
+            scarfplot_dir = os.path.join(self._dataset_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
             if not os.path.exists(scarfplot_dir):
                 os.makedirs(scarfplot_dir, exist_ok=True)
             _ = figs.create_comparison_scarfplots(samples_df, scarfplot_dir)
             # create sample-metric figures
-            sample_metrics_dir = os.path.join(self._dataset_dir, f"{cnst.LABELS}", self._SAMPLE_METRICS_STR)
+            sample_metrics_dir = os.path.join(self._dataset_dir, f"{cnst.SAMPLES}", self._SAMPLE_METRICS_STR)
             if not os.path.exists(sample_metrics_dir):
                 os.makedirs(sample_metrics_dir, exist_ok=True)
             _ = figs.create_sample_metric_distributions(
@@ -184,7 +186,7 @@ class BasePipeline(ABC):
             if not os.path.exists(features_dir):
                 os.makedirs(features_dir, exist_ok=True)
             _ = figs.create_event_feature_distributions(
-                features, self.dataset_name, features_dir, self._rater_detector_pairs
+                features, self.dataset_name, features_dir, None
             )
         end = time.time()
         if verbose:
