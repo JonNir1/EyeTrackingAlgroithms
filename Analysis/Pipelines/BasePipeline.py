@@ -225,7 +225,7 @@ class BasePipeline(ABC):
             for scheme, df in matches.items():
                 df = df.map(
                     lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == event_label}
-                    if pd.notnull(cell).all() else None
+                    if pd.notnull(cell) else None
                 )
                 matches[scheme] = df
         # calculate ratios & create figures
@@ -267,7 +267,7 @@ class BasePipeline(ABC):
             for scheme, df in matches.items():
                 df = df.map(
                     lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == event_label}
-                    if pd.notnull(cell).all() else None
+                    if pd.notnull(cell) else None
                 )
                 matches[scheme] = df
         # calculate features & create figures

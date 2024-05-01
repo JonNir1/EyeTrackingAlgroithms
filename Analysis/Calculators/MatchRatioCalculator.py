@@ -59,7 +59,7 @@ class MatchRatioCalculator(BaseCalculator):
         event_counts = events.map(lambda cell: len(cell) if pd.notnull(cell).all() else None)
         match_ratios = {}
         for scheme, matches_df in matches.items():
-            match_counts = matches_df.map(lambda cell: len(cell) if pd.notnull(cell).all() else None)
+            match_counts = matches_df.map(lambda cell: len(cell) if pd.notnull(cell) else None)
             ratios = np.zeros_like(match_counts, dtype=float)
             for i in range(match_counts.index.size):
                 for j in range(match_counts.columns.size):
