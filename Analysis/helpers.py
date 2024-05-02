@@ -68,6 +68,6 @@ def extract_rater_detector_pairs(data: pd.DataFrame) -> List[Tuple[str, str]]:
     """
     rater_names = sorted([col.upper() for col in data.columns if len(col) == 2])
     rater_rater_pairs = [(r1, r2) for r1, r2 in itertools.product(rater_names, repeat=2) if r1 != r2]
-    detector_names = sorted([col for col in data.columns if "det" in col.lower()])
+    detector_names = sorted([col for col in data.columns if col not in rater_names])
     rater_detector_pairs = [(rater, detector) for rater in rater_names for detector in detector_names]
     return rater_rater_pairs + rater_detector_pairs
