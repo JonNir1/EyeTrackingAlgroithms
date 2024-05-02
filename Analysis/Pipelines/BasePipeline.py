@@ -1,19 +1,15 @@
-import copy
 import os
 import time
-import warnings
+import copy
 from abc import ABC, abstractmethod
-from typing import List, Union, Callable, Set, Dict, Optional
+from typing import List, Union, Set, Dict, Optional
 
 import numpy as np
 import pandas as pd
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
-import Analysis.helpers as hlp
 import Analysis.figures as figs
-from DataSetLoaders.DataSetFactory import DataSetFactory
-from GazeDetectors.BaseDetector import BaseDetector
 from GazeEvents.BaseEvent import BaseEvent
 
 
@@ -36,48 +32,15 @@ class BasePipeline(ABC):
     _DEFAULT_FIXATION_FEATURES = {"Duration", "Peak Velocity"}
     _DEFAULT_SACCADE_FEATURES = {"Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"}
 
-    def __init__(self, dataset_name: str, reference_rater: str):
+    def __init__(self, dataset_name: str):
         self.dataset_name = dataset_name
-        self.reference_rater = reference_rater
         self._output_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
         os.makedirs(self._output_dir, exist_ok=True)
-        self._rater_detector_pairs = []
+        self._column_pairs = []
 
     @abstractmethod
     def run(self, verbose=False, **kwargs):
         raise NotImplementedError
-
-    def load_and_detect(
-            self,
-            detectors: List[BaseDetector],
-            column_mapper: Callable[[str], str] = lambda col: col,
-            save=True,
-            verbose=False
-    ) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            start = time.time()
-            if verbose:
-                print(f"Preprocessing dataset `{self.dataset_name}`...")
-            try:
-                samples = pd.read_pickle(os.path.join(self._output_dir, "samples.pkl"))
-                events = pd.read_pickle(os.path.join(self._output_dir, "events.pkl"))
-                detector_results = pd.read_pickle(os.path.join(self._output_dir, "detector_results.pkl"))
-            except FileNotFoundError:
-                samples, events, detector_results = DataSetFactory.load_and_detect(self.dataset_name,
-                                                                                   detectors=detectors,
-                                                                                   column_mapper=column_mapper)
-                if save:
-                    samples.to_pickle(os.path.join(self._output_dir, "samples.pkl"))
-                    events.to_pickle(os.path.join(self._output_dir, "events.pkl"))
-                    detector_results.to_pickle(os.path.join(self._output_dir, "detector_results.pkl"))
-            self._rater_detector_pairs = [
-                pair for pair in hlp.extract_rater_detector_pairs(samples) if pair[0] == self.reference_rater
-            ]
-            end = time.time()
-            if verbose:
-                print(f"Preprocessing Completed:\t{end - start:.2f}s")
-        return samples, events, detector_results
 
     def match_events(
             self,
@@ -141,7 +104,7 @@ class BasePipeline(ABC):
             if not os.path.exists(sample_metrics_dir):
                 os.makedirs(sample_metrics_dir, exist_ok=True)
             _ = figs.create_sample_metric_distributions(
-                sample_metrics, self.dataset_name, sample_metrics_dir, self._rater_detector_pairs
+                sample_metrics, self.dataset_name, sample_metrics_dir, self._column_pairs
             )
         end = time.time()
         if verbose:
@@ -245,7 +208,7 @@ class BasePipeline(ABC):
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matching_ratio_distributions(
-                ratios, self.dataset_name, matched_features_dir, self._rater_detector_pairs
+                ratios, self.dataset_name, matched_features_dir, self._column_pairs
             )
         end = time.time()
         if verbose:
@@ -288,7 +251,7 @@ class BasePipeline(ABC):
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matched_event_feature_distributions(
-                features, self.dataset_name, matched_features_dir, self._rater_detector_pairs
+                features, self.dataset_name, matched_features_dir, self._column_pairs
             )
         end = time.time()
         if verbose:
