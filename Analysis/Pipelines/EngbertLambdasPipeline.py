@@ -32,8 +32,8 @@ class EngbertLambdasPipeline(BaseComparisonPipeline):
 
     def _velocity_threshold_figure(self, detector_results: pd.DataFrame):
         thresholds = pd.concat(
-            [detector_results[f"{EngbertLambdasPipeline._LAMBDA_STR}:1"].map(lambda cell: cell['thresh_Vx']),
-             detector_results[f"{EngbertLambdasPipeline._LAMBDA_STR}:1"].map(lambda cell: cell['thresh_Vy'])],
+            [detector_results[f"{EngbertLambdasPipeline._LAMBDA_STR}=1"].map(lambda cell: cell['thresh_Vx']),
+             detector_results[f"{EngbertLambdasPipeline._LAMBDA_STR}=1"].map(lambda cell: cell['thresh_Vy'])],
             axis=1, keys=["Vx", "Vy"]
         )
         agg_thresholds = hlp.group_and_aggregate(thresholds, cnst.STIMULUS)
