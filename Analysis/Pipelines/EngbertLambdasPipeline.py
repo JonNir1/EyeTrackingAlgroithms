@@ -1,5 +1,5 @@
 import os
-from typing import Union, List
+from typing import Union, List, Iterable
 
 import pandas as pd
 
@@ -13,8 +13,7 @@ from Visualization import distributions_grid as dg
 class EngbertLambdasPipeline(BaseComparisonPipeline):
     _LAMBDA_STR = "λ"
 
-    def run(self, verbose=False, **kwargs):
-        lambdas = kwargs.get("lambdas", None)
+    def run(self, lambdas: Iterable[float] = None, verbose=False, **kwargs):
         if lambdas is None:
             detectors = self._get_default_detectors()
         else:
