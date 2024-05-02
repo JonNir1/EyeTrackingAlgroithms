@@ -15,7 +15,7 @@ class MatchedFeaturesCalculator(BaseCalculator):
         "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity",
     }
     MATCHED_EVENT_FEATURES_BETWEEN = {
-        "L2 Timing Difference", "IoU", "Overlap Time",
+        "L2 Timing Difference", "IoU", "Overlap Time", "CoM Distance"
         # uninteresting:
         # "Duration Difference", "Amplitude Difference", "Azimuth Difference",
         # "Peak Velocity Difference", "Onset Jitter", "Offset Jitter"
@@ -117,6 +117,13 @@ class MatchedFeaturesCalculator(BaseCalculator):
         elif feature == "Overlap Time":
             feature_df = matches_df.map(
                 lambda cell: [k.overlap_time(v) for k, v in cell.items()] if pd.notnull(cell) else np.nan
+            )
+        elif feature == "CoM Distance":
+            feature_df = matches_df.map(
+                lambda cell: [
+                    k.center_distance(v) for k, v in cell.items()
+                    if k.event_label == v.event_label == cnfg.EVENT_LABELS.FIXATION
+                ] if pd.notnull(cell) else np.nan
             )
         elif feature == "Duration Difference":
             feature_df = matches_df.map(

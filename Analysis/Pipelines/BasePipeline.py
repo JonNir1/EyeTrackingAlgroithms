@@ -1,3 +1,4 @@
+import copy
 import os
 import time
 import warnings
@@ -217,22 +218,24 @@ class BasePipeline(ABC):
         if verbose:
             print(f"Analyzing {event_name.capitalize()} Match Ratios...")
         # ignore events that are not of the required type
+        new_events_df = events_df.copy(deep=True)
+        new_matches = copy.deepcopy(matches)
         if event_label is not None:
-            events_df = events_df.map(
+            new_events_df = new_events_df.map(
                 lambda cell: [event for event in cell if event.event_label == event_label]
                 if pd.notnull(cell).all() else None
             )
-            for scheme, df in matches.items():
+            for scheme, df in new_matches.items():
                 df = df.map(
                     lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == event_label}
                     if pd.notnull(cell) else None
                 )
-                matches[scheme] = df
+                new_matches[scheme] = df
         # calculate ratios & create figures
         ratios = MatchRatioCalculator.calculate(
             file_path=os.path.join(self._dataset_dir, f"{event_name}_match_ratios.pkl"),
-            events=events_df,
-            matches=matches,
+            events=new_events_df,
+            matches=new_matches,
             verbose=False,
         )
         if create_figures:
@@ -263,19 +266,19 @@ class BasePipeline(ABC):
         if verbose:
             print(f"Analyzing {event_name.capitalize()} Matched Features...")
         # ignore events that are not of the required type
+        new_matches = copy.deepcopy(matches)
         if event_label is not None:
-            for scheme, df in matches.items():
+            for scheme, df in new_matches.items():
                 df = df.map(
                     lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == event_label}
                     if pd.notnull(cell) else None
                 )
-                matches[scheme] = df
+                new_matches[scheme] = df
         # calculate features & create figures
-        feature_names = feature_names or MatchedFeaturesCalculator.MATCHED_EVENT_FEATURES_WITHIN | MatchedFeaturesCalculator.MATCHED_EVENT_FEATURES_BETWEEN
         features = MatchedFeaturesCalculator.calculate(
             file_path=os.path.join(self._dataset_dir, f"{event_name}_matched_features.pkl"),
-            matches=matches,
-            feature_names=feature_names,
+            matches=new_matches,
+            feature_names=feature_names or self.__get_default_matched_event_features(event_label),
             verbose=False,
         )
         if create_figures:
@@ -300,14 +303,8 @@ class BasePipeline(ABC):
     def _get_or_make_dataset_dir(self) -> str:
         dataset_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
         if not os.path.exists(dataset_dir):
-            os.makedirs(dataset_dir)
+            os.makedirs(dataset_dir, exist_ok=True)
         return dataset_dir
-
-    def _get_or_make_subdir(self, subdir_name: str) -> str:
-        subdir = os.path.join(self._dataset_dir, subdir_name)
-        if not os.path.exists(subdir):
-            os.makedirs(subdir)
-        return subdir
 
     @classmethod
     def _get_default_detectors(cls) -> Union[BaseDetector, List[BaseDetector]]:
@@ -317,16 +314,6 @@ class BasePipeline(ABC):
         from GazeDetectors.NHDetector import NHDetector
         from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
         return [IVTDetector(), IDTDetector(), EngbertDetector(), NHDetector(), REMoDNaVDetector()]
-
-
-    def __get_default_event_features(self, label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
-        if label is None:
-            return self._DEFAULT_EVENT_FEATURES
-        if label == cnfg.EVENT_LABELS.FIXATION:
-            return self._DEFAULT_FIXATION_FEATURES
-        if label == cnfg.EVENT_LABELS.SACCADE:
-            return self._DEFAULT_SACCADE_FEATURES
-        raise ValueError(f"No default features for {label.name} events.")
 
     def __calculate_event_features_impl(
             self,
@@ -363,7 +350,6 @@ class BasePipeline(ABC):
                 return counts
             missing_labels = pd.Series({l: 0 for l in cnfg.EVENT_LABELS if l not in counts.index})
             return pd.concat([counts, missing_labels]).sort_index()
-
         event_counts = events.map(count_event_labels)
         return event_counts
 
@@ -380,6 +366,16 @@ class BasePipeline(ABC):
                            where=saccades_count != 0)
         ratios = pd.DataFrame(ratios, index=events.index, columns=events.columns)
         return ratios
+
+    @staticmethod
+    def __get_default_event_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
+        if label is None:
+            return {"Count", "Amplitude", "Duration", "Peak Velocity"}
+        if label == cnfg.EVENT_LABELS.FIXATION:
+            return {"Duration", "Peak Velocity"}
+        if label == cnfg.EVENT_LABELS.SACCADE:
+            return {"Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"}
+        raise ValueError(f"No default features for {label.name} events.")
 
     @staticmethod
     def __get_default_matching_schemes() -> Dict[str, Dict[str, float]]:
@@ -414,3 +410,22 @@ class BasePipeline(ABC):
                 "min_overlap": 0.5
             },
         }
+
+    @staticmethod
+    def __get_default_matched_event_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
+        if label is None:
+            return {
+                "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity", "L2 Timing Difference",
+                "IoU", "Overlap Time",
+            }
+        if label == cnfg.EVENT_LABELS.FIXATION:
+            return {
+                "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity", "L2 Timing Difference",
+                "IoU", "Overlap Time", "CoM Distance",
+            }
+        if label == cnfg.EVENT_LABELS.SACCADE:
+            return {
+                "Start Time", "End Time", "Duration", "Amplitude", "Azimuth", "Peak Velocity", "L2 Timing Difference",
+                "IoU", "Overlap Time",
+            }
+        raise ValueError(f"No default matched-features for {label.name} events.")
