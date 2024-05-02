@@ -2,7 +2,6 @@ import os
 import time
 import warnings
 import copy
-from typing import List, Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -12,7 +11,6 @@ import Config.experiment_config as cnfg
 from Analysis.Pipelines.BasePipeline import BasePipeline
 from GazeDetectors.BaseDetector import BaseDetector
 from DataSetLoaders.DataSetFactory import DataSetFactory
-import Analysis.helpers as hlp
 
 
 class MultiIterationsPipeline(BasePipeline):

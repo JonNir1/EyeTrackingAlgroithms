@@ -6,8 +6,9 @@ import pandas as pd
 import Config.constants as cnst
 from Analysis.Pipelines.BaseComparisonPipeline import BaseComparisonPipeline
 from GazeDetectors.EngbertDetector import EngbertDetector
-import Analysis.helpers as hlp
 from Visualization import distributions_grid as dg
+from Analysis.helpers import group_and_aggregate
+from Analysis.figures import save_figure
 
 
 class EngbertLambdasPipeline(BaseComparisonPipeline):
@@ -32,12 +33,12 @@ class EngbertLambdasPipeline(BaseComparisonPipeline):
              detector_results[f"{EngbertLambdasPipeline._LAMBDA_STR}=1"].map(lambda cell: cell['thresh_Vy'])],
             axis=1, keys=["Vx", "Vy"]
         )
-        agg_thresholds = hlp.group_and_aggregate(thresholds, cnst.STIMULUS)
+        agg_thresholds = group_and_aggregate(thresholds, cnst.STIMULUS)
         threshold_fig = dg.distributions_grid(
             agg_thresholds,
             title=f"{self.dataset_name.upper()}:\t\tVelocity-Threshold Distribution"
         )
-        threshold_fig.write_html(os.path.join(self._output_dir, "Velocity-Threshold Distribution.html"))
+        save_figure(threshold_fig, self._output_dir, "Velocity-Threshold Distribution")
 
     @classmethod
     def _get_default_detectors(cls) -> Union[EngbertDetector, List[EngbertDetector]]:

@@ -16,7 +16,6 @@ irf_results = EngbertLambdasPipeline(dataset_name="IRF", reference_rater="RZ").r
 # MultiIterationsPipeline - Engbert
 
 from GazeDetectors.EngbertDetector import EngbertDetector
-from GazeDetectors.NHDetector import NHDetector
 from Analysis.Pipelines.MultiIterationsPipeline import MultiIterationsPipeline
 
 engbert_lund_results = MultiIterationsPipeline(dataset_name="Lund2013", detector=EngbertDetector()).run(verbose=True)

@@ -18,6 +18,11 @@ FEATURES_BETWEEN_EVENTS = {
 }
 
 
+def save_figure(fig: go.Figure, output_dir: str, filename: str):
+    fig.write_html(os.path.join(output_dir, f"{filename}.html"))
+    fig.write_json(os.path.join(output_dir, f"{filename}.json"))
+
+
 def create_comparison_scarfplots(
         samples_df: pd.DataFrame,
         output_dir: str
@@ -30,7 +35,7 @@ def create_comparison_scarfplots(
         is_all_nan = detected_labels.apply(lambda arr: pd.isna(arr).all())
         detected_labels = detected_labels.loc[~is_all_nan]
         fig = scarfplot.scarfplots_comparison_figure(t, *detected_labels.to_list(), names=detected_labels.index)
-        fig.write_html(os.path.join(output_dir, f"{idx}.html"))
+        save_figure(fig, output_dir, f"{idx}")
         figures[str(idx)] = fig
     return figures
 
@@ -52,7 +57,7 @@ def create_sample_metric_distributions(
             pdf_max_val=1 if "Transition Matrix" not in metric else None,
             column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
         )
-        fig.write_html(os.path.join(output_dir, f"{metric}.html"))
+        save_figure(fig, output_dir, f"{metric}")
         figures[metric] = fig
     return figures
 
@@ -85,7 +90,7 @@ def create_event_feature_distributions(
             pdf_min_val=0,
             pdf_max_val=1,
         )
-        fig.write_html(os.path.join(output_dir, f"{feature}.html"))
+        save_figure(fig, output_dir, f"{feature}")
         figures[feature] = fig
     return figures
 
@@ -118,7 +123,7 @@ def create_matched_event_feature_distributions(
             pdf_min_val=0 if feature in {"IoU", "Overlap Time"} else None,
             pdf_max_val=1 if feature in {"IoU", "Overlap Time"} else None,
         )
-        fig.write_html(os.path.join(output_dir, f"{feature}.html"))
+        save_figure(fig, output_dir, f"{feature}")
         figures[feature] = fig
     return figures
 
@@ -139,5 +144,5 @@ def create_matching_ratio_distributions(
         pdf_min_val=0,
         pdf_max_val=1,
     )
-    fig.write_html(os.path.join(output_dir, f"Match Ratios.html"))
+    save_figure(fig, output_dir, f"Match Ratios")
     return fig
