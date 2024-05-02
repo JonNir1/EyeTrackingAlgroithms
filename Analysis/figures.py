@@ -30,7 +30,7 @@ def create_comparison_scarfplots(
         is_all_nan = detected_labels.apply(lambda arr: pd.isna(arr).all())
         detected_labels = detected_labels.loc[~is_all_nan]
         fig = scarfplot.scarfplots_comparison_figure(t, *detected_labels.to_list(), names=detected_labels.index)
-        fig.write_html(os.path.join(output_dir, f"Subj_{idx[1]}_StimType_{idx[2]}_StimName_{idx[3]}.html"))
+        fig.write_html(os.path.join(output_dir, f"{idx}.html"))
         figures[str(idx)] = fig
     return figures
 
