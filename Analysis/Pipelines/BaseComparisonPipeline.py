@@ -1,47 +1,61 @@
 from abc import abstractmethod
-
-import pandas as pd
+from typing import List
 
 import Config.experiment_config as cnfg
 from Analysis.Pipelines.BasePipeline import BasePipeline
+from GazeDetectors.BaseDetector import BaseDetector
 
 
 class BaseComparisonPipeline(BasePipeline):
 
+    @classmethod
     @abstractmethod
-    def _preprocess(self, verbose=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    def _get_default_detectors(cls) -> List[BaseDetector]:
         raise NotImplementedError
 
-    def run(self, verbose=False, **kwargs):
-        samples, events, detector_results = self._preprocess(
+    @staticmethod
+    @abstractmethod
+    def _column_mapper(colname: str) -> str:
+        raise NotImplementedError
+
+    def run(
+            self,
+            detectors: List[BaseDetector] = None,
+            allow_cross_matching: bool = False,
+            verbose=False
+    ):
+        samples, events, detector_results = self.load_and_detect(
+            detectors=detectors or self._get_default_detectors(),
+            column_mapper=self._column_mapper,
+            save=True,
             verbose=verbose,
         )
         sample_metrics = self.process_samples(
             samples_df=samples,
             metric_names=None,
-            create_figures=kwargs.get("create_figures", False),
+            create_figures=True,
             verbose=verbose,
         )
         event_features, fixation_features, saccade_features = self._process_event_features(
             events=events,
-            create_figures=kwargs.get("create_figures", False),
+            create_figures=True,
             verbose=verbose,
         )
         matches = self.match_events(
             events_df=events,
             matching_schemes=None,
-            allow_cross_matching=kwargs.get("allow_cross_matching", False),
+            allow_cross_matching=allow_cross_matching,
             verbose=verbose,
         )
         event_match_ratios, fixation_match_ratios, saccade_match_ratios = self._process_match_ratios(
             events=events,
             matches=matches,
-            create_figures=kwargs.get("create_figures", False),
+            create_figures=True,
             verbose=verbose,
         )
         matched_event_features, matched_fixation_features, matched_saccade_features = self._process_matched_features(
             matches=matches,
-            create_figures=kwargs.get("create_figures", False),
+            create_figures=True,
             verbose=verbose,
         )
         return (

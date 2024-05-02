@@ -2,7 +2,7 @@ import plotly.io as pio
 
 import Config.experiment_config as cnfg
 from GazeDetectors.EngbertDetector import EngbertDetector
-from Analysis.old.Analyzers.MultiIterationAnalyzer import MultiIterationAnalyzer
+from Analysis.oldold.Analyzers.MultiIterationAnalyzer import MultiIterationAnalyzer
 
 pio.renderers.default = "browser"
 

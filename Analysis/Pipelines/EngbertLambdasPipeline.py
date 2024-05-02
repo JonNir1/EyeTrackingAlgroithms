@@ -1,5 +1,5 @@
 import os
-from typing import Iterable
+from typing import Union, List
 
 import pandas as pd
 
@@ -13,22 +13,19 @@ from Visualization import distributions_grid as dg
 class EngbertLambdasPipeline(BaseComparisonPipeline):
     _LAMBDA_STR = "λ"
 
-    def __init__(self, dataset_name: str, reference_rater: str, lambdas: Iterable[float] = range(1, 7)):
-        super().__init__(dataset_name, reference_rater)
-        self.detectors = list({EngbertDetector(lambdaa=lmda) for lmda in lambdas})
-
     def run(self, verbose=False, **kwargs):
-        results = super().run(verbose=verbose, **kwargs)
-        self._velocity_threshold_figure(detector_results=results[2])
-        return results
-
-
-    def _preprocess(self, verbose=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
-        return self.load_and_detect(
-            detectors=self.detectors,
-            column_mapper=EngbertLambdasPipeline._column_mapper,
+        lambdas = kwargs.get("lambdas", None)
+        if lambdas is None:
+            detectors = self._get_default_detectors()
+        else:
+            detectors = list({EngbertDetector(lambdaa=lmda) for lmda in lambdas})
+        results = super().run(
+            detectors=detectors,
+            allow_cross_matching=False,
             verbose=verbose,
         )
+        self._velocity_threshold_figure(detector_results=results[2])
+        return results
 
     def _velocity_threshold_figure(self, detector_results: pd.DataFrame):
         thresholds = pd.concat(
@@ -42,6 +39,10 @@ class EngbertLambdasPipeline(BaseComparisonPipeline):
             title=f"{self.dataset_name.upper()}:\t\tVelocity-Threshold Distribution"
         )
         threshold_fig.write_html(os.path.join(self._dataset_dir, "Velocity-Threshold Distribution.html"))
+
+    @classmethod
+    def _get_default_detectors(cls) -> Union[EngbertDetector, List[EngbertDetector]]:
+        return list({EngbertDetector(lambdaa=lmda) for lmda in range(1, 7)})
 
     @staticmethod
     def _column_mapper(colname: str) -> str:

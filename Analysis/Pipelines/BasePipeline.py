@@ -39,16 +39,17 @@ class BasePipeline(ABC):
     def __init__(self, dataset_name: str, reference_rater: str):
         self.dataset_name = dataset_name
         self.reference_rater = reference_rater
-        self._dataset_dir = self._get_or_make_dataset_dir()
+        self._dataset_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
+        os.makedirs(self._dataset_dir, exist_ok=True)
         self._rater_detector_pairs = []
 
     @abstractmethod
-    def run(self, verbose=False):
+    def run(self, verbose=False, **kwargs):
         raise NotImplementedError
 
     def load_and_detect(
             self,
-            detectors: List[BaseDetector] = None,
+            detectors: List[BaseDetector],
             column_mapper: Callable[[str], str] = lambda col: col,
             save=True,
             verbose=False
@@ -63,7 +64,6 @@ class BasePipeline(ABC):
                 events = pd.read_pickle(os.path.join(self._dataset_dir, "events.pkl"))
                 detector_results = pd.read_pickle(os.path.join(self._dataset_dir, "detector_results.pkl"))
             except FileNotFoundError:
-                detectors = self._get_default_detectors() if detectors is None else detectors
                 samples, events, detector_results = DataSetFactory.load_and_detect(self.dataset_name,
                                                                                    detectors=detectors,
                                                                                    column_mapper=column_mapper)
@@ -299,21 +299,6 @@ class BasePipeline(ABC):
     def _name(cls) -> str:
         classname = cls.__name__
         return classname[:classname.index("Pipeline")]
-
-    def _get_or_make_dataset_dir(self) -> str:
-        dataset_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
-        if not os.path.exists(dataset_dir):
-            os.makedirs(dataset_dir, exist_ok=True)
-        return dataset_dir
-
-    @classmethod
-    def _get_default_detectors(cls) -> Union[BaseDetector, List[BaseDetector]]:
-        from GazeDetectors.IVTDetector import IVTDetector
-        from GazeDetectors.IDTDetector import IDTDetector
-        from GazeDetectors.EngbertDetector import EngbertDetector
-        from GazeDetectors.NHDetector import NHDetector
-        from GazeDetectors.REMoDNaVDetector import REMoDNaVDetector
-        return [IVTDetector(), IDTDetector(), EngbertDetector(), NHDetector(), REMoDNaVDetector()]
 
     def __calculate_event_features_impl(
             self,
