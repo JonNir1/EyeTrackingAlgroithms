@@ -39,8 +39,8 @@ class BasePipeline(ABC):
     def __init__(self, dataset_name: str, reference_rater: str):
         self.dataset_name = dataset_name
         self.reference_rater = reference_rater
-        self._dataset_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
-        os.makedirs(self._dataset_dir, exist_ok=True)
+        self._output_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
+        os.makedirs(self._output_dir, exist_ok=True)
         self._rater_detector_pairs = []
 
     @abstractmethod
@@ -60,17 +60,17 @@ class BasePipeline(ABC):
             if verbose:
                 print(f"Preprocessing dataset `{self.dataset_name}`...")
             try:
-                samples = pd.read_pickle(os.path.join(self._dataset_dir, "samples.pkl"))
-                events = pd.read_pickle(os.path.join(self._dataset_dir, "events.pkl"))
-                detector_results = pd.read_pickle(os.path.join(self._dataset_dir, "detector_results.pkl"))
+                samples = pd.read_pickle(os.path.join(self._output_dir, "samples.pkl"))
+                events = pd.read_pickle(os.path.join(self._output_dir, "events.pkl"))
+                detector_results = pd.read_pickle(os.path.join(self._output_dir, "detector_results.pkl"))
             except FileNotFoundError:
                 samples, events, detector_results = DataSetFactory.load_and_detect(self.dataset_name,
                                                                                    detectors=detectors,
                                                                                    column_mapper=column_mapper)
                 if save:
-                    samples.to_pickle(os.path.join(self._dataset_dir, "samples.pkl"))
-                    events.to_pickle(os.path.join(self._dataset_dir, "events.pkl"))
-                    detector_results.to_pickle(os.path.join(self._dataset_dir, "detector_results.pkl"))
+                    samples.to_pickle(os.path.join(self._output_dir, "samples.pkl"))
+                    events.to_pickle(os.path.join(self._output_dir, "events.pkl"))
+                    detector_results.to_pickle(os.path.join(self._output_dir, "detector_results.pkl"))
             self._rater_detector_pairs = [
                 pair for pair in hlp.extract_rater_detector_pairs(samples) if pair[0] == self.reference_rater
             ]
@@ -93,7 +93,7 @@ class BasePipeline(ABC):
         matching_schemes = matching_schemes or self.__get_default_matching_schemes()
         for scheme in matching_schemes.keys():
             matching_schemes[scheme]["allow_cross_matching"] = allow_cross_matching
-        matches = EventMatchesCalculator.calculate(file_path=os.path.join(self._dataset_dir, "matches.pkl"),
+        matches = EventMatchesCalculator.calculate(file_path=os.path.join(self._output_dir, "matches.pkl"),
                                                    events_df=events_df, matching_schemes=matching_schemes,
                                                    verbose=False)
         end = time.time()
@@ -123,7 +123,7 @@ class BasePipeline(ABC):
             print(f"Analyzing Samples...")
         metric_names = metric_names or self._DEFAULT_SAMPLE_METRICS
         sample_metrics = SampleMetricsCalculator.calculate(
-            file_path=os.path.join(self._dataset_dir, "sample_metrics.pkl"),
+            file_path=os.path.join(self._output_dir, "sample_metrics.pkl"),
             data=samples_df,
             metric_names=metric_names,
             verbose=False,
@@ -132,12 +132,12 @@ class BasePipeline(ABC):
             if verbose:
                 print(f"Creating Sample Figures...")
             # create scarfplots
-            scarfplot_dir = os.path.join(self._dataset_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
+            scarfplot_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
             if not os.path.exists(scarfplot_dir):
                 os.makedirs(scarfplot_dir, exist_ok=True)
             _ = figs.create_comparison_scarfplots(samples_df, scarfplot_dir)
             # create sample-metric figures
-            sample_metrics_dir = os.path.join(self._dataset_dir, f"{cnst.SAMPLES}", self._SAMPLE_METRICS_STR)
+            sample_metrics_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SAMPLE_METRICS_STR)
             if not os.path.exists(sample_metrics_dir):
                 os.makedirs(sample_metrics_dir, exist_ok=True)
             _ = figs.create_sample_metric_distributions(
@@ -175,7 +175,7 @@ class BasePipeline(ABC):
         )
         feature_names = feature_names or self.__get_default_event_features(event_label)
         features = EventFeaturesCalculator.calculate(
-            file_path=os.path.join(self._dataset_dir, f"{event_name}_features.pkl"),
+            file_path=os.path.join(self._output_dir, f"{event_name}_features.pkl"),
             data=data,
             metric_names=feature_names,
             verbose=False,
@@ -183,7 +183,7 @@ class BasePipeline(ABC):
         if create_figures:
             if verbose:
                 print(f"Creating {event_name.capitalize()} Feature Figures...")
-            features_dir = os.path.join(self._dataset_dir, event_name, self._FEATURES_STR)
+            features_dir = os.path.join(self._output_dir, event_name, self._FEATURES_STR)
             if not os.path.exists(features_dir):
                 os.makedirs(features_dir, exist_ok=True)
             _ = figs.create_event_feature_distributions(
@@ -233,7 +233,7 @@ class BasePipeline(ABC):
                 new_matches[scheme] = df
         # calculate ratios & create figures
         ratios = MatchRatioCalculator.calculate(
-            file_path=os.path.join(self._dataset_dir, f"{event_name}_match_ratios.pkl"),
+            file_path=os.path.join(self._output_dir, f"{event_name}_match_ratios.pkl"),
             events=new_events_df,
             matches=new_matches,
             verbose=False,
@@ -241,7 +241,7 @@ class BasePipeline(ABC):
         if create_figures:
             if verbose:
                 print(f"Creating {event_name.capitalize()} Match Ratio Figures...")
-            matched_features_dir = os.path.join(self._dataset_dir, event_name, self._MATCHED_FEATURES_STR)
+            matched_features_dir = os.path.join(self._output_dir, event_name, self._MATCHED_FEATURES_STR)
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matching_ratio_distributions(
@@ -276,7 +276,7 @@ class BasePipeline(ABC):
                 new_matches[scheme] = df
         # calculate features & create figures
         features = MatchedFeaturesCalculator.calculate(
-            file_path=os.path.join(self._dataset_dir, f"{event_name}_matched_features.pkl"),
+            file_path=os.path.join(self._output_dir, f"{event_name}_matched_features.pkl"),
             matches=new_matches,
             feature_names=feature_names or self.__get_default_matched_event_features(event_label),
             verbose=False,
@@ -284,7 +284,7 @@ class BasePipeline(ABC):
         if create_figures:
             if verbose:
                 print(f"Creating {event_name.capitalize()} Matched-Features Figures...")
-            matched_features_dir = os.path.join(self._dataset_dir, event_name, self._MATCHED_FEATURES_STR)
+            matched_features_dir = os.path.join(self._output_dir, event_name, self._MATCHED_FEATURES_STR)
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matched_event_feature_distributions(

@@ -38,7 +38,7 @@ class EngbertLambdasPipeline(BaseComparisonPipeline):
             agg_thresholds,
             title=f"{self.dataset_name.upper()}:\t\tVelocity-Threshold Distribution"
         )
-        threshold_fig.write_html(os.path.join(self._dataset_dir, "Velocity-Threshold Distribution.html"))
+        threshold_fig.write_html(os.path.join(self._output_dir, "Velocity-Threshold Distribution.html"))
 
     @classmethod
     def _get_default_detectors(cls) -> Union[EngbertDetector, List[EngbertDetector]]:
