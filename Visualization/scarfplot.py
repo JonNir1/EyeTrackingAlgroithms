@@ -25,7 +25,7 @@ def scarfplots_comparison_figure(t: np.ndarray, *events, **kwargs) -> go.Figure:
     fig = go.Figure()
     for i, e in enumerate(events):
         ymin, ymax = 2 * i * scarf_size, (2 * i + 1) * scarf_size
-        fig = add_scarfplot(fig, t, e, ymin, ymax, **kwargs)
+        fig = add_scarfplot(fig, t, e.values, ymin, ymax, **kwargs)
     # Update layout
     names = kwargs.get("names", [str(i) for i in range(num_scarfs)])
     assert len(names) == num_scarfs
@@ -34,7 +34,7 @@ def scarfplots_comparison_figure(t: np.ndarray, *events, **kwargs) -> go.Figure:
         yaxis=dict(
             range=[0, (2 * num_scarfs - 1) * scarf_size],
             tickmode='array',
-            tickvals=[(2 * i + 0.5) * scarf_size for i in range(num_scarfs)],
+            tickvals=[(i + 0.5) * scarf_size for i in range(num_scarfs)],
             ticktext=names,
         ),
     )

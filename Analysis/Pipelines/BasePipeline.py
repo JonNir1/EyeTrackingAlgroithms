@@ -20,18 +20,6 @@ class BasePipeline(ABC):
     _FEATURES_STR = "features"
     _MATCHED_FEATURES_STR = "matched_features"
 
-    _DEFAULT_SAMPLE_METRICS = {
-        "Accuracy",
-        "Levenshtein Ratio",
-        "Cohen's Kappa",
-        "Mathew's Correlation",
-        "Transition Matrix l2-norm",
-        "Transition Matrix KL-Divergence",
-    }
-    _DEFAULT_EVENT_FEATURES = {"Count", "Amplitude", "Duration", "Peak Velocity"}
-    _DEFAULT_FIXATION_FEATURES = {"Duration", "Peak Velocity"}
-    _DEFAULT_SACCADE_FEATURES = {"Micro-Saccade Ratio", "Amplitude", "Duration", "Azimuth", "Peak Velocity"}
-
     def __init__(self, dataset_name: str):
         self.dataset_name = dataset_name
         self._output_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
@@ -84,7 +72,7 @@ class BasePipeline(ABC):
         start = time.time()
         if verbose:
             print(f"Analyzing Samples...")
-        metric_names = metric_names or self._DEFAULT_SAMPLE_METRICS
+        metric_names = metric_names or self.__get_default_sample_features()
         sample_metrics = SampleMetricsCalculator.calculate(
             file_path=os.path.join(self._output_dir, "sample_metrics.pkl"),
             data=samples_df,
@@ -94,6 +82,14 @@ class BasePipeline(ABC):
         if create_figures:
             if verbose:
                 print(f"Creating Sample Figures...")
+            # create label-counts figure
+            from GazeEvents.helpers import count_labels_or_events
+            label_counts_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}")
+            if not os.path.exists(label_counts_dir):
+                os.makedirs(label_counts_dir, exist_ok=True)
+            _ = figs.create_event_feature_distributions(
+                {"Count": samples_df.map(count_labels_or_events)}, self.dataset_name, label_counts_dir, None
+            )
             # create scarfplots
             scarfplot_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
             if not os.path.exists(scarfplot_dir):
@@ -263,57 +259,10 @@ class BasePipeline(ABC):
         classname = cls.__name__
         return classname[:classname.index("Pipeline")]
 
-    def __calculate_event_features_impl(
-            self,
-            events_df: pd.DataFrame,
-            feature_names: Set[str]
-    ) -> Dict[str, pd.DataFrame]:
-        event_features = {}
-        for feature in feature_names:
-            feat = feature.lower()
-            if feat in {"count", "counts", "event count", "event counts"}:
-                computed = self.__event_counts_impl(events_df)
-            elif feat in {"micro-saccade ratio", "microsaccade ratio"}:
-                computed = self.__microsaccade_ratio_impl(events_df)
-            else:
-                attr = feat.lower().replace(" ", "_")
-                computed = events_df.map(lambda cell: [getattr(e, attr) for e in cell if hasattr(e, attr)])
-            event_features[feature] = computed
-        return event_features
-
     @staticmethod
-    def __event_counts_impl(events: pd.DataFrame) -> pd.DataFrame:
-        """
-        Counts the number of detected events for each detector by type of event.
-        :param events: A DataFrame containing the detected events of each rater/detector.
-        :return: A DataFrame containing the count of events detected by each rater/detector (cols), grouped by the given
-            criteria (rows).
-        """
-        def count_event_labels(data: List[Union[BaseEvent, cnfg.EVENT_LABELS]]) -> pd.Series:
-            labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
-            counts = labels.value_counts()
-            if counts.empty:
-                return pd.Series({l: 0 for l in cnfg.EVENT_LABELS})
-            if len(counts) == len(cnfg.EVENT_LABELS):
-                return counts
-            missing_labels = pd.Series({l: 0 for l in cnfg.EVENT_LABELS if l not in counts.index})
-            return pd.concat([counts, missing_labels]).sort_index()
-        event_counts = events.map(count_event_labels)
-        return event_counts
-
-    @staticmethod
-    def __microsaccade_ratio_impl(events: pd.DataFrame,
-                                  threshold_amplitude: float = cnfg.MICROSACCADE_AMPLITUDE_THRESHOLD) -> pd.DataFrame:
-        saccades = events.map(lambda cell: [e for e in cell if e.event_label == cnfg.EVENT_LABELS.SACCADE])
-        saccades_count = saccades.map(len).to_numpy()
-        microsaccades = saccades.map(lambda cell: [e for e in cell if e.amplitude < threshold_amplitude])
-        microsaccades_count = microsaccades.map(len).to_numpy()
-
-        ratios = np.divide(microsaccades_count, saccades_count,
-                           out=np.full_like(saccades_count, fill_value=np.nan, dtype=float),  # fill NaN if denom is 0
-                           where=saccades_count != 0)
-        ratios = pd.DataFrame(ratios, index=events.index, columns=events.columns)
-        return ratios
+    def __get_default_sample_features() -> Set[str]:
+        return {"Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
+                "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
 
     @staticmethod
     def __get_default_event_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:

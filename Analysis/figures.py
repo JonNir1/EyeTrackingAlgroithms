@@ -74,15 +74,14 @@ def create_event_feature_distributions(
         if feature == "Count":
             # needs unique grouping
             grouped = data.groupby(level=cnst.STIMULUS).agg(list).map(sum)
-            if len(grouped.index) == 1:
-                return grouped
-            # there is more than one group, so add a row for "all" groups
-            group_all = pd.Series(data.sum(axis=0), index=data.columns, name="all")
-            grouped = pd.concat([grouped.T, group_all], axis=1).T  # add "all" row
+            if len(grouped.index) > 1:
+                # there is more than one group, so add a row for "all" groups
+                group_all = pd.Series(data.sum(axis=0), index=data.columns, name="all")
+                grouped = pd.concat([grouped.T, group_all], axis=1).T  # add "all" row
             title = f"{dataset_name.upper()}:\t\tEvent {feature.title()}"
         else:
             grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
-            title = f"{dataset_name.upper()}:\t\tEvents' {feature.title()} Distribution"
+            title = f"{dataset_name.upper()}:\t\t{feature.title()} Distribution"
         fig = dg.distributions_grid(
             data=grouped,
             title=title,
@@ -110,9 +109,9 @@ def create_matched_event_feature_distributions(
                 scheme_df = scheme_df.map(
                     lambda cell: [v[0] - v[1] for v in cell if not np.any(pd.isna(v))] if np.all(pd.notnull(cell)) else np.nan
                 )
-                title = f"{dataset_name.upper()}:\t\tMatched-Events' Difference in {feature.title()} Distribution"
+                title = f"{dataset_name.upper()}:\t\tDifference of Matched {feature.title()} Distribution"
             elif feature in FEATURES_BETWEEN_EVENTS:
-                title = f"{dataset_name.upper()}:\t\tMatched-Events' {feature.title()} Distribution"
+                title = f"{dataset_name.upper()}:\t\t{feature.title()} Distribution"
             else:
                 raise ValueError(f"Feature {feature} is not supported for matched event distributions.")
             multi_data[scheme] = hlp.group_and_aggregate(scheme_df, group_by=cnst.STIMULUS)
@@ -139,7 +138,7 @@ def create_matching_ratio_distributions(
         ratios[scheme] = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
     fig = dg.multi_distributions_grid(
         multi_data=ratios,
-        title=f"{dataset_name.upper()}:\t\tMatched-Events' Match Ratio Distribution",
+        title=f"{dataset_name.upper()}:\t\tMatch Ratio Distribution",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
         pdf_min_val=0,
         pdf_max_val=1,

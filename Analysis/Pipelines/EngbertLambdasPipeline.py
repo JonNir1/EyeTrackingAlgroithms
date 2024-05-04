@@ -1,4 +1,3 @@
-import os
 from typing import Union, List, Iterable
 
 import pandas as pd
@@ -18,7 +17,7 @@ class EngbertLambdasPipeline(BaseComparisonPipeline):
         if lambdas is None:
             detectors = self._get_default_detectors()
         else:
-            detectors = list({EngbertDetector(lambdaa=lmda) for lmda in lambdas})
+            detectors = list(EngbertDetector(lambdaa=lmda) for lmda in sorted(set(lambdas)))
         results = super().run(
             detectors=detectors,
             allow_cross_matching=False,
@@ -42,7 +41,7 @@ class EngbertLambdasPipeline(BaseComparisonPipeline):
 
     @classmethod
     def _get_default_detectors(cls) -> Union[EngbertDetector, List[EngbertDetector]]:
-        return list({EngbertDetector(lambdaa=lmda) for lmda in range(1, 7)})
+        return list(EngbertDetector(lambdaa=lmda) for lmda in range(1, 7))
 
     @staticmethod
     def _column_mapper(colname: str) -> str:

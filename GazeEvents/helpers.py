@@ -34,6 +34,21 @@ def parse_event_label(val: Union[cnfg.EVENT_LABELS, BaseEvent, int, str, float],
         raise err
 
 
+def count_labels_or_events(data: Sequence[Union[BaseEvent, cnfg.EVENT_LABELS]]) -> pd.Series:
+    """
+    Counts the number of same-type labels/events in the given data, and fills in missing labels with 0 counts.
+    Returns a Series with the counts of each GazEventTypeEnum label.
+    """
+    labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
+    counts = labels.value_counts()
+    if counts.empty:
+        return pd.Series({l: 0 for l in cnfg.EVENT_LABELS})
+    if len(counts) == len(cnfg.EVENT_LABELS):
+        return counts
+    missing_labels = pd.Series({l: 0 for l in cnfg.EVENT_LABELS if l not in counts.index})
+    return pd.concat([counts, missing_labels]).sort_index()
+
+
 def drop_events(seq: Sequence, to_drop: Sequence[cnfg.EVENT_LABELS] = None) -> Sequence:
     """ Drops events from the given sequence if they are in the set of event-labels to drop. """
     if len(seq) == 0 or pd.isnull(seq).all():
