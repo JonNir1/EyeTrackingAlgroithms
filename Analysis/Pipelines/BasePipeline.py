@@ -2,15 +2,13 @@ import os
 import time
 import copy
 from abc import ABC, abstractmethod
-from typing import List, Union, Set, Dict, Optional
+from typing import Set, Dict, Optional
 
-import numpy as np
 import pandas as pd
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
 import Analysis.figures as figs
-from GazeEvents.BaseEvent import BaseEvent
 
 
 class BasePipeline(ABC):
