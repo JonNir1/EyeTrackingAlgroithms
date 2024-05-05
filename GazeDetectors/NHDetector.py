@@ -39,28 +39,40 @@ class NHDetector(BaseDetector):
     __DEFAULT_ALPHA = 0.7   # weight for saccade onset threshold when calculating saccade_offset_threshold
     __DEFAULT_BETA = 0.3    # weight for locally adaptive threshold when calculating saccade_offset_threshold
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if kwargs.get('filter_duration', self.__DEFAULT_FILTER_DURATION) <= 0:
+    def __init__(
+            self,
+            missing_value=cnfg.DEFAULT_MISSING_VALUE,
+            viewer_distance=cnfg.DEFAULT_VIEWER_DISTANCE,
+            pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+            dilate_nans_by=cnfg.DEFAULT_NAN_PADDING,
+            filter_duration=__DEFAULT_FILTER_DURATION,
+            filter_polyorder=__DEFAULT_FILTER_POLYORDER,
+            max_saccade_velocity=__DEFAULT_MAX_SACCADE_VELOCITY,
+            max_saccade_acceleration=__DEFAULT_MAX_SACCADE_ACCELERATION,
+            alpha=__DEFAULT_ALPHA,
+            beta=__DEFAULT_BETA,
+            allow_high_psos=True,
+    ):
+        super().__init__(missing_value, viewer_distance, pixel_size, dilate_nans_by)
+        self._filter_duration = filter_duration
+        if self._filter_duration <= 0:
             raise ValueError("filter_duration must be positive")
-        if kwargs.get('filter_polyorder', self.__DEFAULT_FILTER_POLYORDER) < 0:
+        self._filter_polyorder = filter_polyorder
+        if self._filter_polyorder < 0:
             raise ValueError("filter_polyorder must be non-negative")
-        if kwargs.get('max_saccade_velocity', self.__DEFAULT_MAX_SACCADE_VELOCITY) <= 0:
+        self._max_saccade_velocity = max_saccade_velocity
+        if self._max_saccade_velocity <= 0:
             raise ValueError("max_saccade_velocity must be positive")
-        if kwargs.get('max_saccade_acceleration', self.__DEFAULT_MAX_SACCADE_ACCELERATION) <= 0:
+        self._max_saccade_acceleration = max_saccade_acceleration
+        if self._max_saccade_acceleration <= 0:
             raise ValueError("max_saccade_acceleration must be positive")
-        if not 0 <= kwargs.get('alpha', self.__DEFAULT_ALPHA) <= 1:
+        self._alpha = alpha
+        if not 0 <= self._alpha <= 1:
             raise ValueError("parameter alpha must be in the range [0, 1]")
-        if not 0 <= kwargs.get('beta', self.__DEFAULT_BETA) <= 1:
+        self._beta = beta
+        if not 0 <= self._beta <= 1:
             raise ValueError("parameter beta must be in the range [0, 1]")
-
-        self._filter_duration = kwargs.get('filter_duration', self.__DEFAULT_FILTER_DURATION)
-        self._filter_polyorder = kwargs.get('filter_polyorder', self.__DEFAULT_FILTER_POLYORDER)
-        self._max_saccade_velocity = kwargs.get('max_saccade_velocity', self.__DEFAULT_MAX_SACCADE_VELOCITY)
-        self._max_saccade_acceleration = kwargs.get('max_saccade_acceleration', self.__DEFAULT_MAX_SACCADE_ACCELERATION)
-        self._alpha = kwargs.get('alpha', self.__DEFAULT_ALPHA)
-        self._beta = kwargs.get('beta', self.__DEFAULT_BETA)
-        self._allow_high_psos = kwargs.get('allow_high_psos', True)
+        self._allow_high_psos = allow_high_psos
 
     @property
     def _minimum_fixation_samples(self) -> int:

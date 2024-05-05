@@ -24,11 +24,18 @@ class IVTDetector(BaseDetector):
 
     __DEFAULT_VELOCITY_THRESHOLD = 45  # degrees per second
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if kwargs.get('velocity_threshold', self.__DEFAULT_VELOCITY_THRESHOLD) <= 0:
+    def __init__(
+            self,
+            missing_value=cnfg.DEFAULT_MISSING_VALUE,
+            viewer_distance=cnfg.DEFAULT_VIEWER_DISTANCE,
+            pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+            dilate_nans_by=cnfg.DEFAULT_NAN_PADDING,
+            velocity_threshold=__DEFAULT_VELOCITY_THRESHOLD,
+    ):
+        super().__init__(missing_value, viewer_distance, pixel_size, dilate_nans_by)
+        self._velocity_threshold = velocity_threshold
+        if self._velocity_threshold <= 0:
             raise ValueError("velocity_threshold must be positive")
-        self._velocity_threshold = kwargs.get('velocity_threshold', self.__DEFAULT_VELOCITY_THRESHOLD)
 
     def _detect_impl(self, t: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         candidates = np.asarray(self._candidates, dtype=cnfg.EVENT_LABELS).copy()

@@ -35,41 +35,52 @@ class REMoDNaVDetector(BaseDetector):
     __DEFAULT_SAVGOL_POLYORD = 2                                # unitless
     __DEFAULT_MAX_VELOCITY = 1000                               # deg/s
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._saccade_initial_velocity_threshold = kwargs.get('saccade_initial_velocity_threshold',
-                                                              self.__DEFAULT_SACCADE_INITIAL_VELOCITY_THRESHOLD)
+    def __init__(
+            self,
+            missing_value=cnfg.DEFAULT_MISSING_VALUE,
+            viewer_distance=cnfg.DEFAULT_VIEWER_DISTANCE,
+            pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+            dilate_nans_by=cnfg.DEFAULT_NAN_PADDING,
+            saccade_initial_velocity_threshold=__DEFAULT_SACCADE_INITIAL_VELOCITY_THRESHOLD,
+            saccade_context_window_duration=__DEFAULT_SACCADE_CONTEXT_WINDOW_DURATION,
+            saccade_initial_max_freq=__DEFAULT_SACCADE_INITIAL_MAX_FREQ,
+            saccade_onset_threshold_noise_factor=__DEFAULT_SACCADE_ONSET_THRESHOLD_NOISE_FACTOR,
+            smooth_pursuit_drift_velocity_threshold=__DEFAULT_SMOOTH_PURSUIT_DRIFT_VELOCITY_THRESHOLD,
+            smooth_pursuit_lowpass_cutoff_freq=__DEFAULT_SMOOTH_PURSUIT_LOWPASS_CUTOFF_FREQ,
+            median_filter_length=__DEFAULT_MEDIAN_FILTER_LENGTH,
+            savgol_length=__DEFAULT_SAVGOL_LENGTH,
+            savgol_polyord=__DEFAULT_SAVGOL_POLYORD,
+            max_velocity=__DEFAULT_MAX_VELOCITY,
+    ):
+        super().__init__(missing_value, viewer_distance, pixel_size, dilate_nans_by)
+        self._saccade_initial_velocity_threshold = saccade_initial_velocity_threshold
         if self._saccade_initial_velocity_threshold <= 0:
             raise ValueError("saccade_initial_velocity_threshold must be positive")
-        self._saccade_context_window_duration = kwargs.get('saccade_context_window_duration',
-                                                           self.__DEFAULT_SACCADE_CONTEXT_WINDOW_DURATION)
+        self._saccade_context_window_duration = saccade_context_window_duration
         if self._saccade_context_window_duration <= 0:
             raise ValueError("saccade_context_window_duration must be positive")
-        self._saccade_initial_max_freq = kwargs.get('saccade_initial_max_freq', self.__DEFAULT_SACCADE_INITIAL_MAX_FREQ)
+        self._saccade_initial_max_freq = saccade_initial_max_freq
         if self._saccade_initial_max_freq <= 0:
             raise ValueError("saccade_initial_max_freq must be positive")
-        self._saccade_onset_threshold_noise_factor = kwargs.get('saccade_onset_threshold_noise_factor',
-                                                                self.__DEFAULT_SACCADE_ONSET_THRESHOLD_NOISE_FACTOR)
+        self._saccade_onset_threshold_noise_factor = saccade_onset_threshold_noise_factor
         if self._saccade_onset_threshold_noise_factor <= 0:
             raise ValueError("saccade_onset_threshold_noise_factor must be positive")
-        self._smooth_pursuit_drift_velocity_threshold = kwargs.get('smooth_pursuit_drift_velocity_threshold',
-                                                             self.__DEFAULT_SMOOTH_PURSUIT_DRIFT_VELOCITY_THRESHOLD)
+        self._smooth_pursuit_drift_velocity_threshold = smooth_pursuit_drift_velocity_threshold
         if self._smooth_pursuit_drift_velocity_threshold <= 0:
             raise ValueError("smooth_pursuit_velocity_threshold must be positive")
-        self._smooth_pursuit_lowpass_cutoff_freq = kwargs.get('smooth_pursuit_lowpass_cutoff_freq',
-                                                              self.__DEFAULT_SMOOTH_PURSUIT_LOWPASS_CUTOFF_FREQ)
+        self._smooth_pursuit_lowpass_cutoff_freq = smooth_pursuit_lowpass_cutoff_freq
         if self._smooth_pursuit_lowpass_cutoff_freq <= 0:
             raise ValueError("smooth_pursuit_lowpass_cutoff_freq must be positive")
-        self._median_filter_length = kwargs.get('median_filter_length', self.__DEFAULT_MEDIAN_FILTER_LENGTH)
+        self._median_filter_length = median_filter_length
         if self._median_filter_length <= 0:
             raise ValueError("median_filter_length must be positive")
-        self._savgol_length = kwargs.get('savgol_length', self.__DEFAULT_SAVGOL_LENGTH)
+        self._savgol_length = savgol_length
         if self._savgol_length <= 0:
             raise ValueError("savgol_length must be positive")
-        self._savgol_polyord = kwargs.get('savgol_polyord', self.__DEFAULT_SAVGOL_POLYORD)
+        self._savgol_polyord = savgol_polyord
         if self._savgol_polyord <= 0:
             raise ValueError("savgol_polyord must be positive")
-        self._max_velocity = kwargs.get('max_velocity', self.__DEFAULT_MAX_VELOCITY)
+        self._max_velocity = max_velocity
         if self._max_velocity <= 0:
             raise ValueError("max_velocity must be positive")
 

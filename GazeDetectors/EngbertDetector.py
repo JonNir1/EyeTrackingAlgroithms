@@ -31,14 +31,22 @@ class EngbertDetector(BaseDetector):
     __DEFAULT_LAMBDAA = 5       # lambda noise threshold
     __DEFAULT_WINDOW_SIZE = 2   # (half) number of samples used to calculate axial-velocity
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if kwargs.get('lambdaa', EngbertDetector.__DEFAULT_LAMBDAA) <= 0:
+    def __init__(
+            self,
+            missing_value=cnfg.DEFAULT_MISSING_VALUE,
+            viewer_distance=cnfg.DEFAULT_VIEWER_DISTANCE,
+            pixel_size=cnfg.SCREEN_MONITOR.pixel_size,
+            dilate_nans_by=cnfg.DEFAULT_NAN_PADDING,
+            lambdaa=__DEFAULT_LAMBDAA,
+            window_size=__DEFAULT_WINDOW_SIZE,
+    ):
+        super().__init__(missing_value, viewer_distance, pixel_size, dilate_nans_by)
+        self._lambda = lambdaa
+        if self._lambda <= 0:
             raise ValueError("lambdaa must be positive")
-        if kwargs.get('window_size', EngbertDetector.__DEFAULT_WINDOW_SIZE) <= 0:
+        self._window_size = window_size
+        if self._window_size <= 0:
             raise ValueError("window_size must be positive")
-        self._lambda = kwargs.get('lambdaa', self.__DEFAULT_LAMBDAA)
-        self._window_size = kwargs.get('window_size', self.__DEFAULT_WINDOW_SIZE)
 
     @property
     def name(self) -> str:
