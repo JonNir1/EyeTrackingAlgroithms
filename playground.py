@@ -1,9 +1,14 @@
-from DataSetLoaders.DataSetFactory import DataSetFactory
-from GazeDetectors.EngbertDetector import EngbertDetector
+import os
 
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.io as pio
 
-irf = DataSetFactory.load("IRF")
-eng = EngbertDetector()
+import Config.constants as cnst
+import Config.experiment_config as cnfg
+from Visualization import scarfplot
 
-samples, events, detector_results = DataSetFactory.detect(irf, raters=["RZ"], detectors=[eng])
+pio.renderers.default = "browser"
 
+irf_samples = pd.read_pickle(os.path.join(cnfg.OUTPUT_DIR, "DetectorComparison", "IRF", "samples.pkl"))
