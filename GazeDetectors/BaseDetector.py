@@ -33,21 +33,18 @@ class BaseDetector(ABC):
 
     def __init__(self, **kwargs):
         self._missing_value = kwargs.get('missing_value', cnfg.DEFAULT_MISSING_VALUE)
-        self._sr = np.nan  # sampling rate
-        self._candidates = None  # event candidates
-        self.data: dict = {}  # gaze data
-
         self._viewer_distance = kwargs.get('viewer_distance', cnfg.DEFAULT_VIEWER_DISTANCE)  # cm
         if self._viewer_distance <= 0:
             raise ValueError("viewer_distance must be positive")
-
         self._pixel_size = kwargs.get('pixel_size', cnfg.SCREEN_MONITOR.pixel_size)  # cm
         if self._pixel_size <= 0:
             raise ValueError("pixel_size must be positive")
-
         self._dilate_nans_by = kwargs.get('dilate_nans_by', cnfg.DEFAULT_NAN_PADDING)  # ms
         if self._dilate_nans_by < 0:
             raise ValueError("dilate_nans_by must be non-negative")
+        self._sr = np.nan  # sampling rate
+        self._candidates = None  # event candidates
+        self.data: dict = {}  # gaze data
 
     @property
     def name(self) -> str:
