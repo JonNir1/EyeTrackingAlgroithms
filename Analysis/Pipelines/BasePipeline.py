@@ -24,7 +24,7 @@ class BasePipeline(ABC):
         self.dataset_name = dataset_name
         self._output_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
         os.makedirs(self._output_dir, exist_ok=True)
-        self._column_pairs = []
+        self._figure_columns = []  # a subset of columns to display in the figures
 
     @abstractmethod
     def run(self, verbose=False, **kwargs):
@@ -100,7 +100,7 @@ class BasePipeline(ABC):
             if not os.path.exists(sample_metrics_dir):
                 os.makedirs(sample_metrics_dir, exist_ok=True)
             _ = figs.create_sample_metric_distributions(
-                sample_metrics, self.dataset_name, sample_metrics_dir, self._column_pairs
+                sample_metrics, self.dataset_name, sample_metrics_dir, self._figure_columns
             )
         end = time.time()
         if verbose:
@@ -204,7 +204,7 @@ class BasePipeline(ABC):
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matching_ratio_distributions(
-                ratios, self.dataset_name, matched_features_dir, self._column_pairs
+                ratios, self.dataset_name, matched_features_dir, self._figure_columns
             )
         end = time.time()
         if verbose:
@@ -247,7 +247,7 @@ class BasePipeline(ABC):
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matched_event_feature_distributions(
-                features, self.dataset_name, matched_features_dir, self._column_pairs
+                features, self.dataset_name, matched_features_dir, self._figure_columns
             )
         end = time.time()
         if verbose:

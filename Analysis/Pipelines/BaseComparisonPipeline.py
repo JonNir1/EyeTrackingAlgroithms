@@ -100,7 +100,7 @@ class BaseComparisonPipeline(BasePipeline):
                     samples.to_pickle(os.path.join(self._output_dir, "samples.pkl"))
                     events.to_pickle(os.path.join(self._output_dir, "events.pkl"))
                     detector_results.to_pickle(os.path.join(self._output_dir, "detector_results.pkl"))
-            self._column_pairs = [
+            self._figure_columns = [
                 pair for pair in hlp.extract_rater_detector_pairs(samples) if pair[0] == self.reference_rater
             ]
             end = time.time()

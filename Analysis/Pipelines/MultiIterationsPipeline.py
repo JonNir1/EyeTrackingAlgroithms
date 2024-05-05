@@ -66,7 +66,7 @@ class MultiIterationsPipeline(BasePipeline):
                     samples.to_pickle(os.path.join(self._output_dir, "samples.pkl"))
                     events.to_pickle(os.path.join(self._output_dir, "events.pkl"))
                     detector_results.to_pickle(os.path.join(self._output_dir, "detector_results.pkl"))
-            self._column_pairs = samples.columns.to_list()
+            self._figure_columns = samples.columns.to_list()
             end = time.time()
             if verbose:
                 print(f"Preprocessing Completed:\t{end - start:.2f}s")
