@@ -11,6 +11,7 @@ import Config.experiment_config as cnfg
 from Analysis.Pipelines.BasePipeline import BasePipeline
 from GazeDetectors.BaseDetector import BaseDetector
 from DataSetLoaders.DataSetFactory import DataSetFactory
+import Analysis.figures as figs
 
 
 class MultiIterationsPipeline(BasePipeline):
@@ -41,6 +42,11 @@ class MultiIterationsPipeline(BasePipeline):
             create_figures=True,
             verbose=verbose,
         )
+        # create scarfplots
+        scarfplot_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
+        if not os.path.exists(scarfplot_dir):
+            os.makedirs(scarfplot_dir, exist_ok=True)
+        _ = figs.create_comparison_scarfplots(samples, scarfplot_dir)
         return samples, events, detector_results, event_features, fixation_features, saccade_features
 
     def load_and_detect(
@@ -71,6 +77,9 @@ class MultiIterationsPipeline(BasePipeline):
             if verbose:
                 print(f"Preprocessing Completed:\t{end - start:.2f}s")
         return samples, events, detector_results
+
+    def _process_samples(self, samples, verbose=False):
+        return samples
 
     def _process_event_features(self, events, create_figures=False, verbose=False):
         event_features = self.process_event_features(
