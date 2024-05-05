@@ -5,6 +5,22 @@ import Config.constants as cnst
 import Config.experiment_config as cnfg
 
 
+def _discrete_colormap(colors: dict):
+    borders = np.arange(len(colors) + 1)
+    centers = (borders[1:] + borders[:-1]) / 2
+    borders = borders / len(colors)  # Normalize to [0, 1]
+    colormap = []
+    for i, key in enumerate(sorted(colors.keys())):
+        colormap.extend([(borders[i], colors[key]), (borders[i + 1], colors[key])])
+    return colormap, centers
+
+
+_COLORMAP, _TICKVALS = _discrete_colormap({label: value[cnst.COLOR] for label, value in cnfg.EVENT_MAPPING.items()})
+_ZMIN, _ZMAX = np.nanmin([e.value for e in cnfg.EVENT_LABELS]), np.nanmax([e.value for e in cnfg.EVENT_LABELS])
+_TICKTEXT = [e.name for e in cnfg.EVENT_LABELS]
+
+
+
 def scarfplots_comparison_figure(t: np.ndarray, *events, **kwargs) -> go.Figure:
     """
     Creates a figure with multiple scarfplots stacked on top of each other.
@@ -34,7 +50,7 @@ def scarfplots_comparison_figure(t: np.ndarray, *events, **kwargs) -> go.Figure:
         yaxis=dict(
             range=[0, (2 * num_scarfs - 1) * scarf_size],
             tickmode='array',
-            tickvals=[(i + 0.5) * scarf_size for i in range(num_scarfs)],
+            tickvals=[(2 * i + 0.5) * scarf_size for i in range(num_scarfs)],
             ticktext=names,
         ),
     )
@@ -49,38 +65,21 @@ def add_scarfplot(fig: go.Figure,
                   **colorbar_kwargs) -> go.Figure:
     """ Adds a scarfplot to the figure. """
     assert len(t) == len(events)
-    _borders, centers, colormap = _discrete_colormap({e for e in cnfg.EVENT_LABELS},
-                                                     {k: v[cnst.COLOR] for k, v in cnfg.EVENT_MAPPING.items()})
     colorbar_length = colorbar_kwargs.get("colorbar_length", 1)
     scarfplot = go.Heatmap(
         x=t,
         y=[ymin, ymax],
         z=[events],
-        zmin=np.nanmin([e.value for e in cnfg.EVENT_LABELS]),
-        zmax=np.nanmax([e.value for e in cnfg.EVENT_LABELS]),
-        colorscale=colormap,
+        zmin=_ZMIN,
+        zmax=_ZMAX,
+        colorscale=_COLORMAP,
         colorbar=dict(
             len=colorbar_length,
             thickness=colorbar_kwargs.get("colorbar_thickness", 25),
-            tickvals=np.array(centers) * colorbar_length,
-            ticktext=[e.name for e in cnfg.EVENT_LABELS],
+            tickvals=_TICKVALS * colorbar_length,
+            ticktext=_TICKTEXT,
         ),
         showscale=colorbar_kwargs.get("colorbar_show", True),
     )
     fig.add_trace(scarfplot)
     return fig
-
-
-def _discrete_colormap(s: set, colors: dict):
-    borders, centers = _calculate_bins(s)
-    colormap = []
-    for i, e in enumerate(s):
-        colormap.extend([(borders[i], colors[e]), (borders[i+1], colors[e])])
-    return borders, centers, colormap
-
-
-def _calculate_bins(s: set):
-    borders = np.arange(len(s) + 1)
-    normalized_borders = borders / np.max(borders)
-    centers = ((borders[1:] + borders[:-1]) / 2).tolist()
-    return normalized_borders, centers
