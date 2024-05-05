@@ -51,8 +51,10 @@ class EngbertDetector(BaseDetector):
 
         # Calculate the velocity of the gaze data in both axes
         x_velocity = self._calculate_axial_velocity(x)
-        thresh_x = self._median_standard_deviation(x_velocity) * self._lambda
         y_velocity = self._calculate_axial_velocity(y)
+
+        # Calculate the Fixation-Saccade threshold in both axes
+        thresh_x = self._median_standard_deviation(x_velocity) * self._lambda
         thresh_y = self._median_standard_deviation(y_velocity) * self._lambda
 
         # Identify saccade candidates as samples with velocity greater than the noise threshold
@@ -71,14 +73,14 @@ class EngbertDetector(BaseDetector):
 
     def _calculate_axial_velocity(self, arr) -> np.ndarray:
         """
-        Calculates the velocity along a single axis, based on the algorithm described in the original paper:
+        Calculates the velocity (px/sec) along a single axis, based on the algorithm described in the original paper:
         1. Sum values in a window of size window_size, *before* the current sample:
             sum_before = arr(t-1) + arr(t-2) + ... + arr(t-ws)
         2. Sum values in a window of size window_size, *after* the current sample
             sum_after = arr(t+1) + arr(t+2) + ... + arr(t+ws)
         3. Calculate the difference between the two sums
             diff = sum_after - sum_before
-        4. Divide by the time-difference, calculated as `sampling_rate` / (2 * `window_size`)
+        4. Divide by the time-difference, calculated as `sampling_rate` / (2 * (`window_size` + 1))
             velocity = diff * (sampling_rate / (2 * (window_size + 1))
         5. For the first and last `window_size` samples, the velocity is np.nan
         """
