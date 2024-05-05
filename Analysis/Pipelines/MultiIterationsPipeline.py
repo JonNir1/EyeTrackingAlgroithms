@@ -78,9 +78,6 @@ class MultiIterationsPipeline(BasePipeline):
                 print(f"Preprocessing Completed:\t{end - start:.2f}s")
         return samples, events, detector_results
 
-    def _process_samples(self, samples, verbose=False):
-        return samples
-
     def _process_event_features(self, events, create_figures=False, verbose=False):
         event_features = self.process_event_features(
             events_df=events,
