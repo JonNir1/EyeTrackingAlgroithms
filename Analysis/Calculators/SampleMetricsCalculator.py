@@ -25,7 +25,7 @@ class SampleMetricsCalculator(BaseCalculator):
         """
         sample_metrics = {}
         for metric in metric_names:
-            if metric in {"count", "counts", "label counts"}:
+            if metric.lower() in {"count", "counts", "label counts"}:
                 computed = samples.map(count_labels_or_events)
             else:
                 computed = cls.__calculate_on_column_pairs(samples, metric)

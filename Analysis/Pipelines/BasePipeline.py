@@ -96,7 +96,7 @@ class BasePipeline(ABC):
         label_name = cnst.EVENT if label is None else label.name.lower()
         if verbose:
             print(f"Analyzing {label_name.capitalize()} Samples...")
-        data = samples_df if samples_df is None else samples_df.map(
+        data = samples_df if label is None else samples_df.map(
             lambda cell: [label if sample == label else cnfg.EVENT_LABELS.UNDEFINED for sample in cell] if pd.notnull(
                 cell).all() else None
         )
