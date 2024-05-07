@@ -13,20 +13,31 @@ import Analysis.figures as figs
 
 class BasePipeline(ABC):
 
+    _PIPELINE_STR = "Pipeline"
     _SCARFPLOTS_STR = "scarfplots"
     _SAMPLE_METRICS_STR = "sample_metrics"
     _FEATURES_STR = "features"
     _MATCHED_FEATURES_STR = "matched_features"
 
-    def __init__(self, dataset_name: str):
+    def __init__(self, dataset_name: str, pipeline_name: Optional[str] = None):
         self.dataset_name = dataset_name
-        self._output_dir = os.path.join(cnfg.OUTPUT_DIR, self._name(), self.dataset_name)
+        self._name = pipeline_name
+        self._output_dir = os.path.join(cnfg.OUTPUT_DIR, self.name, self.dataset_name)
         os.makedirs(self._output_dir, exist_ok=True)
         self._figure_columns = []  # a subset of columns to display in the figures
 
     @abstractmethod
     def run(self, verbose=False, **kwargs):
         raise NotImplementedError
+
+    @property
+    def name(self) -> str:
+        if self._name is not None:
+            return self._name
+        classname = self.__class__.__name__
+        if classname.endswith(self._PIPELINE_STR):
+            return classname[:-len(self._PIPELINE_STR)]
+        return classname
 
     def match_events(
             self,
@@ -250,11 +261,6 @@ class BasePipeline(ABC):
         if verbose:
             print(f"Matched Features Analysis for {event_name.capitalize()}:\t{end - start:.2f}s")
         return features
-
-    @classmethod
-    def _name(cls) -> str:
-        classname = cls.__name__
-        return classname[:classname.index("Pipeline")]
 
     @staticmethod
     def __get_default_sample_features() -> Set[str]:
