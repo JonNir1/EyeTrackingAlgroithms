@@ -1,8 +1,9 @@
-from typing import Sequence
+from typing import Sequence, Optional
 
 import numpy as np
 import Levenshtein
 from sklearn.metrics import balanced_accuracy_score, cohen_kappa_score, matthews_corrcoef
+from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
@@ -54,6 +55,24 @@ def matthews_correlation(gt: Sequence, pred: Sequence) -> float:
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     return matthews_corrcoef(gt, pred)
+
+
+def confusion_matrix(
+        gt: Sequence,
+        pred: Sequence,
+        labels: Optional[Sequence] = cnfg.EVENT_LABELS,
+) -> np.ndarray:
+    """
+    Calculates the confusion matrix between two sequences of samples or events, where rows are the ground-truth labels
+    and columns are the predicted labels.
+    :param gt: The ground-truth sequence of samples or events.
+    :param pred: The predicted sequence of samples or events.
+    :param labels: The labels to use for the confusion matrix. If None, use only the existing labels in `gt` & `pred`.
+    :return: the square confusion matrix.
+    """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return sk_confusion_matrix(gt, pred, labels=labels)
 
 
 def transition_matrix_distance(gt: Sequence, pred: Sequence, norm: str) -> float:

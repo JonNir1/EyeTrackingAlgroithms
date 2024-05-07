@@ -260,7 +260,7 @@ class BasePipeline(ABC):
     @staticmethod
     def __get_default_sample_features() -> Set[str]:
         return {"Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
-                "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
+                "Confusion Matrix", "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
 
     @staticmethod
     def __get_default_event_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
