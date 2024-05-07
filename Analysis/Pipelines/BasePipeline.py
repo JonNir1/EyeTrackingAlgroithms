@@ -110,11 +110,6 @@ class BasePipeline(ABC):
         if create_figures:
             if verbose:
                 print(f"Creating Sample Figures...")
-            # create scarfplots
-            scarfplot_dir = os.path.join(self._output_dir, label_name, self._SCARFPLOTS_STR)
-            if not os.path.exists(scarfplot_dir):
-                os.makedirs(scarfplot_dir, exist_ok=True)
-            _ = figs.create_comparison_scarfplots(samples_df, scarfplot_dir)
             # create sample-metric figures
             sample_metrics_dir = os.path.join(self._output_dir, label_name, self._SAMPLE_METRICS_STR)
             if not os.path.exists(sample_metrics_dir):
@@ -122,6 +117,12 @@ class BasePipeline(ABC):
             _ = figs.create_sample_metric_distributions(
                 sample_metrics, self.dataset_name, sample_metrics_dir, self._figure_columns
             )
+            if label is None:
+                # create scarfplots
+                scarfplot_dir = os.path.join(self._output_dir, self._SCARFPLOTS_STR)
+                if not os.path.exists(scarfplot_dir):
+                    os.makedirs(scarfplot_dir, exist_ok=True)
+                _ = figs.create_comparison_scarfplots(samples_df, scarfplot_dir)
         end = time.time()
         if verbose:
             print(f"Sample Analysis for {label_name.capitalize()}:\t{end - start:.2f}s")
