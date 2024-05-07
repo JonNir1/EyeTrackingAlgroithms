@@ -155,7 +155,7 @@ def _create_counts_grid(
     grouped = counts.groupby(level=cnst.STIMULUS).agg(list).map(sum)
     if len(grouped.index) > 1:
         # there is more than one group, so add a row for "all" groups
-        group_all = pd.Series(counts.sum(axis=0), index=data.columns, name="all")
+        group_all = pd.Series(counts.sum(axis=0), index=counts.columns, name="all")
         grouped = pd.concat([grouped.T, group_all], axis=1).T  # add "all" row
     title = f"{dataset_name.upper()}:\t\t{count_of.title()} Label Counts"
     fig = dg.distributions_grid(
