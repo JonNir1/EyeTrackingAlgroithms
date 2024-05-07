@@ -119,6 +119,23 @@ def transition_matrix_distance(gt: Sequence, pred: Sequence, norm: str) -> float
     raise ValueError(f"Invalid norm: {norm}")
 
 
+def levenshtein_distance(gt: Sequence, pred: Sequence, do_normalization: bool = True) -> float:
+    """ Calculates the Levenshtein distance between two sequences of samples or events. """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    d = Levenshtein.distance(gt, pred)
+    if do_normalization:
+        return d / max(len(gt), len(pred))
+    return d
+
+
+def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
+    """ Calculates the Levenshtein ratio between two sequences of samples or events. """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return Levenshtein.ratio(gt, pred)
+
+
 def _transition_matrix(seq: Sequence) -> np.ndarray:
     """
     Calculate the transition probabilities between events in the given sequence.
@@ -160,23 +177,6 @@ def _calculate_stationary_distribution(probs: np.ndarray, allow_zero: bool = Fal
         # No eigenvalue is close enough to 1, so the matrix does not have a stationary distribution
         stationary = np.full_like(eigenvalues.real, dtype=float, fill_value=np.nan)
     return stationary
-
-
-def levenshtein_distance(gt: Sequence, pred: Sequence, do_normalization: bool = True) -> float:
-    """ Calculates the Levenshtein distance between two sequences of samples or events. """
-    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
-    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    d = Levenshtein.distance(gt, pred)
-    if do_normalization:
-        return d / max(len(gt), len(pred))
-    return d
-
-
-def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
-    """ Calculates the Levenshtein ratio between two sequences of samples or events. """
-    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
-    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return Levenshtein.ratio(gt, pred)
 
 
 def _calc_precision_recall_f1(gt: Sequence, pred: Sequence) -> (float, float, float):
