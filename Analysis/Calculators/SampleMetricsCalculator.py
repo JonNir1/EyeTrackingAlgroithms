@@ -53,6 +53,11 @@ class SampleMetricsCalculator(BaseCalculator):
             metric_func = metrics.matthews_correlation
         elif met in {"confusion matrix", "confusion"}:
             metric_func = metrics.confusion_matrix
+        elif met in {"ndkl", "normalized dkl", "normalized kl", "normalized kl divergence",
+                     "normalized kullback leibler", "normalized transition matrix kl-divergence"}:
+            metric_func = metrics.normalized_kl_divergence
+
+        # The following are un-normalized metrics and provide very little additional information
         elif met in {"dkl", "kl", "kl divergence", "kullback leibler", "transition matrix kl-divergence"}:
             metric_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="kl")
         elif met in {"fro", "frobenius", "l2", "transition matrix l2-norm"}:
@@ -61,6 +66,7 @@ class SampleMetricsCalculator(BaseCalculator):
             metric_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="l1")
         elif met in {"linf", "infinity", "max", "inf", "transition matrix l-infinity norm"}:
             metric_func = lambda s1, s2: metrics.transition_matrix_distance(s1, s2, norm="linf")
+
         else:
             raise NotImplementedError(f"Unknown metric for samples:\t{metric_name}")
         computed = hlp.apply_on_column_pairs(samples, metric_func, is_symmetric=False)

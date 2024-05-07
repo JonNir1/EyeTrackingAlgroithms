@@ -101,6 +101,16 @@ def matthews_correlation(gt: Sequence, pred: Sequence) -> float:
     return met.matthews_corrcoef(gt, pred)
 
 
+def normalized_kl_divergence(gt: Sequence, pred: Sequence) -> float:
+    """
+    Calculates the normalized Kullback-Leibler divergence between two sequences of samples or events.
+    Normalization is done by taking the exponential of the negative KL-divergence, making the result in the range [0, 1]
+    where 1 means the sequences are identical and 0 means they are completely different.
+    """
+    kld = transition_matrix_distance(gt, pred, norm="kl")
+    return np.exp(-kld)
+
+
 def transition_matrix_distance(gt: Sequence, pred: Sequence, norm: str) -> float:
     """ Calculate the distance between the transition matrices of two sequences. """
     tm1 = _transition_matrix(gt)
