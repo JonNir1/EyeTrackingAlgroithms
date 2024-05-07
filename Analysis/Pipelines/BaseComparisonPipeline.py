@@ -15,8 +15,8 @@ from GazeDetectors.BaseDetector import BaseDetector
 
 class BaseComparisonPipeline(BasePipeline):
 
-    def __init__(self, dataset_name: str, reference_rater: str):
-        super().__init__(dataset_name)
+    def __init__(self, dataset_name: str, reference_rater: str, pipeline_name: Optional[str] = None):
+        super().__init__(dataset_name, pipeline_name)
         self.reference_rater = reference_rater
 
     @classmethod

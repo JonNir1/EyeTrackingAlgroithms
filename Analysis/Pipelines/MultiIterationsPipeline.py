@@ -2,6 +2,7 @@ import os
 import time
 import warnings
 import copy
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -21,8 +22,8 @@ class MultiIterationsPipeline(BasePipeline):
     _DEFAULT_NUM_ITERATIONS = 5
     _INDEXERS = [cnst.TRIAL, cnst.SUBJECT, cnst.SUBJECT_ID, cnst.STIMULUS, f"{cnst.STIMULUS}_name"]
 
-    def __init__(self, dataset_name: str, detector: BaseDetector):
-        super().__init__(dataset_name)
+    def __init__(self, dataset_name: str, detector: BaseDetector, pipeline_name: Optional[str] = None):
+        super().__init__(dataset_name, pipeline_name)
         self.detector = detector
         subdir_name = detector.name[:detector.name.index(self._DETECTOR_STR)]
         self._output_dir = os.path.join(self._output_dir, subdir_name)
