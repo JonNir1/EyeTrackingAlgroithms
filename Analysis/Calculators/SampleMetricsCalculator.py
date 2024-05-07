@@ -37,8 +37,8 @@ class SampleMetricsCalculator(BaseCalculator):
         met = metric_name.lower()
         if met in {"acc", "accuracy", "balanced accuracy"}:
             metric_func = metrics.balanced_accuracy
-        elif met in {"lev", "levenshtein", "levenshtein ratio"}:
-            metric_func = metrics.levenshtein_ratio
+        elif met in {"lev", "levenshtein", "levenshtein distance", "nld", "1-nld", "complement nld"}:
+            metric_func = metrics.complement_nld
         elif met in {"kappa", "cohen kappa", "cohen's kappa"}:
             metric_func = metrics.cohen_kappa
         elif met in {"mcc", "mathew's correlation", "mathews correlation"}:

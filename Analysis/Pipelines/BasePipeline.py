@@ -275,7 +275,7 @@ class BasePipeline(ABC):
     @staticmethod
     def __get_default_sample_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
         if label is None:
-            return {"Count", "Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
+            return {"Count", "Accuracy", "1-NLD", "Cohen's Kappa", "Mathew's Correlation",
                     "Confusion Matrix", "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
         return {"Accuracy"}
 

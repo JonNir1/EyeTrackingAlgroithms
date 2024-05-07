@@ -26,21 +26,15 @@ def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
     return balanced_accuracy_score(gt, pred)
 
 
-def levenshtein_distance(gt: Sequence, pred: Sequence, do_normalization: bool = True) -> float:
-    """ Calculates the Levenshtein distance between two sequences of samples or events. """
+def complement_nld(gt: Sequence, pred: Sequence) -> float:
+    """
+    Calculates the complement to Normalized Levenshtein Distance (1-NLD) between two sequences of samples or events.
+    """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     d = Levenshtein.distance(gt, pred)
-    if do_normalization:
-        return d / max(len(gt), len(pred))
-    return d
-
-
-def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
-    """ Calculates the Levenshtein ratio between two sequences of samples or events. """
-    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
-    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return Levenshtein.ratio(gt, pred)
+    normalized_d = d / max(len(gt), len(pred))
+    return 1 - normalized_d
 
 
 def cohen_kappa(gt: Sequence, pred: Sequence) -> float:
@@ -135,3 +129,19 @@ def _calculate_stationary_distribution(probs: np.ndarray, allow_zero: bool = Fal
         stationary = np.full_like(eigenvalues.real, dtype=float, fill_value=np.nan)
     return stationary
 
+
+def levenshtein_distance(gt: Sequence, pred: Sequence, do_normalization: bool = True) -> float:
+    """ Calculates the Levenshtein distance between two sequences of samples or events. """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    d = Levenshtein.distance(gt, pred)
+    if do_normalization:
+        return d / max(len(gt), len(pred))
+    return d
+
+
+def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
+    """ Calculates the Levenshtein ratio between two sequences of samples or events. """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return Levenshtein.ratio(gt, pred)

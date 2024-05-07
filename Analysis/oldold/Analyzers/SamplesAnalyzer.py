@@ -95,7 +95,7 @@ class SamplesAnalyzer(BaseAnalyzer):
         if metric_name == "acc" or metric_name == "accuracy" or metric_name == "balanced accuracy":
             metric_func = metrics.balanced_accuracy
         elif metric_name == "lev" or metric_name == "levenshtein":
-            metric_func = metrics.levenshtein_ratio
+            metric_func = metrics.complement_nld
         elif metric_name == "kappa" or metric_name == "cohen kappa":
             metric_func = metrics.cohen_kappa
         elif metric_name == "mcc" or metric_name == "matthews correlation":
