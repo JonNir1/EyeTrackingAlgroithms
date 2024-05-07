@@ -1,9 +1,8 @@
 from typing import Sequence, Optional
 
 import numpy as np
+import sklearn.metrics as met
 import Levenshtein
-from sklearn.metrics import balanced_accuracy_score, cohen_kappa_score, matthews_corrcoef
-from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
 import Config.constants as cnst
 import Config.experiment_config as cnfg
@@ -23,7 +22,7 @@ def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
     """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return balanced_accuracy_score(gt, pred)
+    return met.balanced_accuracy_score(gt, pred)
 
 
 def complement_nld(gt: Sequence, pred: Sequence) -> float:
@@ -41,14 +40,14 @@ def cohen_kappa(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the Cohen's Kappa coefficient between two sequences of samples or events. """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return cohen_kappa_score(gt, pred)
+    return met.cohen_kappa_score(gt, pred)
 
 
 def matthews_correlation(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the Matthews correlation coefficient between two sequences of samples or events. """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return matthews_corrcoef(gt, pred)
+    return met.matthews_corrcoef(gt, pred)
 
 
 def confusion_matrix(
@@ -66,7 +65,7 @@ def confusion_matrix(
     """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return sk_confusion_matrix(gt, pred, labels=labels)
+    return met.confusion_matrix(gt, pred, labels=labels)
 
 
 def transition_matrix_distance(gt: Sequence, pred: Sequence, norm: str) -> float:
