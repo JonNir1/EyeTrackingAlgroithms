@@ -28,7 +28,7 @@ class MultiIterationsPipeline(BasePipeline):
         self._output_dir = os.path.join(self._output_dir, subdir_name)
         os.makedirs(self._output_dir, exist_ok=True)
 
-    def run(
+    def _run_impl(
             self,
             allow_cross_matching: bool = False,
             verbose=False

@@ -13,12 +13,12 @@ from Analysis.figures import save_figure
 class EngbertLambdasPipeline(BaseComparisonPipeline):
     _LAMBDA_STR = "λ"
 
-    def run(self, lambdas: Iterable[float] = None, verbose=False, **kwargs):
+    def _run_impl(self, lambdas: Iterable[float] = None, verbose=False, **kwargs):
         if lambdas is None:
             detectors = self._get_default_detectors()
         else:
             detectors = list(EngbertDetector(lambdaa=lmda) for lmda in sorted(set(lambdas)))
-        results = super().run(
+        results = super()._run_impl(
             detectors=detectors,
             allow_cross_matching=False,
             verbose=verbose,

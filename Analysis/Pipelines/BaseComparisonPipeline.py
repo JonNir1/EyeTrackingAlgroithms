@@ -29,7 +29,7 @@ class BaseComparisonPipeline(BasePipeline):
     def _column_mapper(colname: str) -> str:
         raise NotImplementedError
 
-    def run(
+    def _run_impl(
             self,
             detectors: List[BaseDetector] = None,
             allow_cross_matching: bool = False,

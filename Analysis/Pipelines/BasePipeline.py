@@ -26,9 +26,15 @@ class BasePipeline(ABC):
         os.makedirs(self._output_dir, exist_ok=True)
         self._figure_columns = []  # a subset of columns to display in the figures
 
-    @abstractmethod
     def run(self, verbose=False, **kwargs):
-        raise NotImplementedError
+        start = time.time()
+        if verbose:
+            print(f"Pipeline:\t{self.name.upper()}\t\tDataset:\t{self.dataset_name.upper()}")
+        results = self._run_impl(verbose=verbose, **kwargs)
+        end = time.time()
+        if verbose:
+            print(f"Pipeline Completed:\t{end - start:.2f}s")
+        return results
 
     @property
     def name(self) -> str:
@@ -38,6 +44,10 @@ class BasePipeline(ABC):
         if classname.endswith(self._PIPELINE_STR):
             return classname[:-len(self._PIPELINE_STR)]
         return classname
+
+    @abstractmethod
+    def _run_impl(self, verbose=False, **kwargs):
+        raise NotImplementedError
 
     def match_events(
             self,
