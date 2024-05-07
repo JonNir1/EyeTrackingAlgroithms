@@ -80,14 +80,6 @@ class BasePipeline(ABC):
         if create_figures:
             if verbose:
                 print(f"Creating Sample Figures...")
-            # create label-counts figure
-            from GazeEvents.helpers import count_labels_or_events
-            label_counts_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}")
-            if not os.path.exists(label_counts_dir):
-                os.makedirs(label_counts_dir, exist_ok=True)
-            _ = figs.create_event_feature_distributions(
-                {"Count": samples_df.map(count_labels_or_events)}, self.dataset_name, label_counts_dir, None
-            )
             # create scarfplots
             scarfplot_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
             if not os.path.exists(scarfplot_dir):
@@ -259,7 +251,7 @@ class BasePipeline(ABC):
 
     @staticmethod
     def __get_default_sample_features() -> Set[str]:
-        return {"Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
+        return {"Count", "Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
                 "Confusion Matrix", "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
 
     @staticmethod

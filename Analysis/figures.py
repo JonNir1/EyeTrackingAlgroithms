@@ -48,19 +48,22 @@ def create_sample_metric_distributions(
 ) -> Dict[str, go.Figure]:
     figures = {}
     for metric in metrics.keys():
+        data = metrics[metric][columns] if columns is not None else metrics[metric]
         if metric == "Confusion Matrix":
             # skip confusion matrix as it is not a distribution
             # TODO: add confusion matrix visualization
             continue
-        data = metrics[metric][columns] if columns is not None else metrics[metric]
-        grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
-        fig = dg.distributions_grid(
-            data=grouped,
-            title=f"{dataset_name.upper()}:\t\tSample-Level {metric.title()}",
-            pdf_min_val=0 if "Transition Matrix" not in metric else None,
-            pdf_max_val=1 if "Transition Matrix" not in metric else None,
-            column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
-        )
+        elif metric in {"Count", "Counts"}:
+            fig = _create_counts_grid(data, dataset_name, "Sample")
+        else:
+            grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
+            fig = dg.distributions_grid(
+                data=grouped,
+                title=f"{dataset_name.upper()}:\t\tSample-Level {metric.title()}",
+                pdf_min_val=0 if "Transition Matrix" not in metric else None,
+                pdf_max_val=1 if "Transition Matrix" not in metric else None,
+                column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
+            )
         save_figure(fig, output_dir, f"{metric}")
         figures[metric] = fig
     return figures
@@ -75,24 +78,17 @@ def create_event_feature_distributions(
     figures = {}
     for feature in features.keys():
         data = features[feature][columns] if columns is not None else features[feature]
-        if feature == "Count":
-            # needs unique grouping
-            grouped = data.groupby(level=cnst.STIMULUS).agg(list).map(sum)
-            if len(grouped.index) > 1:
-                # there is more than one group, so add a row for "all" groups
-                group_all = pd.Series(data.sum(axis=0), index=data.columns, name="all")
-                grouped = pd.concat([grouped.T, group_all], axis=1).T  # add "all" row
-            title = f"{dataset_name.upper()}:\t\tEvent {feature.title()}"
+        if feature in {"Count", "Counts"}:
+            fig = _create_counts_grid(data, dataset_name, "Event")
         else:
             grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
-            title = f"{dataset_name.upper()}:\t\t{feature.title()} Distribution"
-        fig = dg.distributions_grid(
-            data=grouped,
-            title=title,
-            show_counts=feature == "Count",
-            pdf_min_val=0,
-            pdf_max_val=1,
-        )
+            fig = dg.distributions_grid(
+                data=grouped,
+                title=f"{dataset_name.upper()}:\t\t{feature.title()} Distribution",
+                show_counts=False,
+                pdf_min_val=0,
+                pdf_max_val=1,
+            )
         save_figure(fig, output_dir, f"{feature}")
         figures[feature] = fig
     return figures
@@ -148,4 +144,23 @@ def create_matching_ratio_distributions(
         pdf_max_val=1,
     )
     save_figure(fig, output_dir, f"Match Ratios")
+    return fig
+
+
+def _create_counts_grid(
+        counts: pd.DataFrame,
+        dataset_name: str,
+        count_of: str,
+) -> go.Figure:
+    grouped = counts.groupby(level=cnst.STIMULUS).agg(list).map(sum)
+    if len(grouped.index) > 1:
+        # there is more than one group, so add a row for "all" groups
+        group_all = pd.Series(counts.sum(axis=0), index=data.columns, name="all")
+        grouped = pd.concat([grouped.T, group_all], axis=1).T  # add "all" row
+    title = f"{dataset_name.upper()}:\t\t{count_of.title()} Label Counts"
+    fig = dg.distributions_grid(
+        data=grouped,
+        title=title,
+        show_counts=True,
+    )
     return fig
