@@ -176,7 +176,9 @@ class PreProcessor(ABC):
         sample_results = {}
         for metric in metric_names:
             met = metric.lower()
-            if met in {"acc", "accuracy", "balanced accuracy"}:
+            if met in {"acc", "accuracy"}:
+                metric_func = metrics.accuracy
+            elif met in {"balanced accuracy"}:
                 metric_func = metrics.balanced_accuracy
             elif met in {"lev", "levenshtein", "levenshtein distance", "nld", "1-nld", "complement nld"}:
                 metric_func = metrics.complement_nld

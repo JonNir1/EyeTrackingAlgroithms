@@ -15,6 +15,13 @@ _NUM_EVENTS = len(cnfg.EVENT_LABELS)
 # TODO: calculate confusion matrix, precision, recall, F1-score, etc.
 
 
+def accuracy(gt: Sequence, pred: Sequence) -> float:
+    """ Calculates the accuracy between two sequences of samples or events. """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return met.accuracy_score(gt, pred)
+
+
 def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
     """
     Calculates the weighted accuracy between two sequences of samples or events.
@@ -23,6 +30,22 @@ def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     return met.balanced_accuracy_score(gt, pred)
+
+
+def confusion_matrix(
+        gt: Sequence,
+        pred: Sequence,
+) -> np.ndarray:
+    """
+    Calculates the confusion matrix between two sequences of samples or events, where rows are the ground-truth labels
+    and columns are the predicted labels.
+    :param gt: The ground-truth sequence of samples or events.
+    :param pred: The predicted sequence of samples or events.
+    :return: the square confusion matrix.
+    """
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    return met.confusion_matrix(gt, pred, labels=cnfg.EVENT_LABELS)
 
 
 def complement_nld(gt: Sequence, pred: Sequence) -> float:
@@ -48,24 +71,6 @@ def matthews_correlation(gt: Sequence, pred: Sequence) -> float:
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     return met.matthews_corrcoef(gt, pred)
-
-
-def confusion_matrix(
-        gt: Sequence,
-        pred: Sequence,
-        labels: Optional[Sequence] = cnfg.EVENT_LABELS,
-) -> np.ndarray:
-    """
-    Calculates the confusion matrix between two sequences of samples or events, where rows are the ground-truth labels
-    and columns are the predicted labels.
-    :param gt: The ground-truth sequence of samples or events.
-    :param pred: The predicted sequence of samples or events.
-    :param labels: The labels to use for the confusion matrix. If None, use only the existing labels in `gt` & `pred`.
-    :return: the square confusion matrix.
-    """
-    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
-    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    return met.confusion_matrix(gt, pred, labels=labels)
 
 
 def transition_matrix_distance(gt: Sequence, pred: Sequence, norm: str) -> float:

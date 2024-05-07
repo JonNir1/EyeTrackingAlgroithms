@@ -35,9 +35,11 @@ class SampleMetricsCalculator(BaseCalculator):
     @staticmethod
     def __calculate_on_column_pairs(samples: pd.DataFrame, metric_name: str) -> pd.DataFrame:
         met = metric_name.lower()
-        if met in {"acc", "accuracy", "balanced accuracy"}:
+        if met in {"acc", "accuracy"}:
+            metric_func = metrics.accuracy
+        elif met in {"balanced accuracy", "balanced acc", "weighted accuracy", "weighted acc"}:
             metric_func = metrics.balanced_accuracy
-        elif met in {"lev", "levenshtein", "levenshtein distance", "nld", "1-nld", "complement nld"}:
+        elif met in {"lev", "levenshtein", "nld", "1-nld", "complement nld"}:
             metric_func = metrics.complement_nld
         elif met in {"kappa", "cohen kappa", "cohen's kappa"}:
             metric_func = metrics.cohen_kappa

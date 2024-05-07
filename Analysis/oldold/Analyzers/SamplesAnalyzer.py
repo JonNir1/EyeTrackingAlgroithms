@@ -92,7 +92,9 @@ class SamplesAnalyzer(BaseAnalyzer):
     def __calc_sample_metric_impl(samples: pd.DataFrame,
                                   metric_name: str) -> pd.DataFrame:
         # extract the function to calculate the metric
-        if metric_name == "acc" or metric_name == "accuracy" or metric_name == "balanced accuracy":
+        if metric_name == "acc" or metric_name == "accuracy":
+            metric_func = metrics.accuracy
+        elif metric_name == "balanced accuracy":
             metric_func = metrics.balanced_accuracy
         elif metric_name == "lev" or metric_name == "levenshtein":
             metric_func = metrics.complement_nld

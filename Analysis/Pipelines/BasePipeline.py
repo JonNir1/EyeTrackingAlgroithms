@@ -98,7 +98,7 @@ class BasePipeline(ABC):
             lambda cell: [label if sample == label else cnfg.EVENT_LABELS.UNDEFINED for sample in cell] if pd.notnull(
                 cell).all() else None
         )
-        metric_names = metric_names or self.__get_default_sample_features(label)
+        metric_names = metric_names or self.__get_default_sample_metrics(label)
         sample_metrics = SampleMetricsCalculator.calculate(
             file_path=os.path.join(self._output_dir, f"{label_name}_sample_metrics.pkl"),
             data=data,
@@ -273,11 +273,13 @@ class BasePipeline(ABC):
         return features
 
     @staticmethod
-    def __get_default_sample_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
+    def __get_default_sample_metrics(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
+        model_metrics = {"Accuracy", "Balanced Accuracy"}
+        similarity_metrics = {"1-NLD", "Cohen's Kappa", "Mathew's Correlation"}
+        transition_metrics = {"Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
         if label is None:
-            return {"Count", "Accuracy", "1-NLD", "Cohen's Kappa", "Mathew's Correlation",
-                    "Confusion Matrix", "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
-        return {"Accuracy"}
+            return {"Count", "Confusion Matrix", *model_metrics, *similarity_metrics, *transition_metrics}
+        return model_metrics
 
 
     @staticmethod
