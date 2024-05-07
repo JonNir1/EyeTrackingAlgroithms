@@ -34,9 +34,9 @@ def apply_on_column_pairs(data: pd.DataFrame,
         res[idx] = {}
         for pair in column_pairs:
             vals1, vals2 = data.loc[idx, pair[0]], data.loc[idx, pair[1]]
-            if len(vals1) == 0 or pd.isnull(vals1).all():
+            if vals1 is None or len(vals1) == 0 or pd.isnull(vals1).all():
                 res[idx][pair] = None
-            elif len(vals2) == 0 or pd.isnull(vals2).all():
+            elif vals2 is None or len(vals2) == 0 or pd.isnull(vals2).all():
                 res[idx][pair] = None
             else:
                 res[idx][pair] = func(vals1, vals2)
