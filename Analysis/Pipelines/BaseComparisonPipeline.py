@@ -41,6 +41,12 @@ class BaseComparisonPipeline(BasePipeline):
             save=True,
             verbose=verbose,
         )
+        matches = self.match_events(
+            events_df=events,
+            matching_schemes=None,
+            allow_cross_matching=allow_cross_matching,
+            verbose=verbose,
+        )
         sample_metrics = self.process_samples(
             samples_df=samples,
             metric_names=None,
@@ -50,12 +56,6 @@ class BaseComparisonPipeline(BasePipeline):
         event_features, fixation_features, saccade_features = self._process_event_features(
             events=events,
             create_figures=True,
-            verbose=verbose,
-        )
-        matches = self.match_events(
-            events_df=events,
-            matching_schemes=None,
-            allow_cross_matching=allow_cross_matching,
             verbose=verbose,
         )
         event_match_ratios, fixation_match_ratios, saccade_match_ratios = self._process_match_ratios(
