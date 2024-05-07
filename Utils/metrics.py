@@ -188,7 +188,6 @@ def _calc_precision_recall_f1(gt: Sequence, pred: Sequence) -> (float, float, fl
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     is_binary = set(gt) == set(pred) and len(set(gt)) == 2
     labels = [_find_positive_label(gt)] if is_binary else cnfg.EVENT_LABELS
-    print(f"labels: {labels}")
     prec, rec, f1, _ = met.precision_recall_fscore_support(
         gt, pred, labels=labels, zero_division=np.nan, average="weighted"
     )
