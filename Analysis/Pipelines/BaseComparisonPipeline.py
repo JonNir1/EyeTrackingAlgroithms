@@ -2,7 +2,7 @@ import os
 import time
 import warnings
 from abc import abstractmethod
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 import pandas as pd
 
@@ -47,29 +47,35 @@ class BaseComparisonPipeline(BasePipeline):
             allow_cross_matching=allow_cross_matching,
             verbose=verbose,
         )
-        sample_metrics = self.process_samples(samples_df=samples, label=None, metric_names=None, create_figures=True,
-                                              verbose=verbose)
-        event_features, fixation_features, saccade_features = self._process_event_features(
+        event_sample_metrics, event_features, event_match_ratios, event_matched_features = self._process_events(
+            samples=samples,
             events=events,
+            matches=matches,
+            label=None,
             create_figures=True,
             verbose=verbose,
         )
-        event_match_ratios, fixation_match_ratios, saccade_match_ratios = self._process_match_ratios(
+        fix_sample_metrics, fix_features, fix_match_ratios, fix_matched_features = self._process_events(
+            samples=samples,
             events=events,
             matches=matches,
+            label=cnfg.EVENT_LABELS.FIXATION,
             create_figures=True,
             verbose=verbose,
         )
-        matched_event_features, matched_fixation_features, matched_saccade_features = self._process_matched_features(
+        sac_sample_metrics, sac_features, sac_match_ratios, sac_matched_features = self._process_events(
+            samples=samples,
+            events=events,
             matches=matches,
+            label=cnfg.EVENT_LABELS.SACCADE,
             create_figures=True,
             verbose=verbose,
         )
         return (
-            samples, events, detector_results, matches, sample_metrics, event_features, fixation_features,
-            saccade_features,
-            event_match_ratios, fixation_match_ratios, saccade_match_ratios, matched_event_features,
-            matched_fixation_features, matched_saccade_features
+            samples, events, detector_results, matches,
+            event_sample_metrics, event_features, event_match_ratios, event_matched_features,
+            fix_sample_metrics, fix_features, fix_match_ratios, fix_matched_features,
+            sac_sample_metrics, sac_features, sac_match_ratios, sac_matched_features,
         )
 
     def load_and_detect(
@@ -104,35 +110,14 @@ class BaseComparisonPipeline(BasePipeline):
                 print(f"Preprocessing Completed:\t{end - start:.2f}s")
         return samples, events, detector_results
 
-    def _process_event_features(self, events, create_figures=False, verbose=False):
-        event_features = self.process_event_features(events_df=events, label=None, feature_names=None,
-                                                     create_figures=create_figures, verbose=verbose)
-        fixation_features = self.process_event_features(events_df=events, label=cnfg.EVENT_LABELS.FIXATION,
-                                                        feature_names=None, create_figures=create_figures,
-                                                        verbose=verbose)
-        saccade_features = self.process_event_features(events_df=events, label=cnfg.EVENT_LABELS.SACCADE,
-                                                       feature_names=None, create_figures=create_figures,
-                                                       verbose=verbose)
-        return event_features, fixation_features, saccade_features
-
-    def _process_match_ratios(self, events, matches, create_figures=False, verbose=False):
-        event_match_ratios = self.process_match_ratios(events_df=events, matches=matches, label=None,
-                                                       create_figures=create_figures, verbose=verbose)
-        fixation_match_ratios = self.process_match_ratios(events_df=events, matches=matches,
-                                                          label=cnfg.EVENT_LABELS.FIXATION,
-                                                          create_figures=create_figures, verbose=verbose)
-        saccade_match_ratios = self.process_match_ratios(events_df=events, matches=matches,
-                                                         label=cnfg.EVENT_LABELS.SACCADE, create_figures=create_figures,
-                                                         verbose=verbose)
-        return event_match_ratios, fixation_match_ratios, saccade_match_ratios
-
-    def _process_matched_features(self, matches, create_figures=False, verbose=False):
-        matched_event_features = self.process_matched_features(matches=matches, label=None, feature_names=None,
-                                                               create_figures=create_figures, verbose=verbose)
-        matched_fixation_features = self.process_matched_features(matches=matches, label=cnfg.EVENT_LABELS.FIXATION,
-                                                                  feature_names=None, create_figures=create_figures,
-                                                                  verbose=verbose)
-        matched_saccade_features = self.process_matched_features(matches=matches, label=cnfg.EVENT_LABELS.SACCADE,
-                                                                 feature_names=None, create_figures=create_figures,
-                                                                 verbose=verbose)
-        return matched_event_features, matched_fixation_features, matched_saccade_features
+    def _process_events(self, samples, events, matches,
+                        label: Optional[cnfg.EVENT_LABELS], create_figures=False, verbose=False):
+        sample_metrics = self.process_samples(samples_df=samples, label=label,
+                                              metric_names=None, create_figures=True, verbose=verbose)
+        features = self.process_event_features(events_df=events, label=label,
+                                               feature_names=None, create_figures=create_figures, verbose=verbose)
+        match_ratios = self.process_match_ratios(events_df=events, matches=matches, label=label,
+                                                 create_figures=create_figures, verbose=verbose)
+        matched_features = self.process_matched_features(matches=matches, label=label, feature_names=None,
+                                                         create_figures=create_figures, verbose=verbose)
+        return sample_metrics, features, match_ratios, matched_features
