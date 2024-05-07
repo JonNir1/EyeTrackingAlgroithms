@@ -1,4 +1,5 @@
 from typing import Sequence, Optional
+from collections import Counter
 
 import numpy as np
 import sklearn.metrics as met
@@ -32,33 +33,30 @@ def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
     return met.balanced_accuracy_score(gt, pred)
 
 
-def precision(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> float:
+def precision(gt: Sequence, pred: Sequence) -> float:
     """
     Calculates the precision between two sequences of samples or events.
-    If a label is provided, calculates the binary-precision for that label only. Otherwise, calculates the weighted
-    precision between all labels.
+    If the sequences are binary, calculates the binary precision; otherwise, calculates the weighted precision.
     """
-    prec, _, _ = _calc_precision_recall_f1(gt, pred, label)
+    prec, _, _ = _calc_precision_recall_f1(gt, pred)
     return prec
 
 
-def recall(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> float:
+def recall(gt: Sequence, pred: Sequence) -> float:
     """
     Calculates the recall (sensitivity) between two sequences of samples or events.
-    If a label is provided, calculates the binary-recall for that label only. Otherwise, calculates the weighted recall
-    between all labels.
+    If the sequences are binary, calculates the binary recall; otherwise, calculates the weighted recall.
     """
-    _, rec, _ = _calc_precision_recall_f1(gt, pred, label)
+    _, rec, _ = _calc_precision_recall_f1(gt, pred)
     return rec
 
 
-def f1_score(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> float:
+def f1_score(gt: Sequence, pred: Sequence) -> float:
     """
     Calculates the F1-score between two sequences of samples or events.
-    If a label is provided, calculates the binary-F1-score for that label only. Otherwise, calculates the weighted F1-score
-    between all labels.
+    If the sequences are binary, calculates the binary F1-score; otherwise, calculates the weighted F1-score.
     """
-    _, _, f1 = _calc_precision_recall_f1(gt, pred, label)
+    _, _, f1 = _calc_precision_recall_f1(gt, pred)
     return f1
 
 
@@ -181,9 +179,30 @@ def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
     return Levenshtein.ratio(gt, pred)
 
 
-def _calc_precision_recall_f1(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> (float, float, float):
+def _calc_precision_recall_f1(gt: Sequence, pred: Sequence) -> (float, float, float):
+    """
+    Calculates the precision, recall, and F1-score between two sequences of samples or events.
+    If the sequences are binary, calculates the binary metrics. Otherwise, calculates the weighted metrics.
+    """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
-    labels = [label] if label is not None else cnfg.EVENT_LABELS
-    prec, rec, f1, _ = met.precision_recall_fscore_support(gt, pred, labels=labels, zero_division=np.nan, average="weighted")
+    is_binary = set(gt) == set(pred) and len(set(gt)) == 2
+    labels = [_find_positive_label(gt)] if is_binary else cnfg.EVENT_LABELS
+    print(f"labels: {labels}")
+    prec, rec, f1, _ = met.precision_recall_fscore_support(
+        gt, pred, labels=labels, zero_division=np.nan, average="weighted"
+    )
     return prec, rec, f1
+
+
+def _find_positive_label(seq: Sequence):
+    """ Find the least common label in the given sequence, that is not the undefined label."""
+    labels = set(seq)
+    assert len(labels) == 2, "The sequence must be binary"
+    if cnfg.EVENT_LABELS.UNDEFINED in labels:
+        # return the other label
+        labels -= {cnfg.EVENT_LABELS.UNDEFINED}
+        return labels.pop()
+    # return the less common label
+    return Counter(seq).most_common()[-1][0]
+

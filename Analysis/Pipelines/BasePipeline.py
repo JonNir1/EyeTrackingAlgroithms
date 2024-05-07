@@ -274,12 +274,13 @@ class BasePipeline(ABC):
 
     @staticmethod
     def __get_default_sample_metrics(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
+        # Note: Precision, Recall & F1 are weighted if `label` is None, and binary if `label` is specified.
         model_metrics = {"Accuracy", "Balanced Accuracy", "Precision", "Recall", "F1 Score"}
         similarity_metrics = {"1-NLD", "Cohen's Kappa", "Mathew's Correlation"}
         transition_metrics = {"Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
         if label is None:
             return {"Count", "Confusion Matrix", *model_metrics, *similarity_metrics, *transition_metrics}
-        return {"Accuracy", "Balanced Accuracy"}
+        return model_metrics
 
 
     @staticmethod
