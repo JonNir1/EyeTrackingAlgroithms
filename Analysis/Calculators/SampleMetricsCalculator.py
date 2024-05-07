@@ -39,6 +39,12 @@ class SampleMetricsCalculator(BaseCalculator):
             metric_func = metrics.accuracy
         elif met in {"balanced accuracy", "balanced acc", "weighted accuracy", "weighted acc"}:
             metric_func = metrics.balanced_accuracy
+        elif met in {"precision", "prec"}:
+            metric_func = lambda s1, s2: metrics.precision(s1, s2, label=None)
+        elif met in {"recall", "sensitivity"}:
+            metric_func = lambda s1, s2: metrics.recall(s1, s2, label=None)
+        elif met in {"f1", "f1-score", "f1 score"}:
+            metric_func = lambda s1, s2: metrics.f1_score(s1, s2, label=None)
         elif met in {"lev", "levenshtein", "nld", "1-nld", "complement nld"}:
             metric_func = metrics.complement_nld
         elif met in {"kappa", "cohen kappa", "cohen's kappa"}:

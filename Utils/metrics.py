@@ -32,6 +32,36 @@ def balanced_accuracy(gt: Sequence, pred: Sequence) -> float:
     return met.balanced_accuracy_score(gt, pred)
 
 
+def precision(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> float:
+    """
+    Calculates the precision between two sequences of samples or events.
+    If a label is provided, calculates the binary-precision for that label only. Otherwise, calculates the weighted
+    precision between all labels.
+    """
+    prec, _, _ = _calc_precision_recall_f1(gt, pred, label)
+    return prec
+
+
+def recall(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> float:
+    """
+    Calculates the recall (sensitivity) between two sequences of samples or events.
+    If a label is provided, calculates the binary-recall for that label only. Otherwise, calculates the weighted recall
+    between all labels.
+    """
+    _, rec, _ = _calc_precision_recall_f1(gt, pred, label)
+    return rec
+
+
+def f1_score(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> float:
+    """
+    Calculates the F1-score between two sequences of samples or events.
+    If a label is provided, calculates the binary-F1-score for that label only. Otherwise, calculates the weighted F1-score
+    between all labels.
+    """
+    _, _, f1 = _calc_precision_recall_f1(gt, pred, label)
+    return f1
+
+
 def confusion_matrix(
         gt: Sequence,
         pred: Sequence,
@@ -149,3 +179,11 @@ def levenshtein_ratio(gt: Sequence, pred: Sequence) -> float:
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     return Levenshtein.ratio(gt, pred)
+
+
+def _calc_precision_recall_f1(gt: Sequence, pred: Sequence, label: Optional[cnfg.EVENT_LABELS] = None) -> (float, float, float):
+    gt = [hlp.parse_event_label(e, safe=False) for e in gt]
+    pred = [hlp.parse_event_label(e, safe=False) for e in pred]
+    labels = [label] if label is not None else cnfg.EVENT_LABELS
+    prec, rec, f1, _ = met.precision_recall_fscore_support(gt, pred, labels=labels, zero_division=np.nan, average="weighted")
+    return prec, rec, f1
