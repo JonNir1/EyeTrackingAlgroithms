@@ -48,14 +48,14 @@ def create_sample_metric_distributions(
 ) -> Dict[str, go.Figure]:
     figures = {}
     for metric in metrics.keys():
-        data = metrics[metric][columns] if columns is not None else metrics[metric]
-        if metric == "Confusion Matrix":
+        if metric in {"Count", "Counts"}:
+            fig = _create_counts_grid(metrics[metric], dataset_name, "Sample")
+        elif metric == "Confusion Matrix":
             # skip confusion matrix as it is not a distribution
             # TODO: add confusion matrix visualization
             continue
-        elif metric in {"Count", "Counts"}:
-            fig = _create_counts_grid(data, dataset_name, "Sample")
         else:
+            data = metrics[metric][columns] if columns is not None else metrics[metric]
             grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
             fig = dg.distributions_grid(
                 data=grouped,
