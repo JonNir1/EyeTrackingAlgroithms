@@ -95,10 +95,10 @@ class BasePipeline(ABC):
         if verbose:
             print(f"Analyzing {label_name.capitalize()} Samples...")
         data = samples_df if samples_df is None else samples_df.map(
-            lambda cell: [sample for sample in cell if sample == label] if pd.notnull(
+            lambda cell: [label if sample == label else cnfg.EVENT_LABELS.UNDEFINED for sample in cell] if pd.notnull(
                 cell).all() else None
         )
-        metric_names = metric_names or self.__get_default_sample_features()
+        metric_names = metric_names or self.__get_default_sample_features(label)
         sample_metrics = SampleMetricsCalculator.calculate(
             file_path=os.path.join(self._output_dir, f"{label_name}_sample_metrics.pkl"),
             data=data,
@@ -273,9 +273,12 @@ class BasePipeline(ABC):
         return features
 
     @staticmethod
-    def __get_default_sample_features() -> Set[str]:
-        return {"Count", "Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
-                "Confusion Matrix", "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
+    def __get_default_sample_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
+        if label is None:
+            return {"Count", "Accuracy", "Levenshtein Ratio", "Cohen's Kappa", "Mathew's Correlation",
+                    "Confusion Matrix", "Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
+        return {"Accuracy"}
+
 
     @staticmethod
     def __get_default_event_features(label: Optional[cnfg.EVENT_LABELS]) -> Set[str]:
