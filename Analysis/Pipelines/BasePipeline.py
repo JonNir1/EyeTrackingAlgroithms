@@ -279,7 +279,7 @@ class BasePipeline(ABC):
         # Note: Precision, Recall & F1 are weighted if `label` is None, and binary if `label` is specified.
         certainty_metrics = {"Accuracy", "Balanced Accuracy", "Precision", "Recall", "F1 Score"}
         agreement_metrics = {"1-NLD", "Cohen's Kappa", "Mathew's Correlation"}
-        transition_metrics = {"Transition Matrix l2-norm", "Transition Matrix KL-Divergence"}
+        transition_metrics = {"Transition Matrix KL-Divergence", "Transition Matrix l2-norm"}
         if label is None:
             return {"Count", "Confusion Matrix", *certainty_metrics, *agreement_metrics, *transition_metrics}
         return certainty_metrics
