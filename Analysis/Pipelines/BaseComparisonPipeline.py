@@ -47,13 +47,8 @@ class BaseComparisonPipeline(BasePipeline):
             allow_cross_matching=allow_cross_matching,
             verbose=verbose,
         )
-        sample_metrics = self.process_samples(
-            samples_df=samples,
-            sample_label=None,
-            metric_names=None,
-            create_figures=True,
-            verbose=verbose,
-        )
+        sample_metrics = self.process_samples(samples_df=samples, label=None, metric_names=None, create_figures=True,
+                                              verbose=verbose)
         event_features, fixation_features, saccade_features = self._process_event_features(
             events=events,
             create_figures=True,
@@ -110,73 +105,34 @@ class BaseComparisonPipeline(BasePipeline):
         return samples, events, detector_results
 
     def _process_event_features(self, events, create_figures=False, verbose=False):
-        event_features = self.process_event_features(
-            events_df=events,
-            event_label=None,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        fixation_features = self.process_event_features(
-            events_df=events,
-            event_label=cnfg.EVENT_LABELS.FIXATION,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        saccade_features = self.process_event_features(
-            events_df=events,
-            event_label=cnfg.EVENT_LABELS.SACCADE,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
+        event_features = self.process_event_features(events_df=events, label=None, feature_names=None,
+                                                     create_figures=create_figures, verbose=verbose)
+        fixation_features = self.process_event_features(events_df=events, label=cnfg.EVENT_LABELS.FIXATION,
+                                                        feature_names=None, create_figures=create_figures,
+                                                        verbose=verbose)
+        saccade_features = self.process_event_features(events_df=events, label=cnfg.EVENT_LABELS.SACCADE,
+                                                       feature_names=None, create_figures=create_figures,
+                                                       verbose=verbose)
         return event_features, fixation_features, saccade_features
 
     def _process_match_ratios(self, events, matches, create_figures=False, verbose=False):
-        event_match_ratios = self.process_match_ratios(
-            events_df=events,
-            matches=matches,
-            event_label=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        fixation_match_ratios = self.process_match_ratios(
-            events_df=events,
-            matches=matches,
-            event_label=cnfg.EVENT_LABELS.FIXATION,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        saccade_match_ratios = self.process_match_ratios(
-            events_df=events,
-            matches=matches,
-            event_label=cnfg.EVENT_LABELS.SACCADE,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
+        event_match_ratios = self.process_match_ratios(events_df=events, matches=matches, label=None,
+                                                       create_figures=create_figures, verbose=verbose)
+        fixation_match_ratios = self.process_match_ratios(events_df=events, matches=matches,
+                                                          label=cnfg.EVENT_LABELS.FIXATION,
+                                                          create_figures=create_figures, verbose=verbose)
+        saccade_match_ratios = self.process_match_ratios(events_df=events, matches=matches,
+                                                         label=cnfg.EVENT_LABELS.SACCADE, create_figures=create_figures,
+                                                         verbose=verbose)
         return event_match_ratios, fixation_match_ratios, saccade_match_ratios
 
     def _process_matched_features(self, matches, create_figures=False, verbose=False):
-        matched_event_features = self.process_matched_features(
-            matches=matches,
-            event_label=None,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        matched_fixation_features = self.process_matched_features(
-            matches=matches,
-            event_label=cnfg.EVENT_LABELS.FIXATION,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        matched_saccade_features = self.process_matched_features(
-            matches=matches,
-            event_label=cnfg.EVENT_LABELS.SACCADE,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
+        matched_event_features = self.process_matched_features(matches=matches, label=None, feature_names=None,
+                                                               create_figures=create_figures, verbose=verbose)
+        matched_fixation_features = self.process_matched_features(matches=matches, label=cnfg.EVENT_LABELS.FIXATION,
+                                                                  feature_names=None, create_figures=create_figures,
+                                                                  verbose=verbose)
+        matched_saccade_features = self.process_matched_features(matches=matches, label=cnfg.EVENT_LABELS.SACCADE,
+                                                                 feature_names=None, create_figures=create_figures,
+                                                                 verbose=verbose)
         return matched_event_features, matched_fixation_features, matched_saccade_features

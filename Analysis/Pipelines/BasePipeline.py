@@ -53,7 +53,7 @@ class BasePipeline(ABC):
     def process_samples(
             self,
             samples_df: pd.DataFrame,
-            sample_label: Optional[cnfg.EVENT_LABELS] = None,
+            label: Optional[cnfg.EVENT_LABELS] = None,
             metric_names: Set[str] = None,
             create_figures=False,
             verbose=False,
@@ -62,7 +62,7 @@ class BasePipeline(ABC):
         Calculates sample-level metrics for every pair of columns in the given DataFrame, and groups the results by the
             stimulus.
         :param samples_df: A DataFrame containing the label-per-sample of each rater/detector.
-        :param sample_label: If provided, only metrics of this type of sample are processed.
+        :param label: If provided, only metrics of this type of sample are processed.
         :param metric_names: A set of metric names to calculate. If None, the default set of metrics will be calculated.
         :param create_figures: Whether to create and save figures.
         :param verbose: Whether to print the progress of the metric calculation.
@@ -70,11 +70,11 @@ class BasePipeline(ABC):
         """
         from Analysis.Calculators.SampleMetricsCalculator import SampleMetricsCalculator
         start = time.time()
-        label_name = cnst.EVENT if sample_label is None else sample_label.name.lower()
+        label_name = cnst.EVENT if label is None else label.name.lower()
         if verbose:
             print(f"Analyzing {label_name.capitalize()} Samples...")
         data = samples_df if samples_df is None else samples_df.map(
-            lambda cell: [sample for sample in cell if sample == sample_label] if pd.notnull(
+            lambda cell: [sample for sample in cell if sample == label] if pd.notnull(
                 cell).all() else None
         )
         metric_names = metric_names or self.__get_default_sample_features()
@@ -107,7 +107,7 @@ class BasePipeline(ABC):
     def process_event_features(
             self,
             events_df: pd.DataFrame,
-            event_label: Optional[cnfg.EVENT_LABELS] = None,
+            label: Optional[cnfg.EVENT_LABELS] = None,
             feature_names: Set[str] = None,
             create_figures=False,
             verbose=False,
@@ -115,7 +115,7 @@ class BasePipeline(ABC):
         """
         Calculates event-level features for each column in the given DataFrame.
         :param events_df: A DataFrame containing the detected events of each rater/detector.
-        :param event_label: If provided, only features of this type of event are processed.
+        :param label: If provided, only features of this type of event are processed.
         :param feature_names: A set of feature names to calculate. If None, the default set of features will be calculated.
         :param create_figures: Whether to create and save figures.
         :param verbose: Whether to print the progress of the feature calculation.
@@ -123,13 +123,13 @@ class BasePipeline(ABC):
         """
         from Analysis.Calculators.EventFeaturesCalculator import EventFeaturesCalculator
         start = time.time()
-        label_name = cnst.EVENT if event_label is None else event_label.name.lower()
+        label_name = cnst.EVENT if label is None else label.name.lower()
         if verbose:
             print(f"Analyzing {label_name.capitalize()} Features...")
-        data = events_df if event_label is None else events_df.map(
-            lambda cell: [event for event in cell if event.event_label == event_label] if pd.notnull(cell).all() else None
+        data = events_df if label is None else events_df.map(
+            lambda cell: [event for event in cell if event.event_label == label] if pd.notnull(cell).all() else None
         )
-        feature_names = feature_names or self.__get_default_event_features(event_label)
+        feature_names = feature_names or self.__get_default_event_features(label)
         features = EventFeaturesCalculator.calculate(
             file_path=os.path.join(self._output_dir, f"{label_name}_features.pkl"),
             data=data,
@@ -154,7 +154,7 @@ class BasePipeline(ABC):
             self,
             events_df: pd.DataFrame,
             matches: Dict[str, pd.DataFrame],
-            event_label: Optional[cnfg.EVENT_LABELS] = None,
+            label: Optional[cnfg.EVENT_LABELS] = None,
             create_figures=False,
             verbose=False,
     ) -> Dict[str, pd.DataFrame]:
@@ -163,27 +163,27 @@ class BasePipeline(ABC):
         results by the stimulus.
         :param events_df: A DataFrame containing the detected events of each rater/detector.
         :param matches: A dictionary mapping each matching scheme to a DataFrame containing the matched events.
-        :param event_label: If provided, only features of this type of event are processed.
+        :param label: If provided, only features of this type of event are processed.
         :param create_figures: Whether to create and save figures.
         :param verbose: Whether to print the progress of the match ratio calculation.
         :return: A dictionary mapping each matching scheme to a DataFrame containing the calculated match ratios.
         """
         from Analysis.Calculators.MatchRatioCalculator import MatchRatioCalculator
         start = time.time()
-        event_name = cnst.EVENT if event_label is None else event_label.name.lower()
+        event_name = cnst.EVENT if label is None else label.name.lower()
         if verbose:
             print(f"Analyzing {event_name.capitalize()} Match Ratios...")
         # ignore events that are not of the required type
         new_events_df = events_df.copy(deep=True)
         new_matches = copy.deepcopy(matches)
-        if event_label is not None:
+        if label is not None:
             new_events_df = new_events_df.map(
-                lambda cell: [event for event in cell if event.event_label == event_label]
+                lambda cell: [event for event in cell if event.event_label == label]
                 if pd.notnull(cell).all() else None
             )
             for scheme, df in new_matches.items():
                 df = df.map(
-                    lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == event_label}
+                    lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == label}
                     if pd.notnull(cell) else None
                 )
                 new_matches[scheme] = df
@@ -211,22 +211,22 @@ class BasePipeline(ABC):
     def process_matched_features(
             self,
             matches: Dict[str, pd.DataFrame],
-            event_label: Optional[cnfg.EVENT_LABELS] = None,
+            label: Optional[cnfg.EVENT_LABELS] = None,
             feature_names: Set[str] = None,
             create_figures=False,
             verbose=False,
     ) -> Dict[str, Dict[str, pd.DataFrame]]:
         from Analysis.Calculators.MatchedFeaturesCalculator import MatchedFeaturesCalculator
         start = time.time()
-        event_name = cnst.EVENT if event_label is None else event_label.name.lower()
+        event_name = cnst.EVENT if label is None else label.name.lower()
         if verbose:
             print(f"Analyzing {event_name.capitalize()} Matched Features...")
         # ignore events that are not of the required type
         new_matches = copy.deepcopy(matches)
-        if event_label is not None:
+        if label is not None:
             for scheme, df in new_matches.items():
                 df = df.map(
-                    lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == event_label}
+                    lambda cell: {gt: pred for gt, pred in cell.items() if gt.event_label == label}
                     if pd.notnull(cell) else None
                 )
                 new_matches[scheme] = df
@@ -234,7 +234,7 @@ class BasePipeline(ABC):
         features = MatchedFeaturesCalculator.calculate(
             file_path=os.path.join(self._output_dir, f"{event_name}_matched_features.pkl"),
             matches=new_matches,
-            feature_names=feature_names or self.__get_default_matched_event_features(event_label),
+            feature_names=feature_names or self.__get_default_matched_event_features(label),
             verbose=False,
         )
         if create_figures:

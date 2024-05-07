@@ -79,27 +79,14 @@ class MultiIterationsPipeline(BasePipeline):
         return samples, events, detector_results
 
     def _process_event_features(self, events, create_figures=False, verbose=False):
-        event_features = self.process_event_features(
-            events_df=events,
-            event_label=None,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        fixation_features = self.process_event_features(
-            events_df=events,
-            event_label=cnfg.EVENT_LABELS.FIXATION,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
-        saccade_features = self.process_event_features(
-            events_df=events,
-            event_label=cnfg.EVENT_LABELS.SACCADE,
-            feature_names=None,
-            create_figures=create_figures,
-            verbose=verbose,
-        )
+        event_features = self.process_event_features(events_df=events, label=None, feature_names=None,
+                                                     create_figures=create_figures, verbose=verbose)
+        fixation_features = self.process_event_features(events_df=events, label=cnfg.EVENT_LABELS.FIXATION,
+                                                        feature_names=None, create_figures=create_figures,
+                                                        verbose=verbose)
+        saccade_features = self.process_event_features(events_df=events, label=cnfg.EVENT_LABELS.SACCADE,
+                                                       feature_names=None, create_figures=create_figures,
+                                                       verbose=verbose)
         return event_features, fixation_features, saccade_features
 
     @staticmethod
