@@ -43,7 +43,7 @@ class MultiIterationsPipeline(BasePipeline):
             verbose=verbose,
         )
         # create scarfplots
-        scarfplot_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
+        scarfplot_dir = os.path.join(self._output_dir, self._SCARFPLOTS_STR)
         if not os.path.exists(scarfplot_dir):
             os.makedirs(scarfplot_dir, exist_ok=True)
         _ = figs.create_comparison_scarfplots(samples, scarfplot_dir)

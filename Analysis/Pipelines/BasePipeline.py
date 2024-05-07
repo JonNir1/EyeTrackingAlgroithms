@@ -29,11 +29,13 @@ class BasePipeline(ABC):
     def run(self, verbose=False, **kwargs):
         start = time.time()
         if verbose:
+            print("\n====================================")
             print(f"Pipeline:\t{self.name.upper()}\t\tDataset:\t{self.dataset_name.upper()}")
         results = self._run_impl(verbose=verbose, **kwargs)
         end = time.time()
         if verbose:
             print(f"Pipeline Completed:\t{end - start:.2f}s")
+            print("====================================\n")
         return results
 
     @property
