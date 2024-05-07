@@ -53,6 +53,7 @@ class BasePipeline(ABC):
     def process_samples(
             self,
             samples_df: pd.DataFrame,
+            sample_label: Optional[cnfg.EVENT_LABELS] = None,
             metric_names: Set[str] = None,
             create_figures=False,
             verbose=False,
@@ -61,6 +62,7 @@ class BasePipeline(ABC):
         Calculates sample-level metrics for every pair of columns in the given DataFrame, and groups the results by the
             stimulus.
         :param samples_df: A DataFrame containing the label-per-sample of each rater/detector.
+        :param sample_label: If provided, only metrics of this type of sample are processed.
         :param metric_names: A set of metric names to calculate. If None, the default set of metrics will be calculated.
         :param create_figures: Whether to create and save figures.
         :param verbose: Whether to print the progress of the metric calculation.
@@ -68,12 +70,17 @@ class BasePipeline(ABC):
         """
         from Analysis.Calculators.SampleMetricsCalculator import SampleMetricsCalculator
         start = time.time()
+        label_name = cnst.EVENT if sample_label is None else sample_label.name.lower()
         if verbose:
-            print(f"Analyzing Samples...")
+            print(f"Analyzing {label_name.capitalize()} Samples...")
+        data = samples_df if samples_df is None else samples_df.map(
+            lambda cell: [sample for sample in cell if sample == sample_label] if pd.notnull(
+                cell).all() else None
+        )
         metric_names = metric_names or self.__get_default_sample_features()
         sample_metrics = SampleMetricsCalculator.calculate(
-            file_path=os.path.join(self._output_dir, "sample_metrics.pkl"),
-            data=samples_df,
+            file_path=os.path.join(self._output_dir, f"{label_name}_sample_metrics.pkl"),
+            data=data,
             metric_names=metric_names,
             verbose=False,
         )
@@ -81,12 +88,12 @@ class BasePipeline(ABC):
             if verbose:
                 print(f"Creating Sample Figures...")
             # create scarfplots
-            scarfplot_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SCARFPLOTS_STR)
+            scarfplot_dir = os.path.join(self._output_dir, label_name, self._SCARFPLOTS_STR)
             if not os.path.exists(scarfplot_dir):
                 os.makedirs(scarfplot_dir, exist_ok=True)
             _ = figs.create_comparison_scarfplots(samples_df, scarfplot_dir)
             # create sample-metric figures
-            sample_metrics_dir = os.path.join(self._output_dir, f"{cnst.SAMPLES}", self._SAMPLE_METRICS_STR)
+            sample_metrics_dir = os.path.join(self._output_dir, label_name, self._SAMPLE_METRICS_STR)
             if not os.path.exists(sample_metrics_dir):
                 os.makedirs(sample_metrics_dir, exist_ok=True)
             _ = figs.create_sample_metric_distributions(
@@ -94,7 +101,7 @@ class BasePipeline(ABC):
             )
         end = time.time()
         if verbose:
-            print(f"Sample Analysis:\t{end - start:.2f}s")
+            print(f"Sample Analysis for {label_name.capitalize()}:\t{end - start:.2f}s")
         return sample_metrics
 
     def process_event_features(
@@ -116,23 +123,23 @@ class BasePipeline(ABC):
         """
         from Analysis.Calculators.EventFeaturesCalculator import EventFeaturesCalculator
         start = time.time()
-        event_name = cnst.EVENT if event_label is None else event_label.name.lower()
+        label_name = cnst.EVENT if event_label is None else event_label.name.lower()
         if verbose:
-            print(f"Analyzing {event_name.capitalize()} Features...")
+            print(f"Analyzing {label_name.capitalize()} Features...")
         data = events_df if event_label is None else events_df.map(
             lambda cell: [event for event in cell if event.event_label == event_label] if pd.notnull(cell).all() else None
         )
         feature_names = feature_names or self.__get_default_event_features(event_label)
         features = EventFeaturesCalculator.calculate(
-            file_path=os.path.join(self._output_dir, f"{event_name}_features.pkl"),
+            file_path=os.path.join(self._output_dir, f"{label_name}_features.pkl"),
             data=data,
             metric_names=feature_names,
             verbose=False,
         )
         if create_figures:
             if verbose:
-                print(f"Creating {event_name.capitalize()} Feature Figures...")
-            features_dir = os.path.join(self._output_dir, event_name, self._FEATURES_STR)
+                print(f"Creating {label_name.capitalize()} Feature Figures...")
+            features_dir = os.path.join(self._output_dir, label_name, self._FEATURES_STR)
             if not os.path.exists(features_dir):
                 os.makedirs(features_dir, exist_ok=True)
             _ = figs.create_event_feature_distributions(
@@ -140,7 +147,7 @@ class BasePipeline(ABC):
             )
         end = time.time()
         if verbose:
-            print(f"Features Analysis for {event_name.capitalize()}:\t{end - start:.2f}s")
+            print(f"Features Analysis for {label_name.capitalize()}:\t{end - start:.2f}s")
         return features
 
     def process_match_ratios(

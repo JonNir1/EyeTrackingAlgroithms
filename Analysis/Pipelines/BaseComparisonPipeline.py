@@ -49,6 +49,7 @@ class BaseComparisonPipeline(BasePipeline):
         )
         sample_metrics = self.process_samples(
             samples_df=samples,
+            sample_label=None,
             metric_names=None,
             create_figures=True,
             verbose=verbose,
