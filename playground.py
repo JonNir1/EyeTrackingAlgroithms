@@ -3,6 +3,7 @@ import copy
 
 import numpy as np
 import pandas as pd
+import sklearn.metrics as met
 import plotly.graph_objects as go
 import plotly.io as pio
 
@@ -18,9 +19,22 @@ DATASET_NAME = "Lund2013"
 
 # %%
 
+hfc = DataSetFactory.load("HFC")
+
+
+# %%
+###############
+###############
+###############
+
+# %%
+######## MULTI-ITERATIONS PIPELINE (ENGBERT) ########
+
 loaded_detector_results = pd.read_pickle(os.path.join(cnfg.OUTPUT_DIR, "MultiIterations", DATASET_NAME, "detector_results.pkl"))
 
 # %%
+######## MULTI-ITERATIONS - Manual Replication ########
+
 engbert = EngbertDetector()
 
 dataset = DataSetFactory.load(DATASET_NAME)
