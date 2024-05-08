@@ -53,7 +53,7 @@ class SampleMetricsCalculator(BaseCalculator):
             metric_func = metrics.matthews_correlation
         elif met in {"confusion matrix", "confusion"}:
             metric_func = metrics.confusion_matrix
-        elif met in {"ndkl", "normalized dkl", "normalized kl", "normalized kl divergence",
+        elif met in {"ndkl", "n-dkl", "normalized dkl", "normalized kl", "normalized kl divergence",
                      "normalized kullback leibler", "normalized transition matrix kl-divergence"}:
             metric_func = metrics.normalized_kl_divergence
 
