@@ -43,6 +43,7 @@ def create_comparison_scarfplots(
 def create_sample_metric_distributions(
         metrics: dict,
         dataset_name: str,
+        label_name: str,
         output_dir: str,
         columns: list = None
 ) -> Dict[str, go.Figure]:
@@ -59,7 +60,7 @@ def create_sample_metric_distributions(
             grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
             fig = dg.distributions_grid(
                 data=grouped,
-                title=f"{dataset_name.upper()}:\t\tSample-Level {metric.title()}",
+                title=f"{dataset_name.upper()}:\t\tSample-Level {metric.title()}\t\t({label_name.title()})",
                 pdf_min_val=0 if "Transition Matrix" not in metric else None,
                 pdf_max_val=1 if "Transition Matrix" not in metric else None,
                 column_title_mapper=lambda col: f"{col[0]}→{col[1]}"
@@ -72,6 +73,7 @@ def create_sample_metric_distributions(
 def create_event_feature_distributions(
         features: dict,
         dataset_name: str,
+        label_name: str,
         output_dir: str,
         columns: list = None
 ) -> Dict[str, go.Figure]:
@@ -84,7 +86,7 @@ def create_event_feature_distributions(
             grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
             fig = dg.distributions_grid(
                 data=grouped,
-                title=f"{dataset_name.upper()}:\t\t{feature.title()} Distribution",
+                title=f"{dataset_name.upper()}:\t\t{feature.title()} Distribution\t\t({label_name.title()})",
                 show_counts=False,
                 pdf_min_val=0,
                 pdf_max_val=1,
@@ -97,6 +99,7 @@ def create_event_feature_distributions(
 def create_matched_event_feature_distributions(
         matched_features: dict,
         dataset_name: str,
+        label_name: str,
         output_dir: str,
         columns: list = None
 ) -> Dict[str, go.Figure]:
@@ -109,9 +112,9 @@ def create_matched_event_feature_distributions(
                 scheme_df = scheme_df.map(
                     lambda cell: [v[0] - v[1] for v in cell if not np.any(pd.isna(v))] if np.all(pd.notnull(cell)) else np.nan
                 )
-                title = f"{dataset_name.upper()}:\t\tDifference of Matched {feature.title()} Distribution"
+                title = f"{dataset_name.upper()}:\t\tDifference of Matched {feature.title()} Distribution\t\t({label_name.title()})"
             elif feature in FEATURES_BETWEEN_EVENTS:
-                title = f"{dataset_name.upper()}:\t\t{feature.title()} Distribution"
+                title = f"{dataset_name.upper()}:\t\t{feature.title()} Distribution\t\t({label_name.title()})"
             else:
                 raise ValueError(f"Feature {feature} is not supported for matched event distributions.")
             multi_data[scheme] = hlp.group_and_aggregate(scheme_df, group_by=cnst.STIMULUS)
@@ -130,6 +133,7 @@ def create_matched_event_feature_distributions(
 def create_matching_ratio_distributions(
         ratios: dict,
         dataset_name: str,
+        label_name: str,
         output_dir: str,
         columns: list = None
 ) -> go.Figure:
@@ -138,7 +142,7 @@ def create_matching_ratio_distributions(
         ratios[scheme] = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
     fig = dg.multi_distributions_grid(
         multi_data=ratios,
-        title=f"{dataset_name.upper()}:\t\tMatch Ratio Distribution",
+        title=f"{dataset_name.upper()}:\t\tMatch Ratio Distribution\t\t({label_name.title()})",
         column_title_mapper=lambda col: f"{col[0]}→{col[1]}",
         pdf_min_val=0,
         pdf_max_val=1,

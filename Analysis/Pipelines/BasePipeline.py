@@ -115,7 +115,7 @@ class BasePipeline(ABC):
             if not os.path.exists(sample_metrics_dir):
                 os.makedirs(sample_metrics_dir, exist_ok=True)
             _ = figs.create_sample_metric_distributions(
-                sample_metrics, self.dataset_name, sample_metrics_dir, self._figure_columns
+                sample_metrics, self.dataset_name, label_name, sample_metrics_dir, self._figure_columns
             )
             if label is None:
                 # create scarfplots
@@ -167,7 +167,7 @@ class BasePipeline(ABC):
             if not os.path.exists(features_dir):
                 os.makedirs(features_dir, exist_ok=True)
             _ = figs.create_event_feature_distributions(
-                features, self.dataset_name, features_dir, None
+                features, self.dataset_name, label_name, features_dir, None
             )
         end = time.time()
         if verbose:
@@ -225,7 +225,7 @@ class BasePipeline(ABC):
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matching_ratio_distributions(
-                ratios, self.dataset_name, matched_features_dir, self._figure_columns
+                ratios, self.dataset_name, event_name, matched_features_dir, self._figure_columns
             )
         end = time.time()
         if verbose:
@@ -268,7 +268,7 @@ class BasePipeline(ABC):
             if not os.path.exists(matched_features_dir):
                 os.makedirs(matched_features_dir, exist_ok=True)
             _ = figs.create_matched_event_feature_distributions(
-                features, self.dataset_name, matched_features_dir, self._figure_columns
+                features, self.dataset_name, event_name, matched_features_dir, self._figure_columns
             )
         end = time.time()
         if verbose:
