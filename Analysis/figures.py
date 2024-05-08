@@ -49,7 +49,7 @@ def create_sample_metric_distributions(
     figures = {}
     for metric in metrics.keys():
         if metric in {"Count", "Counts"}:
-            fig = _create_counts_grid(metrics[metric], dataset_name, "Sample")
+            fig = _create_counts_grid(metrics[metric], dataset_name, cnst.SAMPLES)
         elif metric == "Confusion Matrix":
             # skip confusion matrix as it is not a distribution
             # TODO: add confusion matrix visualization
@@ -79,7 +79,7 @@ def create_event_feature_distributions(
     for feature in features.keys():
         data = features[feature][columns] if columns is not None else features[feature]
         if feature in {"Count", "Counts"}:
-            fig = _create_counts_grid(data, dataset_name, "Event")
+            fig = _create_counts_grid(data, dataset_name, cnst.EVENTS)
         else:
             grouped = hlp.group_and_aggregate(data, group_by=cnst.STIMULUS)
             fig = dg.distributions_grid(
