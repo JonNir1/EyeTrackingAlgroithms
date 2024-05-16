@@ -56,7 +56,7 @@ class MatchRatioCalculator(BaseCalculator):
         :param matches: A dictionary mapping each matching scheme to a DataFrame containing the matched events.
         :return: A dictionary mapping each matching scheme to a DataFrame containing the calculated match ratios.
         """
-        event_counts = events.map(lambda cell: len(cell) if pd.notnull(cell).all() else None)
+        event_counts = events.map(lambda cell: len(cell) if cell is not None else None)
         match_ratios = {}
         for scheme, matches_df in matches.items():
             match_counts = matches_df.map(lambda cell: len(cell) if pd.notnull(cell) else None)

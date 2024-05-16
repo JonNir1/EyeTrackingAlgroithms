@@ -96,12 +96,13 @@ class DataSetFactory(ABC):
         with warnings.catch_warnings(action="ignore"):
             labels = {
                 rater: trial_data[rater] if rater in trial_data.columns and pd.notnull(trial_data[rater]).all()
-                else [float("nan")] for rater in raters
+                else None for rater in raters
             }
             events = {
                 rater: EventFactory.make_from_gaze_data(
                     trial_data, vd=viewer_distance, ps=pixel_size, column_mapping={rater: cnst.EVENT}
-                ) if rater in trial_data.columns else [float("nan")] for rater in raters
+                ) if rater in trial_data.columns and pd.notnull(trial_data[rater]).all()
+                else None for rater in raters
             }
         detector_results = {}
         for det in detectors:

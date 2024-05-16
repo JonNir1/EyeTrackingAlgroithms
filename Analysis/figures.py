@@ -29,10 +29,12 @@ def create_comparison_scarfplots(
 ) -> Dict[str, go.Figure]:
     figures = {}
     for i, idx in enumerate(samples_df.index):
-        num_samples = samples_df.loc[idx].map(len).max()  # Number of samples in the longest detected sequence
+        num_samples = samples_df.loc[idx].map(
+            lambda cell: len(cell) if cell is not None else 0
+        ).max()  # Number of samples in the longest detected sequence
         t = np.arange(num_samples)
         detected_labels = samples_df.loc[idx]
-        is_all_nan = detected_labels.apply(lambda arr: pd.isna(arr).all())
+        is_all_nan = detected_labels.apply(lambda arr: pd.isna(arr).all() if arr is not None else True)
         detected_labels = detected_labels.loc[~is_all_nan]
         fig = scarfplot.scarfplots_comparison_figure(t, *detected_labels.to_list(), names=detected_labels.index)
         save_figure(fig, output_dir, f"{idx}")
@@ -156,7 +158,7 @@ def _create_counts_grid(
         dataset_name: str,
         count_of: str,
 ) -> go.Figure:
-    grouped = counts.groupby(level=cnst.STIMULUS).agg(list).map(sum)
+    grouped = counts.groupby(level=cnst.STIMULUS).agg(list).map(lambda cell: [x for x in cell if x is not None]).map(sum)
     if len(grouped.index) > 1:
         # there is more than one group, so add a row for "all" groups
         group_all = pd.Series(counts.sum(axis=0), index=counts.columns, name="all")

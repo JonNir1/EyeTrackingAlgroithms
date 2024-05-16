@@ -39,6 +39,8 @@ def count_labels_or_events(data: Sequence[Union[BaseEvent, cnfg.EVENT_LABELS]]) 
     Counts the number of same-type labels/events in the given data, and fills in missing labels with 0 counts.
     Returns a Series with the counts of each GazEventTypeEnum label.
     """
+    if data is None:
+        return None
     labels = pd.Series([e.event_label if isinstance(e, BaseEvent) else e for e in data])
     counts = labels.value_counts()
     if counts.empty:

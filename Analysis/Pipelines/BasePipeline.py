@@ -97,8 +97,8 @@ class BasePipeline(ABC):
         if verbose:
             print(f"Analyzing {label_name.capitalize()} Samples...")
         data = samples_df if label is None else samples_df.map(
-            lambda cell: [label if sample == label else cnfg.EVENT_LABELS.UNDEFINED for sample in cell] if pd.notnull(
-                cell).all() else None
+            lambda cell: [label if sample == label else cnfg.EVENT_LABELS.UNDEFINED for sample in cell]
+            if cell is not None else None
         )
         metric_names = metric_names or self.__get_default_sample_metrics(label)
         sample_metrics = SampleMetricsCalculator.calculate(
@@ -150,9 +150,13 @@ class BasePipeline(ABC):
         label_name = cnst.EVENT if label is None else label.name.lower()
         if verbose:
             print(f"Analyzing {label_name.capitalize()} Features...")
-        data = events_df if label is None else events_df.map(
-            lambda cell: [event for event in cell if event.event_label == label] if pd.notnull(cell).all() else None
-        )
+        if label is None:
+            data = events_df.copy(deep=True)
+        else:
+            data = events_df.map(
+                lambda cell: [event for event in cell if event.event_label == label]
+                if cell is not None else None
+            )
         feature_names = feature_names or self.__get_default_event_features(label)
         features = EventFeaturesCalculator.calculate(
             file_path=os.path.join(self._output_dir, f"{label_name}_features.pkl"),
@@ -203,7 +207,7 @@ class BasePipeline(ABC):
         if label is not None:
             new_events_df = new_events_df.map(
                 lambda cell: [event for event in cell if event.event_label == label]
-                if pd.notnull(cell).all() else None
+                if cell is not None else None
             )
             for scheme, df in new_matches.items():
                 df = df.map(

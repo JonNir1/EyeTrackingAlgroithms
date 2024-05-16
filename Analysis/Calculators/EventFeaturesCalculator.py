@@ -31,17 +31,29 @@ class EventFeaturesCalculator(BaseCalculator):
                 computed = cls._microsaccade_ratio_impl(events)
             else:
                 attr = feat.lower().replace(" ", "_")
-                computed = events.map(lambda cell: [getattr(e, attr) for e in cell if hasattr(e, attr)])
+                computed = events.map(
+                    lambda cell: [getattr(e, attr) for e in cell if hasattr(e, attr)] if cell is not None else None
+                )
             event_features[feature] = computed
         return event_features
 
     @staticmethod
     def _microsaccade_ratio_impl(events: pd.DataFrame,
                                  threshold_amplitude: float = cnfg.MICROSACCADE_AMPLITUDE_THRESHOLD) -> pd.DataFrame:
-        saccades = events.map(lambda cell: [e for e in cell if e.event_label == cnfg.EVENT_LABELS.SACCADE])
-        saccades_count = saccades.map(len).to_numpy()
-        microsaccades = saccades.map(lambda cell: [e for e in cell if e.amplitude < threshold_amplitude])
-        microsaccades_count = microsaccades.map(len).to_numpy()
+        saccades = events.map(
+            lambda cell: [e for e in cell if e.event_label == cnfg.EVENT_LABELS.SACCADE]
+            if cell is not None else None
+        )
+        saccades_count = saccades.map(
+            lambda cell: len(cell) if cell is not None else 0
+        ).to_numpy()
+        microsaccades = saccades.map(
+            lambda cell: [e for e in cell if e.amplitude < threshold_amplitude]
+            if cell is not None else None
+        )
+        microsaccades_count = microsaccades.map(
+            lambda cell: len(cell) if cell is not None else 0
+        ).to_numpy()
 
         ratios = np.divide(microsaccades_count, saccades_count,
                            out=np.full_like(saccades_count, fill_value=np.nan, dtype=float),  # fill NaN if denom is 0

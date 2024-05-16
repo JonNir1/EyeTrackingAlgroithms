@@ -39,7 +39,9 @@ class EventMatcher(ABC):
             The cells of the DataFrame contain a dictionary matching each event from the first detector/rater to the second one.
         """
         ignore_events = ignore_events or set()
-        events = events.map(lambda cell: [e for e in cell if e.event_label not in ignore_events])
+        events = events.map(
+            lambda cell: [e for e in cell if e.event_label not in ignore_events] if cell is not None else None
+        )
         match_by = match_by.lower().replace("_", " ").replace("-", " ").strip()
         if match_by == "first" or match_by == "first overlap":
             return EventMatcher._apply_on_column_pairs(events,
