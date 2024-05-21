@@ -75,12 +75,14 @@ def _add_traces(fig: go.Figure, data: pd.DataFrame, **kwargs):
             if kwargs.get("show_counts", False):
                 trace = go.Bar(x=cell.index, y=cell.values, name=label)
             else:
-                trace_params = dict(showlegend=False,
-                                    name=label,
-                                    line_color=kwargs.get("color", "blue"),
-                                    points=kwargs.get("points", "all"),
-                                    side=kwargs.get("side", "positive"))
-                trace = go.Violin(y=cell, **trace_params) if kwargs.get("orientation", "v") == "v" else go.Violin(x=cell, **trace_params)
+                trace_params = dict(
+                    showlegend=False, name=label, line_color=kwargs.get("color", "blue"), spanmode='hard',
+                    points=kwargs.get("points", "all"), side=kwargs.get("side", "positive"),
+                )
+                if kwargs.get("orientation", "v") == "v":
+                    trace = go.Violin(y=cell, **trace_params)
+                else:
+                    trace = go.Violin(x=cell, **trace_params)
                 if kwargs.get("pdf_min_val", None) and kwargs.get("pdf_max_val", None):
                     trace.update(span=[kwargs["pdf_min_val"], kwargs["pdf_max_val"]], spanmode="manual")
             fig.add_trace(
