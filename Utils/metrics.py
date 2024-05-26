@@ -84,7 +84,7 @@ def complement_nld(gt: Sequence, pred: Sequence) -> float:
     return 1 - normalized_d
 
 
-def cohen_kappa(gt: Sequence, pred: Sequence) -> float:
+def cohens_kappa(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the Cohen's Kappa coefficient between two sequences of samples or events. """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]

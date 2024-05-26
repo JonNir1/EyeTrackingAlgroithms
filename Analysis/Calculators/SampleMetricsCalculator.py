@@ -47,8 +47,8 @@ class SampleMetricsCalculator(BaseCalculator):
             metric_func = lambda s1, s2: metrics.f1_score(s1, s2)
         elif met in {"lev", "levenshtein", "nld", "1-nld", "complement nld"}:
             metric_func = metrics.complement_nld
-        elif met in {"kappa", "cohen kappa", "cohen's kappa"}:
-            metric_func = metrics.cohen_kappa
+        elif met in {"kappa", "cohen kappa", "cohen's kappa", "cohens_kappa"}:
+            metric_func = metrics.cohens_kappa
         elif met in {"mcc", "mathew's correlation", "mathews correlation"}:
             metric_func = metrics.matthews_correlation
         elif met in {"confusion matrix", "confusion"}:
