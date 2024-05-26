@@ -17,8 +17,7 @@ class SampleMetricsCalculator(BaseCalculator):
             metric_names: Set[str],
     ) -> Dict[str, pd.DataFrame]:
         """
-        Calculates sample-level metrics for every pair of columns in the given DataFrame, and groups the results by the
-            stimulus.
+        Calculates sample-level metrics for every pair of columns in the given DataFrame.
         :param samples: A DataFrame containing the label-per-sample of each rater/detector.
         :param metric_names: A set of metric names to calculate. If None, the default set of metrics will be calculated.
         :return: A dictionary mapping each metric to a DataFrame containing the calculated metric values.

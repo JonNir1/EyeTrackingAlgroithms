@@ -72,7 +72,7 @@ class MatchedFeaturesCalculator(BaseCalculator):
             feature_names: Set[str],
     ) -> Dict[str, Dict[str, pd.DataFrame]]:
         """
-        Calculates features for matched events for each matching scheme, and groups the results by the stimulus.
+        Calculates features for matched events for each matching scheme.
         :param matches: A dictionary mapping each matching scheme to a DataFrame containing the matched events.
         :param feature_names: A set of feature names to calculate.
         :return: A dictionary mapping each feature to a dictionary of matching schemes to a DataFrame containing the

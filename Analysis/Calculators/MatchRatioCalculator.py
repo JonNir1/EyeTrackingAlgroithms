@@ -50,8 +50,7 @@ class MatchRatioCalculator(BaseCalculator):
             matches: Dict[str, pd.DataFrame],
     ) -> Dict[str, pd.DataFrame]:
         """
-        Calculates the ratio of matched events to the total number of detected events for each detector, and groups the
-            results by the stimulus.
+        Calculates the ratio of matched events to the total number of detected events for each detector.
         :param events: A DataFrame containing the detected events of each rater/detector.
         :param matches: A dictionary mapping each matching scheme to a DataFrame containing the matched events.
         :return: A dictionary mapping each matching scheme to a DataFrame containing the calculated match ratios.
