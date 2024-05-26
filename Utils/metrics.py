@@ -197,14 +197,14 @@ def _calc_precision_recall_f1(gt: Sequence, pred: Sequence) -> (float, float, fl
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
     pred = [hlp.parse_event_label(e, safe=False) for e in pred]
     is_binary = set(gt) == set(pred) and len(set(gt)) == 2
-    labels = [_find_positive_label(gt)] if is_binary else cnfg.EVENT_LABELS
+    labels = [__find_positive_label(gt)] if is_binary else cnfg.EVENT_LABELS
     prec, rec, f1, _ = met.precision_recall_fscore_support(
         gt, pred, labels=labels, zero_division=np.nan, average="weighted"
     )
     return prec, rec, f1
 
 
-def _find_positive_label(seq: Sequence):
+def __find_positive_label(seq: Sequence):
     """ Find the least common label in the given sequence, that is not the undefined label."""
     labels = set(seq)
     assert len(labels) == 2, "The sequence must be binary"
