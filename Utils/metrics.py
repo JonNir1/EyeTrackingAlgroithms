@@ -13,9 +13,6 @@ import GazeEvents.helpers as hlp
 _NUM_EVENTS = len(cnfg.EVENT_LABELS)
 
 
-# TODO: calculate confusion matrix, precision, recall, F1-score, etc.
-
-
 def accuracy(gt: Sequence, pred: Sequence) -> float:
     """ Calculates the accuracy between two sequences of samples or events. """
     gt = [hlp.parse_event_label(e, safe=False) for e in gt]
