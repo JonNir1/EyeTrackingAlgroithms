@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 
-from Config import constants as cnst
-from Utils import pixel_utils as pixel_utils
+from peyes.Config import constants as cnst
+from peyes.Utils import pixel_utils as pixel_utils
 
 
 class TestPixelUtils(unittest.TestCase):
