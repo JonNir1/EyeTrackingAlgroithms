@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 
-from Config import constants as cnst
-import Utils.visual_angle_utils as visang_utils
+from peyes.Config import constants as cnst
+import peyes.Utils.visual_angle_utils as visang_utils
 
 
 class TestVisualAngleUtils(unittest.TestCase):

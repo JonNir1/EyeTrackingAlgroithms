@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 
-from Config import constants as cnst
-from GazeDetectors.EngbertDetector import EngbertDetector
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
+from peyes.Config import constants as cnst
+from peyes.GazeDetectors.EngbertDetector import EngbertDetector
+from peyes.Config.GazeEventTypeEnum import GazeEventTypeEnum
 
 
 class TestBaseDetector(unittest.TestCase):

@@ -1,11 +1,11 @@
 import unittest
-from Config.GazeEventTypeEnum import GazeEventTypeEnum
-from Detectors.NHDetector import NHDetector
+from peyes.Config.GazeEventTypeEnum import GazeEventTypeEnum
+from peyes.Detectors.NHDetector import NHDetector
 import numpy as np
 from sklearn.metrics import confusion_matrix
 import pandas as pd
-from DataSetLoaders.Lund2013DataSetLoader import Lund2013DataSetLoader
-from Config import constants as cnst
+from peyes.DataSetLoaders.Lund2013DataSetLoader import Lund2013DataSetLoader
+from peyes.Config import constants as cnst
 from sklearn.metrics import mean_squared_error
 
 

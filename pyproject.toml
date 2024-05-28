@@ -1,0 +1,21 @@
+[project]
+name = "peyes"
+version = "0.0.5"
+authors = [
+  { name="Jonathan Nir", email="jonathan.nir@mail.huji.ac.il" },
+]
+description = "Package containing implementation of various eye-tracking event identifiers"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [ 'numpy', 'pandas', 'scikit-learn', 'plotly', 'h5py', 'requests', 'arff', 'overrides', 'remodnav', 'scipy', 'Levenshtein' ] 
+
+[project.urls]
+"Homepage" = "https://github.com/JonNir1/EyeTrackingAlgroithms"
+"Bug Tracker" = "https://github.com/JonNir1/EyeTrackingAlgroithms/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

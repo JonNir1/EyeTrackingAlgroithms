@@ -3,8 +3,8 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from Config import constants as cnst
-import Utils.array_utils as arr_utils
+from peyes.Config import constants as cnst
+import peyes.Utils.array_utils as arr_utils
 
 
 class TestIOUtils(unittest.TestCase):

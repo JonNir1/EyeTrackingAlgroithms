@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 
-from Config import constants as cnst
-from GazeDetectors.EngbertDetector import EngbertDetector
+from peyes.Config import constants as cnst
+from peyes.GazeDetectors.EngbertDetector import EngbertDetector
 
 
 class TestEngbertDetector(unittest.TestCase):

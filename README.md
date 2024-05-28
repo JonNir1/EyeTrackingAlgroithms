@@ -34,5 +34,17 @@ Detectors- implemented algorithms to detect types of events in eye movements:
     * Our dispersion calculation (according to the article: "Review and Evaluation of Eye Movement Event
 Detection Algorithms" by Birtukan Birawo and Pawel Kasprowski): D = [max(x) - min(x)] + [max(y) - min(y)]
     * Output: np ndarray of labels (1 or 2 only)
+
+## Installation instructions
+
+This package has been created and tested with python ```3.12```. The steps to install this package are -  
+
+```
+python -m venv env 
+source ./env/bin/activate (In linux, instructions on other OS will vary)
+pip install . (or pip install -e . for installing the editable version)
+```
     
-    
+## Acknowledgement
+
+We are grateful for the support of the [Center for Interdisciplinary Data Science Research (CIDR)](https://cidr.huji.ac.il/) at the [Hebrew University of Jerusalem](https://new.huji.ac.il/). In particular, we would like to thank Haimasree Bhattacharya from CIDR for her contributions.
