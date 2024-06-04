@@ -34,6 +34,11 @@ class REMoDNaVDetector(BaseDetector):
     __DEFAULT_SAVGOL_LENGTH = 0.019                             # s
     __DEFAULT_SAVGOL_POLYORD = 2                                # unitless
     __DEFAULT_MAX_VELOCITY = 1000                               # deg/s
+    __LABEL_MAPPING = {
+        'FIXA': cnfg.EVENT_LABELS.FIXATION, 'SACC': cnfg.EVENT_LABELS.SACCADE, 'ISAC': cnfg.EVENT_LABELS.SACCADE,
+        'HPSO': cnfg.EVENT_LABELS.PSO, 'IHPS': cnfg.EVENT_LABELS.PSO, 'LPSO': cnfg.EVENT_LABELS.PSO,
+        'ILPS': cnfg.EVENT_LABELS.PSO, 'PURS': cnfg.EVENT_LABELS.SMOOTH_PURSUIT, 'BLNK': cnfg.EVENT_LABELS.BLINK
+    }
 
     def __init__(
             self,
@@ -102,13 +107,16 @@ class REMoDNaVDetector(BaseDetector):
         )
 
         xy = np.rec.fromarrays([x, y], names="{},{}".format(cnst.X, cnst.Y), formats="<f8,<f8")
-        pp = classifier.preproc(xy,
-                                min_blink_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.BLINK][cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
-                                dilate_nan=cnfg.DEFAULT_NAN_PADDING,
-                                median_filter_length=self._median_filter_length,
-                                savgol_length=self._savgol_length,
-                                savgol_polyord=self._savgol_polyord,
-                                max_vel=self._max_velocity)
+        pp = classifier.preproc(
+            xy,
+            min_blink_duration=cnfg.EVENT_MAPPING[cnfg.EVENT_LABELS.BLINK][
+                                   cnst.MIN_DURATION] / cnst.MILLISECONDS_PER_SECOND,
+            dilate_nan=cnfg.DEFAULT_NAN_PADDING,
+            median_filter_length=self._median_filter_length,
+            savgol_length=self._savgol_length,
+            savgol_polyord=self._savgol_polyord,
+            max_vel=self._max_velocity
+        )
 
         # save preprocessed gaze data
         df = self.data[cnst.GAZE]
@@ -126,19 +134,10 @@ class REMoDNaVDetector(BaseDetector):
         return self._candidates
 
     def _parse_events(self, events: List[Dict[str, float]]) -> np.ndarray:
-        events_map = {'FIXA': cnfg.EVENT_LABELS.FIXATION,
-                      'SACC': cnfg.EVENT_LABELS.SACCADE,
-                      'ISAC': cnfg.EVENT_LABELS.SACCADE,
-                      'HPSO': cnfg.EVENT_LABELS.PSO,
-                      'IHPS': cnfg.EVENT_LABELS.PSO,
-                      'LPSO': cnfg.EVENT_LABELS.PSO,
-                      'ILPS': cnfg.EVENT_LABELS.PSO,
-                      'PURS': cnfg.EVENT_LABELS.SMOOTH_PURSUIT,
-                      'BLNK': cnfg.EVENT_LABELS.BLINK}
         candidates = np.full_like(self._candidates, cnfg.EVENT_LABELS.UNDEFINED)
         for i, event in enumerate(events):
             start_sample = round(event["start_time"] * self._sr)
             end_sample = round(event["end_time"] * self._sr)
-            label = events_map[event["label"]]
+            label = self.__LABEL_MAPPING[event["label"]]
             candidates[start_sample:end_sample+1] = label
         return candidates
