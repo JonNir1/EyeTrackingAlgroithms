@@ -12,7 +12,7 @@ import Config.experiment_config as cnfg
 from Analysis.Calculators.BaseCalculator import BaseCalculator
 
 
-class SDTCalculator(BaseCalculator):
+class EventSDTCalculator(BaseCalculator):
 
     @classmethod
     def _calculate_impl(
