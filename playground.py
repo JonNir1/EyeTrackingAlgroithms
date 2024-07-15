@@ -23,6 +23,8 @@ DATASET_NAME = "Lund2013"
 ###################
 
 PATH = r'C:\Users\nirjo\Documents\University\Masters\Projects\EyeTrackingAlgroithms\Results\DetectorComparison\Lund2013'
+# PATH = r'C:\Users\jonathanni\PycharmProjects\EyeTrackingAlgroithms\Results\DetectorComparison\Lund2013'
+
 samples = pd.read_pickle(os.path.join(PATH, 'samples.pkl'))
 events = pd.read_pickle(os.path.join(PATH, 'events.pkl'))
 with open(os.path.join(PATH, 'matches.pkl'), 'rb') as f:
